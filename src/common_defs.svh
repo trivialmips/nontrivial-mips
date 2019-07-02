@@ -39,9 +39,9 @@ interface cpu_dbus_if();
 	logic icache_inv, dcache_inv;
 	logic read, write, stall;
 	logic uncached_read, uncached_write, uncached_stall;
-	uint8_t  byteenable;
-	uint32_t address;      // aligned in 8bytes
-	uint64_t rddata, wrdata, uncached_rddata;
+	logic [3:0] byteenable;
+	uint32_t address;      // aligned in 4bytes
+	uint32_t rddata, wrdata, uncached_rddata;
 
     modport master (
 		output read, write,
