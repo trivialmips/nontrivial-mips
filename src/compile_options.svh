@@ -1,5 +1,5 @@
-`ifndef COMPILE_OPTION_SVH
-`define COMPILE_OPTION_SVH
+`ifndef COMPILE_OPTIONS_SVH
+`define COMPILE_OPTIONS_SVH
 
 /*
     Options to control optional components to be compiled
