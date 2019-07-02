@@ -24,12 +24,12 @@ interface cpu_ibus_if();
 
     modport master (
 		output read, address,
-		input  stall, rddata,
+		input  stall, rddata
     );
 
     modport slave (
 		input  read, address,
-		output stall, rddata,
+		output stall, rddata
     );
 
 endinterface
