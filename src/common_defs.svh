@@ -15,11 +15,13 @@ typedef logic [7:0]   uint8_t;
 typedef logic [15:0]  uint16_t;
 typedef logic [31:0]  uint32_t;
 typedef logic [63:0]  uint64_t;
+typedef uint32_t      virt_t;
+typedef uint32_t      phys_t;
 
 // interface of I$ and CPU
 interface cpu_ibus_if();
 	logic read, stall;
-	uint32_t address;   // aligned in 8bytes
+	phys_t address;   // aligned in 8bytes
 	uint64_t rddata;
 
     modport master (
@@ -40,7 +42,7 @@ interface cpu_dbus_if();
 	logic read, write, stall;
 	logic uncached_read, uncached_write, uncached_stall;
 	logic [3:0] byteenable;
-	uint32_t address;      // aligned in 4bytes
+	phys_t address;      // aligned in 4bytes
 	uint32_t rddata, wrdata, uncached_rddata;
 
     modport master (
