@@ -20,8 +20,7 @@ module instr_fetch (
 
 	// fetch
 	input  logic         [`FETCH_NUM-1:0] fetch_ack,
-	output fetch_entry_t [`FETCH_NUM-1:0] fetch_entry,
-	output logic                          fetch_ready
+	output fetch_entry_t [`FETCH_NUM-1:0] fetch_entry
 );
 
 endmodule

@@ -11,12 +11,32 @@
 // fetched instruction
 typedef struct packed {
 	logic valid;
-	uint32_t inst;
+	virt_t   vaddr;
+	uint32_t instr;
+	exception_t ex;
 } fetch_entry_t;
+
+// control flow type
+typedef enum logic [2:0] {
+	ControlFlow_None,
+	ControlFlow_Branch,
+	ControlFlow_JumpImm,
+	ControlFlow_JumpReg,
+	ControlFlow_Return
+} controlflow_t;
 
 // resolved branch information (forward)
 typedef struct packed {
+	logic valid, mispredict, taken;
+	virt_t pc, target;
+	controlflow_t cf;
 } branch_resolved_t;
+
+// branch prediction information
+typedef struct packed {
+	controlflow_t cf;
+	virt_t predict_vaddr;
+} branch_predict_t;
 
 // BTB information
 typedef struct packed {
