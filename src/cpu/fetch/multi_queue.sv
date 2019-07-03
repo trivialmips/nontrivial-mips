@@ -1,10 +1,10 @@
 `include "cpu_defs.svh"
 
 module multi_queue #(
-    parameter int unsigned DATA_WIDTH   = 32,   // default data width if the fifo is of type logic
-    parameter int unsigned DEPTH        = 8,    // depth per channel, only support for 2**p
-	parameter int unsigned CHANNEL      = 4,
-    parameter type dtype                = logic [DATA_WIDTH-1:0]
+	parameter int unsigned DATA_WIDTH   = 32,   // default data width if the fifo is of type logic
+	parameter int unsigned DEPTH        = 8,    // depth per channel, must be the power of 2
+	parameter int unsigned CHANNEL      = 4,    // channel number, must be the power of 2
+	parameter type dtype                = logic [DATA_WIDTH-1:0]
 )(
 	input  logic  clk,
 	input  logic  rst_n,
@@ -20,7 +20,7 @@ module multi_queue #(
 	input  logic  [$clog2(CHANNEL+1)-1:0] pop_num
 );
 
-typedef logic[$clog2(CHANNEL+1)-1:0] index_t;
+typedef logic[$clog2(CHANNEL)-1:0] index_t;
 
 // queues info
 logic [CHANNEL-1:0] queue_push, queue_pop;
