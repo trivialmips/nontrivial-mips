@@ -32,24 +32,27 @@ assign empty = &queue_empty;
 
 // index
 index_t [CHANNEL-1:0] shifted_read_idx, shifted_write_idx;
+index_t [CHANNEL-1:0] rshifted_read_idx, rshifted_write_idx;
 index_t read_ptr_now, write_ptr_now;
 
 for(genvar i = 0; i < CHANNEL; ++i) begin : gen_shifted_rw_index
-	assign shifted_read_idx[i]  = read_ptr_now + i;
-	assign shifted_write_idx[i] = write_ptr_now + i;
+	assign shifted_read_idx[i]   = read_ptr_now + i;
+	assign shifted_write_idx[i]  = write_ptr_now + i;
+	assign rshifted_read_idx[i]  = i - read_ptr_now;
+	assign rshifted_write_idx[i] = i - write_ptr_now;
 end
 
 // queue logic
 for(genvar i = 0; i < CHANNEL; ++i) begin : gen_read_queue
 	assign data_pop[i]  = data_out[shifted_read_idx[i]];
-	assign pop_valid[i] = queue_empty[shifted_read_idx[i]];
+	assign pop_valid[i] = ~queue_empty[shifted_read_idx[i]];
 end
 
 // write queue logic
 for(genvar i = 0; i < CHANNEL; ++i) begin : gen_rw_req
-	assign data_in[shifted_write_idx[i]]    = data_push[i];
-	assign queue_pop[shifted_read_idx[i]]   = (i < pop_num);
-	assign queue_push[shifted_write_idx[i]] = (i < push_num);
+	assign data_in[i]    = data_push[rshifted_write_idx[i]];
+	assign queue_pop[i]  = (rshifted_read_idx[i] < pop_num);
+	assign queue_push[i] = (rshifted_write_idx[i] < push_num);
 end
 
 // update index

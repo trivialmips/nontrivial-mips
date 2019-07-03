@@ -8,13 +8,16 @@
 
 `define FETCH_NUM   2
 
-// fetched instruction
+// exception
 typedef struct packed {
-	logic valid;
-	virt_t   vaddr;
-	uint32_t instr;
-	exception_t ex;
-} fetch_entry_t;
+	logic miss, illegal, invalid;
+} address_exception_t;
+
+typedef struct packed {
+	address_exception_t iaddr, daddr;
+	logic syscall, breakpoint, priv_inst, overflow;
+	logic invalid_inst, trap, eret;
+} exception_t;
 
 // control flow type
 typedef enum logic [2:0] {
@@ -65,6 +68,15 @@ typedef struct packed {
 	logic valid, taken;
 } bht_predict_t;
 
+// fetched instruction
+typedef struct packed {
+	logic            valid;
+	virt_t           vaddr;
+	uint32_t         instr;
+	branch_predict_t branch_predict;
+	exception_t      ex;
+} fetch_entry_t;
+
 // memory request for instruction fetch
 typedef struct packed {
 	logic read;
@@ -74,11 +86,7 @@ typedef struct packed {
 typedef struct packed {
 	logic valid;
 	uint64_t data;
-	exception_t ex;
+	address_exception_t iaddr_ex;
 } instr_fetch_memres_t;
-
-// exception
-typedef struct packed {
-} exception_t;
 
 `endif
