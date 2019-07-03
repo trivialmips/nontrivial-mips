@@ -38,6 +38,12 @@ typedef struct packed {
 	virt_t predict_vaddr;
 } branch_predict_t;
 
+// RAS information
+typedef struct packed {
+	logic valid;
+	virt_t data;
+} ras_t;
+
 // BTB information
 typedef struct packed {
 	logic valid;

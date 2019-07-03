@@ -45,7 +45,7 @@ end
 
 // update prediction
 always_ff @(posedge clk or negedge rst_n) begin
-	if(!rst_n) begin
+	if(~rst_n) begin
 		for(int i = 0; i < ROW_NUM; ++i) begin
 			btb_now[i] <= '{default: 0};
 		end
