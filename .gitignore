@@ -1,0 +1,7 @@
+.vscode/
+*.ip_user_files/
+*.runs/
+*.sims/
+*.cache/
+*.hw/
+
