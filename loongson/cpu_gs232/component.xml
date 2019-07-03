@@ -363,7 +363,7 @@
       <spirit:parameters>
         <spirit:parameter>
           <spirit:name>SENSITIVITY</spirit:name>
-          <spirit:value spirit:id="BUSIFPARAM_VALUE.INTERRUPT_I.SENSITIVITY" spirit:choiceRef="choice_list_9ca20931">LEVEL_HIGH</spirit:value>
+          <spirit:value spirit:id="BUSIFPARAM_VALUE.INTERRUPT_I.SENSITIVITY" spirit:choiceRef="choice_list_99a1d2b9">LEVEL_HIGH</spirit:value>
         </spirit:parameter>
       </spirit:parameters>
     </spirit:busInterface>
@@ -1227,7 +1227,7 @@
   </spirit:model>
   <spirit:choices>
     <spirit:choice>
-      <spirit:name>choice_list_9ca20931</spirit:name>
+      <spirit:name>choice_list_99a1d2b9</spirit:name>
       <spirit:enumeration>LEVEL_HIGH</spirit:enumeration>
       <spirit:enumeration>LEVEL_LOW</spirit:enumeration>
       <spirit:enumeration>EDGE_RISING</spirit:enumeration>
@@ -1500,13 +1500,13 @@
         <xilinx:taxonomy>/Embedded_Processing/Processor</xilinx:taxonomy>
         <xilinx:taxonomy>/UserIP</xilinx:taxonomy>
       </xilinx:taxonomies>
-      <xilinx:displayName>loongson_cpu_gs232_v1_0</xilinx:displayName>
+      <xilinx:displayName>Loongson GS232 CPU</xilinx:displayName>
       <xilinx:definitionSource>package_project</xilinx:definitionSource>
-      <xilinx:coreRevision>1</xilinx:coreRevision>
+      <xilinx:coreRevision>2</xilinx:coreRevision>
       <xilinx:upgrades>
         <xilinx:canUpgradeFrom>xilinx.com:user:godson_cpu_mid:1.0</xilinx:canUpgradeFrom>
       </xilinx:upgrades>
-      <xilinx:coreCreationDateTime>2019-07-03T17:33:09Z</xilinx:coreCreationDateTime>
+      <xilinx:coreCreationDateTime>2019-07-03T17:40:54Z</xilinx:coreCreationDateTime>
       <xilinx:tags>
         <xilinx:tag xilinx:name="nopcore"/>
         <xilinx:tag xilinx:name="ui.data.coregen.dd@27f90f9a_ARCHIVE_LOCATION">c:/Users/Harry Chen/Documents/Workspace/nontrivial-mips/loongson/cpu_gs232</xilinx:tag>
@@ -1540,11 +1540,18 @@
         <xilinx:tag xilinx:name="ui.data.coregen.dd@47fdf777_ARCHIVE_LOCATION">c:/Users/Harry Chen/Documents/Workspace/nontrivial-mips/loongson/cpu_gs232</xilinx:tag>
         <xilinx:tag xilinx:name="ui.data.coregen.dd@5ee6b995_ARCHIVE_LOCATION">c:/Users/Harry Chen/Documents/Workspace/nontrivial-mips/loongson/cpu_gs232</xilinx:tag>
         <xilinx:tag xilinx:name="ui.data.coregen.dd@68b52a09_ARCHIVE_LOCATION">c:/Users/Harry Chen/Documents/Workspace/nontrivial-mips/loongson/cpu_gs232</xilinx:tag>
+        <xilinx:tag xilinx:name="ui.data.coregen.dd@435b9a5c_ARCHIVE_LOCATION">c:/Users/Harry Chen/Documents/Workspace/nontrivial-mips/loongson/cpu_gs232</xilinx:tag>
+        <xilinx:tag xilinx:name="ui.data.coregen.dd@7b6ae8d3_ARCHIVE_LOCATION">c:/Users/Harry Chen/Documents/Workspace/nontrivial-mips/loongson/cpu_gs232</xilinx:tag>
+        <xilinx:tag xilinx:name="ui.data.coregen.dd@2387126f_ARCHIVE_LOCATION">c:/Users/Harry Chen/Documents/Workspace/nontrivial-mips/loongson/cpu_gs232</xilinx:tag>
+        <xilinx:tag xilinx:name="ui.data.coregen.dd@7d8e8b9e_ARCHIVE_LOCATION">c:/Users/Harry Chen/Documents/Workspace/nontrivial-mips/loongson/cpu_gs232</xilinx:tag>
+        <xilinx:tag xilinx:name="ui.data.coregen.dd@5122e404_ARCHIVE_LOCATION">c:/Users/Harry Chen/Documents/Workspace/nontrivial-mips/loongson/cpu_gs232</xilinx:tag>
+        <xilinx:tag xilinx:name="ui.data.coregen.dd@6ceef311_ARCHIVE_LOCATION">c:/Users/Harry Chen/Documents/Workspace/nontrivial-mips/loongson/cpu_gs232</xilinx:tag>
+        <xilinx:tag xilinx:name="ui.data.coregen.dd@334598bc_ARCHIVE_LOCATION">c:/Users/Harry Chen/Documents/Workspace/nontrivial-mips/loongson/cpu_gs232</xilinx:tag>
       </xilinx:tags>
     </xilinx:coreExtensions>
     <xilinx:packagingInfo>
       <xilinx:xilinxVersion>2018.3</xilinx:xilinxVersion>
-      <xilinx:checksum xilinx:scope="busInterfaces" xilinx:value="e4e3c1a7"/>
+      <xilinx:checksum xilinx:scope="busInterfaces" xilinx:value="0f8c4455"/>
       <xilinx:checksum xilinx:scope="addressSpaces" xilinx:value="3b42acec"/>
       <xilinx:checksum xilinx:scope="fileGroups" xilinx:value="2b718745"/>
       <xilinx:checksum xilinx:scope="ports" xilinx:value="755a6b22"/>
