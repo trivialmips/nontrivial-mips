@@ -1,0 +1,1 @@
+void Infrare(void);

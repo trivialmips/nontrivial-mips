@@ -1,0 +1,2 @@
+
+float BatteryMeasure(void)

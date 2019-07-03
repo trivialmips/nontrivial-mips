@@ -1,0 +1,11 @@
+../../testbench/godson_system.v
+../../testbench/MX25L6405D.v
+../../testbench/uart_dev.v
+../../testbench/ejtag_virtual_host.v
+../../testbench/ddr3_model_c1.v
+../../testbench/vmac/virtual_mac.v
+../../testbench/vmac/mac_top.v
+../../testbench/vmac/mac_ram.v
+../../testbench/nand_sim.v
+
+
