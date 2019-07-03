@@ -19,7 +19,7 @@ module instr_fetch (
 	output instr_fetch_memreq_t icache_req,
 
 	// fetch
-	input  logic         [`FETCH_NUM-1:0] fetch_ack,
+	input  fetch_ack_t                    fetch_ack,
 	output fetch_entry_t [`FETCH_NUM-1:0] fetch_entry
 );
 

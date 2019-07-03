@@ -76,6 +76,7 @@ typedef struct packed {
 	branch_predict_t branch_predict;
 	exception_t      ex;
 } fetch_entry_t;
+typedef logic [$clog2(`FETCH_NUM+1)-1:0] fetch_ack_t;
 
 // memory request for instruction fetch
 typedef struct packed {

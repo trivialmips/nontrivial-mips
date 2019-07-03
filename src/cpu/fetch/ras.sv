@@ -26,7 +26,7 @@ always_comb begin
 	end
 
 	if(pop_req) begin
-		ras_nxt[ENTRIES_NUM-1].data  = 'b0;
+		ras_nxt[ENTRIES_NUM-1].data  = '0;
 		ras_nxt[ENTRIES_NUM-1].valid = 1'b0;
 		ras_nxt[ENTRIES_NUM-2:0] = ras_now[ENTRIES_NUM-1:1];
 	end
