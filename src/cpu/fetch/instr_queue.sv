@@ -39,7 +39,7 @@ for(genvar i = 0; i < `FETCH_NUM; ++i) begin : gen_fetch_entry
 	assign fetch_entry[i].ex = {
 		iaddr: data_pop[i].iaddr_ex,
 		default: '0
-	);
+	};
 	assign fetch_entry[i].branch_predict = data_pop[i].branch_predict;
 end
 
