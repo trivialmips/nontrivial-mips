@@ -21,7 +21,8 @@ typedef uint32_t      phys_t;
 // interface of I$ and CPU
 // I$ is 2-stage pipelined
 interface cpu_ibus_if();
-	logic read, stall;
+	logic read;
+	logic stall;
 	phys_t address;   // aligned in 8-bytes
 	uint64_t rddata;
 
@@ -45,9 +46,14 @@ endinterface
 
 // interface of D$ and CPU
 interface cpu_dbus_if();
+	// invalidate I$ and D$ respectively
 	logic icache_inv, dcache_inv;
+	// signals for D$
 	logic read, write, stall;
+	// signals for uncached memory access 
 	logic uncached_read, uncached_write, uncached_stall;
+	// only used for write
+	// byteenable[i] corresponds to wrdata[(i + 1) * 8 - 1 : i * 8]
 	logic [3:0] byteenable;
 	phys_t address;      // aligned in 4-bytes
 	uint32_t rddata, wrdata, uncached_rddata;
