@@ -140,9 +140,8 @@ for(genvar i = 0; i < `FETCH_NUM; ++i) begin : gen_unpacked_instr
 	assign instr[i] = icache_res.data[i * 32 +: 32];
 end
 
-logic delayslot_d, branch_flush_d;
-assign delayslot_d     = maybe_jump_d[`FETCH_NUM - 1];
-assign branch_flush_d  = |(maybe_jump_d[`FETCH_NUM - 2:0]);
+logic delayslot_d;
+assign delayslot_d = maybe_jump_d[`FETCH_NUM - 1];
 always_comb begin
 	for(int i = 0; i < `FETCH_NUM; ++i) begin
 		instr_vaddr[i] = aligned_fetch_vaddr_d + i * 4;
@@ -157,7 +156,7 @@ always_comb begin
 		valid_instr_num = 1;
 	end
 
-	if(branch_flush_d | invalid_push) begin
+	if(invalid_push) begin
 		instr_valid = '0;
 		valid_instr_num = 0;
 	end

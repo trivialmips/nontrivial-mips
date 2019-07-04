@@ -66,7 +66,7 @@ task judge(input integer fans, input integer cycle, input fetch_entry_t entry);
 			resolved_branch.cf = ControlFlow_JumpImm;
 		end else if(cf_type == "JumpReg") begin
 			resolved_branch.cf = ControlFlow_JumpReg;
-			$fscanf(fans, "%d", resolved_branch.target);
+			$fscanf(fans, "%d %d", resolved_branch.target, mispredict);
 			resolved_branch.target = resolved_branch.target << 2;
 		end else if(cf_type == "Branch") begin
 			resolved_branch.cf = ControlFlow_Branch;
@@ -83,23 +83,22 @@ task judge(input integer fans, input integer cycle, input fetch_entry_t entry);
 
 	resolved_branch.mispredict = resolved_branch.cf != entry.branch_predict.cf;
 
-	mispredict = 0;
-	if(cf_type == "Branch") begin
-		mispredict = entry.branch_predict.cf != ControlFlow_Branch;
-	end
-
 	if(entry.vaddr[15:0] != pc)
 	begin
 		$display("[%0d] %d, %s", cycle, pc >> 2, cf_type);
 		$display("[Error] Expected: %d, Got: %d", pc >> 2, entry.vaddr[15:0] >> 2);
 		$stop;
-	end else if(cf_type == "Branch" && resolved_branch.mispredict != mispredict) begin
+	end else if((cf_type == "Branch" || cf_type == "JumpReg") && resolved_branch.mispredict != mispredict) begin
 		$display("[%0d] %d, %s", cycle, pc >> 2, cf_type);
 		$display("[Error] Mispredict, expected: %d, got: %d",
 			resolved_branch.mispredict, mispredict);
 		$stop;
 	end else begin
-		$display("[%0d] %d, %s [pass]", cycle, pc >> 2, cf_type);
+		case(cf_type)
+			"JumpImm": $display("[%0d] %d, %s [pass]", cycle, pc >> 2, cf_type);
+			"JumpReg", "Branch": $display("[%0d] %d, %s, mispredict=%s [pass]",
+				cycle, pc >> 2, cf_type, mispredict ? "True" : "False");
+		endcase
 	end
 endtask
 
@@ -164,6 +163,7 @@ initial begin
 	wait(rst_n == 1'b1);
 	unittest("jump");
 	unittest("jump_reg");
+	$finish;
 end
 
 endmodule

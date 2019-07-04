@@ -1,7 +1,7 @@
 `include "cpu_defs.svh"
 
 module pc_generator #(
-	parameter int unsigned RESET_BASE = `BOOT_VEC,
+	parameter int unsigned RESET_BASE = `BOOT_VEC
 )(
 	input  logic   clk,
 	input  logic   rst_n,
