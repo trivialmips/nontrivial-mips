@@ -1,6 +1,6 @@
 # NonTrivialMIPS
 
-NonTrivial-MIPS is a synthesizable superscalar MIPS processer with branch prediction and FPU support, and it is capable of booting linux.
+NonTrivial-MIPS is a synthesizable superscalar MIPS processor with branch prediction and FPU support, and it is capable of booting linux.
 
 ## Directory Structure
 
