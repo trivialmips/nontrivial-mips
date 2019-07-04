@@ -1,13 +1,13 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <Root MajorVersion="0" MinorVersion="36">
-  <CompositeFile CompositeFileTopName="nscscc_bd_top" CanBeSetAsTop="false" CanDisplayChildGraph="true">
+  <CompositeFile CompositeFileTopName="bd_soc" CanBeSetAsTop="false" CanDisplayChildGraph="true">
     <Description>Composite Fileset</Description>
-    <Generation Name="SYNTHESIS" State="RESET" Timestamp="1562231045"/>
-    <Generation Name="IMPLEMENTATION" State="RESET" Timestamp="1562231045"/>
-    <Generation Name="SIMULATION" State="RESET" Timestamp="1562231045"/>
-    <Generation Name="HW_HANDOFF" State="RESET" Timestamp="1562231045"/>
+    <Generation Name="SYNTHESIS" State="STALE" Timestamp="1562231479"/>
+    <Generation Name="IMPLEMENTATION" State="STALE" Timestamp="1562231479"/>
+    <Generation Name="SIMULATION" State="STALE" Timestamp="1562231479"/>
+    <Generation Name="HW_HANDOFF" State="STALE" Timestamp="1562231479"/>
     <FileCollection Name="SOURCES" Type="SOURCES">
-      <File Name="ip\nscscc_bd_top_loongson_cpu_gs232_0_0\nscscc_bd_top_loongson_cpu_gs232_0_0.xci" Type="IP">
+      <File Name="ip\bd_soc_loongson_cpu_gs232_0_0\bd_soc_loongson_cpu_gs232_0_0.xci" Type="IP">
         <Instance HierarchyPath="loongson_cpu_gs232_0"/>
         <Properties IsEditable="false" IsVisible="true" Timestamp="0" IsTrackable="true" IsStatusTracked="true"/>
         <Library Name="xil_defaultlib"/>

@@ -1,0 +1,30 @@
+{
+  "design": {
+    "design_info": {
+      "boundary_crc": "0x0",
+      "device": "xc7a200tfbg676-2",
+      "name": "bd_soc",
+      "synth_flow_mode": "Hierarchical",
+      "tool_version": "2018.3"
+    },
+    "design_tree": {
+      "loongson_cpu_gs232_0": ""
+    },
+    "components": {
+      "loongson_cpu_gs232_0": {
+        "vlnv": "loongson.cn:user:loongson_cpu_gs232:1.0",
+        "xci_name": "bd_soc_loongson_cpu_gs232_0_0"
+      }
+    },
+    "addressing": {
+      "/loongson_cpu_gs232_0": {
+        "address_spaces": {
+          "interface_aximm": {
+            "range": "4G",
+            "width": "32"
+          }
+        }
+      }
+    }
+  }
+}
