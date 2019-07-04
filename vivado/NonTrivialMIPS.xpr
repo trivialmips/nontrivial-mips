@@ -3,7 +3,7 @@
 <!--                                                         -->
 <!-- Copyright 1986-2018 Xilinx, Inc. All Rights Reserved.   -->
 
-<Project Version="7" Minor="39" Path="C:/Users/Harry Chen/Documents/Workspace/nontrivial-mips/vivado/NonTrivialMIPS.xpr">
+<Project Version="7" Minor="39" Path="C:/Workspace/nontrivial-mips/vivado/NonTrivialMIPS.xpr">
   <DefaultLaunch Dir="$PRUNDIR"/>
   <Configuration>
     <Option Name="Id" Val="f747e94b4f154130b3378f0c147ce87b"/>
@@ -21,7 +21,7 @@
     <Option Name="ActiveSimSet" Val="cpu_test"/>
     <Option Name="DefaultLib" Val="xil_defaultlib"/>
     <Option Name="ProjectType" Val="Default"/>
-    <Option Name="IPRepoPath" Val="$PPRDIR/../loongson/cpu_gs232"/>
+    <Option Name="IPRepoPath" Val="$PPRDIR/ip_repo"/>
     <Option Name="IPOutputRepo" Val="$PCACHEDIR/ip"/>
     <Option Name="IPCachePermission" Val="read"/>
     <Option Name="IPCachePermission" Val="write"/>
@@ -206,6 +206,12 @@
           <Attr Name="UsedIn" Val="simulation"/>
         </FileInfo>
       </File>
+      <File Path="$PPRDIR/../src/compile_options.svh">
+        <FileInfo>
+          <Attr Name="UsedIn" Val="synthesis"/>
+          <Attr Name="UsedIn" Val="simulation"/>
+        </FileInfo>
+      </File>
       <File Path="$PPRDIR/../src/cpu/cpu_defs.svh">
         <FileInfo>
           <Attr Name="UsedIn" Val="synthesis"/>
@@ -213,12 +219,6 @@
         </FileInfo>
       </File>
       <File Path="$PPRDIR/../src/common_defs.svh">
-        <FileInfo>
-          <Attr Name="UsedIn" Val="synthesis"/>
-          <Attr Name="UsedIn" Val="simulation"/>
-        </FileInfo>
-      </File>
-      <File Path="$PPRDIR/../src/compile_options.svh">
         <FileInfo>
           <Attr Name="UsedIn" Val="synthesis"/>
           <Attr Name="UsedIn" Val="simulation"/>

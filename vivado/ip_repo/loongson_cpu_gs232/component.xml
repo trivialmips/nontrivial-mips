@@ -1253,91 +1253,91 @@
         <spirit:isIncludeFile>true</spirit:isIncludeFile>
       </spirit:file>
       <spirit:file>
-        <spirit:name>axi_interface.v</spirit:name>
+        <spirit:name>../../../loongson/cpu_gs232/axi_interface.v</spirit:name>
         <spirit:fileType>verilogSource</spirit:fileType>
       </spirit:file>
       <spirit:file>
-        <spirit:name>godson_addr_module.v</spirit:name>
+        <spirit:name>../../../loongson/cpu_gs232/godson_addr_module.v</spirit:name>
         <spirit:fileType>verilogSource</spirit:fileType>
       </spirit:file>
       <spirit:file>
-        <spirit:name>godson_alu_module.v</spirit:name>
+        <spirit:name>../../../loongson/cpu_gs232/godson_alu_module.v</spirit:name>
         <spirit:fileType>verilogSource</spirit:fileType>
       </spirit:file>
       <spirit:file>
-        <spirit:name>godson_bus_module.v</spirit:name>
+        <spirit:name>../../../loongson/cpu_gs232/godson_bus_module.v</spirit:name>
         <spirit:fileType>verilogSource</spirit:fileType>
       </spirit:file>
       <spirit:file>
-        <spirit:name>godson_cpu_core.v</spirit:name>
+        <spirit:name>../../../loongson/cpu_gs232/godson_cpu_core.v</spirit:name>
         <spirit:fileType>verilogSource</spirit:fileType>
       </spirit:file>
       <spirit:file>
-        <spirit:name>godson_cpu_mid.v</spirit:name>
+        <spirit:name>../../../loongson/cpu_gs232/godson_cpu_mid.v</spirit:name>
         <spirit:fileType>verilogSource</spirit:fileType>
       </spirit:file>
       <spirit:file>
-        <spirit:name>godson_dcache_module.v</spirit:name>
+        <spirit:name>../../../loongson/cpu_gs232/godson_dcache_module.v</spirit:name>
         <spirit:fileType>verilogSource</spirit:fileType>
       </spirit:file>
       <spirit:file>
-        <spirit:name>godson_dcr_module.v</spirit:name>
+        <spirit:name>../../../loongson/cpu_gs232/godson_dcr_module.v</spirit:name>
         <spirit:fileType>verilogSource</spirit:fileType>
       </spirit:file>
       <spirit:file>
-        <spirit:name>godson_decoder_module.v</spirit:name>
+        <spirit:name>../../../loongson/cpu_gs232/godson_decoder_module.v</spirit:name>
         <spirit:fileType>verilogSource</spirit:fileType>
       </spirit:file>
       <spirit:file>
-        <spirit:name>godson_dtlb_module.v</spirit:name>
+        <spirit:name>../../../loongson/cpu_gs232/godson_dtlb_module.v</spirit:name>
         <spirit:fileType>verilogSource</spirit:fileType>
       </spirit:file>
       <spirit:file>
-        <spirit:name>godson_ejtag_tap_module.v</spirit:name>
+        <spirit:name>../../../loongson/cpu_gs232/godson_ejtag_tap_module.v</spirit:name>
         <spirit:fileType>verilogSource</spirit:fileType>
       </spirit:file>
       <spirit:file>
-        <spirit:name>godson_fetch_module.v</spirit:name>
+        <spirit:name>../../../loongson/cpu_gs232/godson_fetch_module.v</spirit:name>
         <spirit:fileType>verilogSource</spirit:fileType>
       </spirit:file>
       <spirit:file>
-        <spirit:name>godson_gr_module.v</spirit:name>
+        <spirit:name>../../../loongson/cpu_gs232/godson_gr_module.v</spirit:name>
         <spirit:fileType>verilogSource</spirit:fileType>
       </spirit:file>
       <spirit:file>
-        <spirit:name>godson_hb_module.v</spirit:name>
+        <spirit:name>../../../loongson/cpu_gs232/godson_hb_module.v</spirit:name>
         <spirit:fileType>verilogSource</spirit:fileType>
       </spirit:file>
       <spirit:file>
-        <spirit:name>godson_icache_module.v</spirit:name>
+        <spirit:name>../../../loongson/cpu_gs232/godson_icache_module.v</spirit:name>
         <spirit:fileType>verilogSource</spirit:fileType>
       </spirit:file>
       <spirit:file>
-        <spirit:name>godson_itlb_module.v</spirit:name>
+        <spirit:name>../../../loongson/cpu_gs232/godson_itlb_module.v</spirit:name>
         <spirit:fileType>verilogSource</spirit:fileType>
       </spirit:file>
       <spirit:file>
-        <spirit:name>godson_memqueue_module.v</spirit:name>
+        <spirit:name>../../../loongson/cpu_gs232/godson_memqueue_module.v</spirit:name>
         <spirit:fileType>verilogSource</spirit:fileType>
       </spirit:file>
       <spirit:file>
-        <spirit:name>godson_queue_module.v</spirit:name>
+        <spirit:name>../../../loongson/cpu_gs232/godson_queue_module.v</spirit:name>
         <spirit:fileType>verilogSource</spirit:fileType>
       </spirit:file>
       <spirit:file>
-        <spirit:name>godson_ram_bist.v</spirit:name>
+        <spirit:name>../../../loongson/cpu_gs232/godson_ram_bist.v</spirit:name>
         <spirit:fileType>verilogSource</spirit:fileType>
       </spirit:file>
       <spirit:file>
-        <spirit:name>godson_rs_module.v</spirit:name>
+        <spirit:name>../../../loongson/cpu_gs232/godson_rs_module.v</spirit:name>
         <spirit:fileType>verilogSource</spirit:fileType>
       </spirit:file>
       <spirit:file>
-        <spirit:name>godson_tap_buffer_module.v</spirit:name>
+        <spirit:name>../../../loongson/cpu_gs232/godson_tap_buffer_module.v</spirit:name>
         <spirit:fileType>verilogSource</spirit:fileType>
       </spirit:file>
       <spirit:file>
-        <spirit:name>tools.v</spirit:name>
+        <spirit:name>../../../loongson/cpu_gs232/tools.v</spirit:name>
         <spirit:fileType>verilogSource</spirit:fileType>
         <spirit:userFileType>CHECKSUM_01d15aed</spirit:userFileType>
       </spirit:file>
@@ -1345,127 +1345,127 @@
     <spirit:fileSet>
       <spirit:name>xilinx_anylanguagebehavioralsimulation_view_fileset</spirit:name>
       <spirit:file>
-        <spirit:name>global.h</spirit:name>
+        <spirit:name>../../../loongson/cpu_gs232/global.h</spirit:name>
         <spirit:fileType>verilogSource</spirit:fileType>
         <spirit:isIncludeFile>true</spirit:isIncludeFile>
       </spirit:file>
       <spirit:file>
-        <spirit:name>reg.h</spirit:name>
+        <spirit:name>../../../loongson/cpu_gs232/reg.h</spirit:name>
         <spirit:fileType>verilogSource</spirit:fileType>
         <spirit:isIncludeFile>true</spirit:isIncludeFile>
       </spirit:file>
       <spirit:file>
-        <spirit:name>bus.h</spirit:name>
+        <spirit:name>../../../loongson/cpu_gs232/bus.h</spirit:name>
         <spirit:fileType>verilogSource</spirit:fileType>
         <spirit:isIncludeFile>true</spirit:isIncludeFile>
       </spirit:file>
       <spirit:file>
-        <spirit:name>axi_interface.v</spirit:name>
+        <spirit:name>../../../loongson/cpu_gs232/axi_interface.v</spirit:name>
         <spirit:fileType>verilogSource</spirit:fileType>
       </spirit:file>
       <spirit:file>
-        <spirit:name>godson_addr_module.v</spirit:name>
+        <spirit:name>../../../loongson/cpu_gs232/godson_addr_module.v</spirit:name>
         <spirit:fileType>verilogSource</spirit:fileType>
       </spirit:file>
       <spirit:file>
-        <spirit:name>godson_alu_module.v</spirit:name>
+        <spirit:name>../../../loongson/cpu_gs232/godson_alu_module.v</spirit:name>
         <spirit:fileType>verilogSource</spirit:fileType>
       </spirit:file>
       <spirit:file>
-        <spirit:name>godson_bus_module.v</spirit:name>
+        <spirit:name>../../../loongson/cpu_gs232/godson_bus_module.v</spirit:name>
         <spirit:fileType>verilogSource</spirit:fileType>
       </spirit:file>
       <spirit:file>
-        <spirit:name>godson_cpu_core.v</spirit:name>
+        <spirit:name>../../../loongson/cpu_gs232/godson_cpu_core.v</spirit:name>
         <spirit:fileType>verilogSource</spirit:fileType>
       </spirit:file>
       <spirit:file>
-        <spirit:name>godson_cpu_mid.v</spirit:name>
+        <spirit:name>../../../loongson/cpu_gs232/godson_cpu_mid.v</spirit:name>
         <spirit:fileType>verilogSource</spirit:fileType>
       </spirit:file>
       <spirit:file>
-        <spirit:name>godson_dcache_module.v</spirit:name>
+        <spirit:name>../../../loongson/cpu_gs232/godson_dcache_module.v</spirit:name>
         <spirit:fileType>verilogSource</spirit:fileType>
       </spirit:file>
       <spirit:file>
-        <spirit:name>godson_dcr_module.v</spirit:name>
+        <spirit:name>../../../loongson/cpu_gs232/godson_dcr_module.v</spirit:name>
         <spirit:fileType>verilogSource</spirit:fileType>
       </spirit:file>
       <spirit:file>
-        <spirit:name>godson_decoder_module.v</spirit:name>
+        <spirit:name>../../../loongson/cpu_gs232/godson_decoder_module.v</spirit:name>
         <spirit:fileType>verilogSource</spirit:fileType>
       </spirit:file>
       <spirit:file>
-        <spirit:name>godson_dtlb_module.v</spirit:name>
+        <spirit:name>../../../loongson/cpu_gs232/godson_dtlb_module.v</spirit:name>
         <spirit:fileType>verilogSource</spirit:fileType>
       </spirit:file>
       <spirit:file>
-        <spirit:name>godson_ejtag_tap_module.v</spirit:name>
+        <spirit:name>../../../loongson/cpu_gs232/godson_ejtag_tap_module.v</spirit:name>
         <spirit:fileType>verilogSource</spirit:fileType>
       </spirit:file>
       <spirit:file>
-        <spirit:name>godson_fetch_module.v</spirit:name>
+        <spirit:name>../../../loongson/cpu_gs232/godson_fetch_module.v</spirit:name>
         <spirit:fileType>verilogSource</spirit:fileType>
       </spirit:file>
       <spirit:file>
-        <spirit:name>godson_gr_module.v</spirit:name>
+        <spirit:name>../../../loongson/cpu_gs232/godson_gr_module.v</spirit:name>
         <spirit:fileType>verilogSource</spirit:fileType>
       </spirit:file>
       <spirit:file>
-        <spirit:name>godson_hb_module.v</spirit:name>
+        <spirit:name>../../../loongson/cpu_gs232/godson_hb_module.v</spirit:name>
         <spirit:fileType>verilogSource</spirit:fileType>
       </spirit:file>
       <spirit:file>
-        <spirit:name>godson_icache_module.v</spirit:name>
+        <spirit:name>../../../loongson/cpu_gs232/godson_icache_module.v</spirit:name>
         <spirit:fileType>verilogSource</spirit:fileType>
       </spirit:file>
       <spirit:file>
-        <spirit:name>godson_itlb_module.v</spirit:name>
+        <spirit:name>../../../loongson/cpu_gs232/godson_itlb_module.v</spirit:name>
         <spirit:fileType>verilogSource</spirit:fileType>
       </spirit:file>
       <spirit:file>
-        <spirit:name>godson_memqueue_module.v</spirit:name>
+        <spirit:name>../../../loongson/cpu_gs232/godson_memqueue_module.v</spirit:name>
         <spirit:fileType>verilogSource</spirit:fileType>
       </spirit:file>
       <spirit:file>
-        <spirit:name>godson_queue_module.v</spirit:name>
+        <spirit:name>../../../loongson/cpu_gs232/godson_queue_module.v</spirit:name>
         <spirit:fileType>verilogSource</spirit:fileType>
       </spirit:file>
       <spirit:file>
-        <spirit:name>godson_ram_bist.v</spirit:name>
+        <spirit:name>../../../loongson/cpu_gs232/godson_ram_bist.v</spirit:name>
         <spirit:fileType>verilogSource</spirit:fileType>
       </spirit:file>
       <spirit:file>
-        <spirit:name>godson_rs_module.v</spirit:name>
+        <spirit:name>../../../loongson/cpu_gs232/godson_rs_module.v</spirit:name>
         <spirit:fileType>verilogSource</spirit:fileType>
       </spirit:file>
       <spirit:file>
-        <spirit:name>godson_tap_buffer_module.v</spirit:name>
+        <spirit:name>../../../loongson/cpu_gs232/godson_tap_buffer_module.v</spirit:name>
         <spirit:fileType>verilogSource</spirit:fileType>
       </spirit:file>
       <spirit:file>
-        <spirit:name>tools.v</spirit:name>
+        <spirit:name>../../../loongson/cpu_gs232/tools.v</spirit:name>
         <spirit:fileType>verilogSource</spirit:fileType>
       </spirit:file>
     </spirit:fileSet>
     <spirit:fileSet>
       <spirit:name>xilinx_testbench_view_fileset</spirit:name>
       <spirit:file>
-        <spirit:name>global.h</spirit:name>
+        <spirit:name>../../../loongson/cpu_gs232/global.h</spirit:name>
         <spirit:fileType>verilogSource</spirit:fileType>
         <spirit:userFileType>USED_IN_simulation</spirit:userFileType>
         <spirit:userFileType>USED_IN_synthesis</spirit:userFileType>
         <spirit:isIncludeFile>true</spirit:isIncludeFile>
       </spirit:file>
       <spirit:file>
-        <spirit:name>bus.h</spirit:name>
+        <spirit:name>../../../loongson/cpu_gs232/bus.h</spirit:name>
         <spirit:fileType>verilogSource</spirit:fileType>
         <spirit:userFileType>USED_IN_simulation</spirit:userFileType>
         <spirit:userFileType>USED_IN_synthesis</spirit:userFileType>
         <spirit:isIncludeFile>true</spirit:isIncludeFile>
       </spirit:file>
       <spirit:file>
-        <spirit:name>reg.h</spirit:name>
+        <spirit:name>../../../loongson/cpu_gs232/reg.h</spirit:name>
         <spirit:fileType>verilogSource</spirit:fileType>
         <spirit:userFileType>USED_IN_simulation</spirit:userFileType>
         <spirit:userFileType>USED_IN_synthesis</spirit:userFileType>
