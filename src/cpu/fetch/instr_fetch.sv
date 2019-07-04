@@ -152,13 +152,13 @@ branch_predictor #(
 ) bp_inst (
 	.clk,
 	.rst_n,
-	.flush           ( flush_bp          ),
+	.flush           ( flush_bp              ),
 	.stall,
-	.pc              ( aligned_pc        ),
-	.resolved_branch ( resolved_branch   ),
+	.pc              ( aligned_fetch_vaddr_d ),
+	.resolved_branch ( resolved_branch       ),
 	.instr,
 	.instr_valid,
-	.valid           ( predict_valid     ),
+	.valid           ( predict_valid         ),
 	.maybe_jump,
 	.predict_vaddr,
 	.cf

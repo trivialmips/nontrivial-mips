@@ -45,7 +45,7 @@ logic [`FETCH_NUM-1:0] taken;
 always_comb begin
 	ras_pop       = 1'b0;
 	ras_push      = 1'b0;
-	ras_push_data = '0;
+	ras_update    = '0;
 	predict_vaddr = '0;
 	taken         = '0;
 	for(int i = 0; i < `FETCH_NUM; ++i) begin
@@ -59,25 +59,28 @@ always_comb begin
 			is_jump_i[i],
 			is_jump_r[i] }
 		)
-		4'b0000:; // do nothing, no control flow change
-		4'b0001:  // unconditional jump via register, use BTB
+		4'b0000:;       // do nothing, no control flow change
+		4'b0001: begin  // unconditional jump via register, use BTB
 			ras_pop  = 1'b0;
 			ras_push = 1'b0;
 			if(btb_predict[i].valid) begin
 				cf[i] = ControlFlow_JumpReg;
 				predict_vaddr = btb_predict[i].target;
 			end
-		4'b0010: // unconditional jump via immediate
+		end
+		4'b0010: begin  // unconditional jump via immediate
 			ras_pop  = 1'b0;
 			ras_push = 1'b0;
 			cf[i] = ControlFlow_JumpImm;
 			predict_vaddr = pc + 4 * i + imm_jump[i];
-		4'b0100: // return, use RAS
+		end
+		4'b0100: begin // return, use RAS
 			ras_pop  = ras_predict.valid;
 			ras_push = 1'b0;
 			cf[i] = ControlFlow_Return;
 			predict_vaddr = ras_predict.data;
-		4'b1000: // conditional jump, use BHT
+		end
+		4'b1000: begin // conditional jump, use BHT
 			ras_pop  = 1'b0;
 			ras_push = 1'b0;
 			if(bht_predict[i].valid) begin
@@ -92,6 +95,7 @@ always_comb begin
 				cf[i] = ControlFlow_Branch;
 				predict_vaddr = pc + 4 * i + imm_branch[i];
 			end
+		end
 		default:; // error
 		endcase
 
@@ -108,16 +112,15 @@ always_comb begin
 end
 
 // update BTB/BHT
-assign btb_update.valid  = ~stall
-                           & resolved_branch.valid & resolved_branch.mispredict
+assign btb_update.valid  = resolved_branch.valid & resolved_branch.mispredict
                            & (resolved_branch.cf == ControlFlow_JumpReg);
 assign btb_update.pc     = resolved_branch.pc;
 assign btb_update.target = resolved_branch.target;
 
-assign bht_update.valid  = ~stall & resolved_branch.valid 
+assign bht_update.valid  = resolved_branch.valid 
                            & (resolved_branch.cf == ControlFlow_Branch);
 assign bht_update.pc     = resolved_branch.pc;
-assign bht_update.target = resolved_branch.taken;
+assign bht_update.taken  = resolved_branch.taken;
 
 // decode branch information
 logic [`FETCH_NUM-1:0] b_branch;

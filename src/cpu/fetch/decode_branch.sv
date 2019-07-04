@@ -26,7 +26,7 @@ assign is_branch = (
 	// BEQ (000100), BNE (000101), BLEZ (000110), BGTZ (000111)
 	opcode[5:2] == 4'b0001 ||
 	// BLTZ (00000), BGEZ (00001), BLTZAL (10000), BGEZAL (10001)
-	opcode == 6'b000001 && inst[19:17] == 3'b0
+	opcode == 6'b000001 && instr[19:17] == 3'b0
 );
 
 // TODO: determine return/call instr
