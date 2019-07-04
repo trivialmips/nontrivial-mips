@@ -11,7 +11,7 @@ module instr_fetch (
 	input  logic    except_valid,
 	input  virt_t   except_vec,
 
-	// mispredict
+	// mispredict info
 	input  branch_resolved_t    resolved_branch,
 
 	// memory request

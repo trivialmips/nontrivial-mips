@@ -7,9 +7,8 @@ module decode_branch(
 	output logic    is_branch,
 	output logic    is_return,
 	output logic    is_call,
-	output logic    is_jr,
-	output logic    is_jalr,
-	output logic    is_jump
+	output logic    is_jump_r,
+	output logic    is_jump_i
 );
 
 logic [5:0] opcode;
@@ -19,9 +18,10 @@ assign opcode = instr[31:26];
 assign imm_jump   = { 4'b0, instr[25:0], 2'b0 };
 assign imm_branch = { {14{instr[15]}}, instr[15:0], 2'b0 };
 
-assign is_jr     = (opcode == 6'b0 && instr[5:0] == 6'b001000);
-assign is_jalr   = (opcode == 6'b0 && instr[5:0] == 6'b001001);
-assign is_jump   = (opcode[5:1] == 5'b00001);  // J, JAL
+//assign is_jr     = (opcode == 6'b0 && instr[5:0] == 6'b001000);
+//assign is_jalr   = (opcode == 6'b0 && instr[5:0] == 6'b001001);
+assign is_jump_r = (opcode == 6'b0 && instr[5:1] == 5'b00100);
+assign is_jump_i = (opcode[5:1] == 5'b00001);  // J, JAL
 assign is_branch = (
 	// BEQ (000100), BNE (000101), BLEZ (000110), BGTZ (000111)
 	opcode[5:2] == 4'b0001 ||
