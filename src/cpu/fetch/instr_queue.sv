@@ -6,6 +6,7 @@ module instr_queue #(
 	input  logic    clk,
 	input  logic    rst_n,
 	input  logic    flush,
+	input  logic    stall,
 
 	output logic    full,
 	output logic    empty,
@@ -14,6 +15,7 @@ module instr_queue #(
 	input  virt_t            [`FETCH_NUM-1:0] vaddr,
 	input  branch_predict_t  [`FETCH_NUM-1:0] branch_predict,
 	input  logic   [$clog2(`FETCH_NUM+1)-1:0] valid_num,
+	input  logic   [$clog2(`FETCH_NUM)-1:0]   offset,
 	input  address_exception_t                iaddr_ex,
 
 	input  fetch_ack_t                    fetch_ack,
@@ -28,11 +30,7 @@ typedef struct packed {
 } queue_data_t;
 
 queue_data_t  [`FETCH_NUM-1:0]    data_push, data_pop;
-logic  [$clog2(`FETCH_NUM+1)-1:0] push_num, pop_num;
 logic  [`FETCH_NUM-1:0]           pop_valid;
-
-assign pop_num  = fetch_ack;
-assign push_num = valid_num;
 
 for(genvar i = 0; i < `FETCH_NUM; ++i) begin : gen_fetch_entry
 	assign fetch_entry[i].valid = pop_valid[i];
@@ -60,12 +58,14 @@ multi_queue #(
 	.clk,
 	.rst_n,
 	.flush,
+	.stall,
 	.full,
 	.empty,
 	.data_push,
-	.push_num,
+	.push_num    ( valid_num ),
+	.push_offset ( offset    ),
 	.data_pop,
-	.pop_num,
+	.pop_num     ( fetch_ack ),
 	.pop_valid
 );
 

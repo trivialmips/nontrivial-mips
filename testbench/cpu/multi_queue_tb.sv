@@ -5,7 +5,7 @@ module multi_queue_tb();
 	logic full, empty;
 	typedef logic [7:0] data_t;
 	data_t [3:0] data_push, data_pop;
-	logic [2:0] push_num, pop_num;
+	logic [2:0] push_num, pop_num, push_offset;
 	logic [7:0] pop_valid;
 
 	task display_and_check_data(
@@ -35,6 +35,7 @@ module multi_queue_tb();
 	begin
 		push_num = '0;
 		pop_num = '0;
+		push_offset = '0;
 		data_push[0] = 1;
 		data_push[1] = 2;
 		data_push[2] = 3;
@@ -46,17 +47,19 @@ module multi_queue_tb();
 
 		display_and_check_data(data_pop, pop_valid, { -1, -1, -1, -1} );
 		push_num = 1;
+		push_offset = 2;
 		#20 push_num = 0;
-		display_and_check_data(data_pop, pop_valid, { 1, -1, -1, -1} );
+		push_offset = 0;
+		display_and_check_data(data_pop, pop_valid, { 3, -1, -1, -1} );
 		#20 push_num = 2;
 		#20 push_num = 0;
-		display_and_check_data(data_pop, pop_valid, { 1, 1, 2, -1} );
+		display_and_check_data(data_pop, pop_valid, { 3, 1, 2, -1} );
 		#20 push_num = 3;
 		#20 push_num = 0;
-		display_and_check_data(data_pop, pop_valid, { 1, 1, 2, 1} );
+		display_and_check_data(data_pop, pop_valid, { 3, 1, 2, 1} );
 		#20 push_num = 2;
 		#20 push_num = 0;
-		display_and_check_data(data_pop, pop_valid, { 1, 1, 2, 1} );
+		display_and_check_data(data_pop, pop_valid, { 3, 1, 2, 1} );
 
 		#20 pop_num = 3;
 		#20 pop_num = 0;
@@ -86,10 +89,12 @@ module multi_queue_tb();
 		.clk,
 		.rst_n,
 		.flush,
+		.stall(1'b0),
 		.full,
 		.empty,
 		.data_push,
 		.push_num,
+		.push_offset,
 		.data_pop,
 		.pop_valid,
 		.pop_num

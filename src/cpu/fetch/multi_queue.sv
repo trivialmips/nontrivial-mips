@@ -9,11 +9,13 @@ module multi_queue #(
 	input  logic  clk,
 	input  logic  rst_n,
 	input  logic  flush,
+	input  logic  stall,
 	output logic  full,   // 1 if any channel is full
 	output logic  empty,  // 1 if all channels are empty
 
 	input  dtype  [CHANNEL-1:0] data_push,
 	input  logic  [$clog2(CHANNEL+1)-1:0] push_num,
+	input  logic  [$clog2(CHANNEL)-1:0]   push_offset,
 
 	output dtype  [CHANNEL-1:0] data_pop,
 	output logic  [CHANNEL-1:0] pop_valid,
@@ -50,9 +52,9 @@ end
 
 // write queue logic
 for(genvar i = 0; i < CHANNEL; ++i) begin : gen_rw_req
-	assign data_in[i]    = data_push[rshifted_write_idx[i]];
-	assign queue_pop[i]  = (rshifted_read_idx[i] < pop_num);
-	assign queue_push[i] = (rshifted_write_idx[i] < push_num);
+	assign data_in[i]    = data_push[push_offset + rshifted_write_idx[i]];
+	assign queue_pop[i]  = ~stall & (rshifted_read_idx[i] < pop_num);
+	assign queue_push[i] = ~stall & (rshifted_write_idx[i] < push_num);
 end
 
 // update index

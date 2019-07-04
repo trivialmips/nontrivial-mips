@@ -17,13 +17,12 @@ module pc_generator (
 	// branch misprediction
 	input  branch_resolved_t resolved_branch,
 
-	output virt_t  pc,
-	output virt_t  fetch_vaddr
+	output virt_t  pc
 );
 
 localparam int PC_INC_OFFSET = $clog2(`FETCH_NUM) + 2;
 
-virt_t npc, pc_now;
+virt_t npc, pc_now, fetch_vaddr;
 assign pc = pc_now;
 assign fetch_vaddr = predict_valid ? predict_vaddr : pc_now;
 

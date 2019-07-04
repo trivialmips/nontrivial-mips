@@ -8,6 +8,7 @@ module branch_predictor #(
 	input  logic   clk,
 	input  logic   rst_n,
 	input  logic   flush,
+	input  logic   stall,
 
 	input  virt_t            pc,   // 8-bytes aligned
 	input  branch_resolved_t resolved_branch,
@@ -16,6 +17,7 @@ module branch_predictor #(
 
 	output logic             valid,
 	output virt_t            predict_vaddr,
+	output logic             [`FETCH_NUM-1:0] maybe_jump,
 	output controlflow_t     [`FETCH_NUM-1:0] cf
 );
 
@@ -106,12 +108,13 @@ always_comb begin
 end
 
 // update BTB/BHT
-assign btb_update.valid  = resolved_branch.valid & resolved_branch.mispredict
+assign btb_update.valid  = ~stall
+                           & resolved_branch.valid & resolved_branch.mispredict
                            & (resolved_branch.cf == ControlFlow_JumpReg);
 assign btb_update.pc     = resolved_branch.pc;
 assign btb_update.target = resolved_branch.target;
 
-assign bht_update.valid  = resolved_branch.valid 
+assign bht_update.valid  = ~stall & resolved_branch.valid 
                            & (resolved_branch.cf == ControlFlow_Branch);
 assign bht_update.pc     = resolved_branch.pc;
 assign bht_update.target = resolved_branch.taken;
@@ -137,7 +140,16 @@ for(genvar i = 0; i < `FETCH_NUM; ++i) begin : gen_branch_decoder
 	assign is_return[i] = instr_valid[i] & b_return[i];
 	assign is_call[i]   = instr_valid[i] & b_call[i];
 	assign is_jump_i[i] = instr_valid[i] & b_jump_i[i];
-	assign is_jump_r[i] = instr_valid[i] & b_jump_r[i] & ~b_call[i] & ~b_return[i];
+	assign is_jump_r[i] = instr_valid[i] 
+	                      & b_jump_r[i] & ~b_call[i] & ~b_return[i];
+	assign maybe_jump[i] = instr_valid[`FETCH_NUM - 1] & (
+		  b_branch[`FETCH_NUM - 1]
+		| b_return[`FETCH_NUM - 1]
+		| b_call[`FETCH_NUM - 1]
+		| b_jump_i[`FETCH_NUM - 1]
+		| b_jump_r[`FETCH_NUM - 1]
+	);
+
 end
 
 bht #(
@@ -168,8 +180,8 @@ ras #(
 	.clk,
 	.rst_n,
 	.flush,
-	.push_req   ( ras_push    ),
-	.pop_req    ( ras_pop     ),
+	.push_req   ( ~stall & ras_push ),
+	.pop_req    ( ~stall & ras_pop  ),
 	.push_data  ( ras_update  ),
 	.ras_top    ( ras_predict )
 );
