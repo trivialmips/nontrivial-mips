@@ -1,6 +1,6 @@
 `include "cpu_defs.svh"
 
-module nontrivial_mips(
+module cpu_core(
 	input  logic       clk,
 	input  logic       rst_n,
 	cpu_ibus_if.master ibus,
