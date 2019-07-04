@@ -1,9 +1,10 @@
 `include "cpu_defs.svh"
 
-module pc_generator (
+module pc_generator #(
+	parameter int unsigned RESET_BASE = `BOOT_VEC,
+)(
 	input  logic   clk,
 	input  logic   rst_n,
-	input  logic   flush,
 	input  logic   hold_pc,
 
 	// exception
@@ -49,8 +50,8 @@ always_comb begin
 end
 
 always_ff @(posedge clk or negedge rst_n) begin
-	if(~rst_n || flush) begin
-		pc_now <= `BOOT_VEC;
+	if(~rst_n) begin
+		pc_now <= RESET_BASE;
 	end else if(~hold_pc) begin
 		pc_now <= npc;
 	end

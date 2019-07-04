@@ -1,6 +1,7 @@
 `include "cpu_defs.svh"
 
 module instr_fetch #(
+	parameter int unsigned RESET_BASE = `BOOT_VEC,
 	parameter int BTB_SIZE = 8,
 	parameter int BHT_SIZE = 1024,
 	parameter int RAS_SIZE = 8,
@@ -44,6 +45,7 @@ virt_t   fetch_vaddr_d, predict_vaddr_d;
 logic    [`FETCH_NUM-1:0] maybe_jump_d;
 
 // fetched instructions (stage 2)
+logic    invalid_push;
 logic    [`FETCH_NUM-1:0] instr_valid;
 virt_t   [`FETCH_NUM-1:0] instr_vaddr;
 uint32_t [`FETCH_NUM-1:0] instr;
@@ -85,10 +87,11 @@ end
 
 assign hold_pc = stall | queue_full;
 
-pc_generator pc_gen_inst (
+pc_generator #(
+	.RESET_BASE ( RESET_BASE )
+) pc_gen_inst (
 	.clk,
 	.rst_n,
-	.flush ( flush_pc ),
 	.hold_pc,
 	.except_valid,
 	.except_vec,
@@ -112,9 +115,8 @@ always_ff @(posedge clk or negedge rst_n) begin
 	end
 end
 
-logic sync_rst_n;
 always_ff @(posedge clk or negedge rst_n) begin
-	sync_rst_n <= rst_n;
+	invalid_push <= ~rst_n | flush_que;
 end
 
 /* ==== stage 2 ====
@@ -155,17 +157,17 @@ always_comb begin
 		valid_instr_num = 1;
 	end
 
-	if(branch_flush_d | ~sync_rst_n) begin
+	if(branch_flush_d | invalid_push) begin
 		instr_valid = '0;
 		valid_instr_num = 0;
 	end
 end
 
 // commit flush request
-assign icache_req.flush_s1 = flush_pc
+assign icache_req.flush_s2 = flush_pc
       | (resolved_branch.valid & resolved_branch.mispredict);
-assign icache_req.flush_s2 = icache_req.flush_s1 | predict_valid;
-assign flush_que = icache_req.flush_s1;
+assign icache_req.flush_s1 = icache_req.flush_s2; // | predict_valid;
+assign flush_que = icache_req.flush_s2;
 
 branch_predictor #(
 	.BTB_SIZE ( BTB_SIZE ),

@@ -30,10 +30,15 @@ branch_resolved_t    resolved_branch;
 instr_fetch_memres_t icache_res;
 instr_fetch_memreq_t icache_req;
 fetch_ack_t   fetch_ack;
-fetch_entry_t [`FETCH_NUM-1:0] fetch_entry;
+fetch_entry_t [`FETCH_NUM-1:0] fetch_entry, fetch_entry_p1, fetch_entry_p2;
 
-instr_fetch if_inst(.*);
+instr_fetch #(.RESET_BASE(0)) if_inst(.*);
 resolv_instr_fetch_req resolv_ibus_req_inst(.*);
+
+always_ff @(posedge clk) begin
+	fetch_entry_p1 <= fetch_entry;
+	fetch_entry_p2 <= fetch_entry_p1;
+end
 
 always_comb begin
 	if(~rst_n) begin
@@ -47,15 +52,54 @@ end
 
 task judge(input integer fans, input integer cycle, input fetch_entry_t entry);
 	string cf_type;
-	integer pc;
-	$fscanf(fans, "%d,%s\n", pc, cf_type);
-	if((entry.vaddr[15:0] >> 2) == pc - 1)
-	begin
-		$display("[%0d] %d, %s [pass]", cycle, pc - 1, cf_type);
+	integer pc, mispredict;
+	cf_type = "";
+	$fscanf(fans, "%d %s", pc, cf_type);
+	pc = pc << 2;
+	if(cf_type == "") return;
+
+	resolved_branch.cf = ControlFlow_None;
+	if(cf_type != "None") begin
+		resolved_branch.valid = 1'b1;
+		resolved_branch.pc    = pc;
+		if(cf_type == "JumpImm") begin
+			resolved_branch.cf = ControlFlow_JumpImm;
+		end else if(cf_type == "JumpReg") begin
+			resolved_branch.cf = ControlFlow_JumpReg;
+			$fscanf(fans, "%d", resolved_branch.target);
+			resolved_branch.target = resolved_branch.target << 2;
+		end else if(cf_type == "Branch") begin
+			resolved_branch.cf = ControlFlow_Branch;
+			$fscanf(fans, "%d %d", resolved_branch.taken, mispredict);
+		end else if(cf_type == "Return") begin
+			resolved_branch.cf = ControlFlow_Return;
+		end else begin
+			$display("[Error] Unknown control flow.");
+			$stop;
+		end
 	end else begin
-		$display("[%0d] %d, %s", cycle, pc - 1, cf_type);
-		$display("[Error] Expected: %d, Got: %d", pc - 1, entry.vaddr[15:0] >> 2);
+		resolved_branch.valid = 1'b0;
+	end
+
+	resolved_branch.mispredict = resolved_branch.cf != entry.branch_predict.cf;
+
+	mispredict = 0;
+	if(cf_type == "Branch") begin
+		mispredict = entry.branch_predict.cf != ControlFlow_Branch;
+	end
+
+	if(entry.vaddr[15:0] != pc)
+	begin
+		$display("[%0d] %d, %s", cycle, pc >> 2, cf_type);
+		$display("[Error] Expected: %d, Got: %d", pc >> 2, entry.vaddr[15:0] >> 2);
 		$stop;
+	end else if(cf_type == "Branch" && resolved_branch.mispredict != mispredict) begin
+		$display("[%0d] %d, %s", cycle, pc >> 2, cf_type);
+		$display("[Error] Mispredict, expected: %d, got: %d",
+			resolved_branch.mispredict, mispredict);
+		$stop;
+	end else begin
+		$display("[%0d] %d, %s [pass]", cycle, pc >> 2, cf_type);
 	end
 endtask
 
@@ -99,8 +143,9 @@ while(!$feof(fans)) begin
 	@(negedge clk);
 		cycle = cycle + 1;
 
-		if(fetch_entry[0].valid) begin
-			judge(fans, cycle, fetch_entry[0]);
+		resolved_branch.valid = 1'b0;
+		if(fetch_entry_p1[0].valid) begin
+			judge(fans, cycle, fetch_entry_p1[0]);
 		end
 end
 
@@ -118,6 +163,7 @@ initial begin
 
 	wait(rst_n == 1'b1);
 	unittest("jump");
+	unittest("jump_reg");
 end
 
 endmodule

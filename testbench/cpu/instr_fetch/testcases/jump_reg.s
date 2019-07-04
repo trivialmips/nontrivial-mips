@@ -4,22 +4,26 @@
 	.set noreorder
 _start:
 	nop
-	j dest_1
+	jr $0
 	nop
 	nop
 	nop
-dest_1:
-	j dest_2
+	jr $0
 	nop
 	nop
-dest_2:
+	nop
+	nop
+	nop
 	nop
 
 # %BEGIN CONTROLFLOW%
 # 0 None
-# 1 JumpImm
+# 1 JumpReg 5
 # 2 None
-# 5 JumpImm
+# 5 JumpReg 8
 # 6 None
 # 8 None
+# 9 None
+# 10 None
+# 11 None
 # %END CONTROLFLOW%
