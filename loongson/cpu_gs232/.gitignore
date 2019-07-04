@@ -1,0 +1,4 @@
+# ignore all gs232 sources, make loongson happy
+*.v
+*.h
+
