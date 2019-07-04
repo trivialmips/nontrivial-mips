@@ -11,6 +11,7 @@ module pc_generator (
 	input  virt_t  except_vec,
 
 	// branch prediction
+	input  logic   predict_delayed,
 	input  logic   predict_valid,
 	input  virt_t  predict_vaddr,
 	
@@ -30,6 +31,11 @@ always_comb begin
 	// default
 	npc[31:PC_INC_OFFSET]  = fetch_vaddr[31:PC_INC_OFFSET] + 1;
 	npc[PC_INC_OFFSET-1:0] = '0;
+
+	// fetch delayslot
+	if(predict_delayed) begin
+		npc = predict_vaddr;
+	end
 
 	// mispredict
 	if(resolved_branch.valid & resolved_branch.mispredict) begin

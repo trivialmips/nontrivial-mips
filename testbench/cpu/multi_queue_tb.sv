@@ -89,7 +89,6 @@ module multi_queue_tb();
 		.clk,
 		.rst_n,
 		.flush,
-		.stall(1'b0),
 		.full,
 		.empty,
 		.data_push,

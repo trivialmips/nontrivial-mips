@@ -83,10 +83,10 @@ typedef logic [$clog2(`FETCH_NUM+1)-1:0] fetch_ack_t;
 typedef struct packed {
 	logic read;
 	virt_t vaddr;
+	logic flush_s1, flush_s2;
 } instr_fetch_memreq_t;
 
 typedef struct packed {
-	logic valid;
 	uint64_t data;
 	address_exception_t iaddr_ex;
 } instr_fetch_memres_t;

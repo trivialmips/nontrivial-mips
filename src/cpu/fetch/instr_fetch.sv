@@ -36,11 +36,12 @@ function virt_t aligned_address( input virt_t addr );
 endfunction
 
 // program counter (stage 1)
+logic    hold_pc;
 virt_t   pc, fetch_vaddr;
 
 // pipeline registers
-virt_t fetch_vaddr_d;
-logic [`FETCH_NUM-1:0] maybe_jump_d;
+virt_t   fetch_vaddr_d, predict_vaddr_d;
+logic    [`FETCH_NUM-1:0] maybe_jump_d;
 
 // fetched instructions (stage 2)
 logic    [`FETCH_NUM-1:0] instr_valid;
@@ -48,11 +49,11 @@ virt_t   [`FETCH_NUM-1:0] instr_vaddr;
 uint32_t [`FETCH_NUM-1:0] instr;
 
 // instruction queue (stage 2)
-logic queue_full, queue_empty;
-logic [$clog2(`FETCH_NUM+1)-1:0] valid_instr_num;
+logic    queue_full, queue_empty, flush_que;
+logic    [$clog2(`FETCH_NUM+1)-1:0] valid_instr_num;
 
 // branch prediction (stage 2)
-logic    predict_valid;
+logic    predict_valid, predict_delayed;
 virt_t   predict_vaddr;
 controlflow_t    [`FETCH_NUM-1:0] cf;
 branch_predict_t [`FETCH_NUM-1:0] branch_predict;
@@ -67,9 +68,14 @@ assign icache_req.read  = 1'b1;
 assign icache_req.vaddr = aligned_address(fetch_vaddr);
 
 // set fetch address
+logic delayslot;
+assign delayslot = maybe_jump[`FETCH_NUM - 1];
+assign predict_delayed = predict_valid & delayslot;
 always_comb begin
 	if(predict_valid) begin
-		fetch_vaddr = predict_vaddr;
+		// when the last instruction is a branch
+		// delayslot must be fetched next cycle
+		fetch_vaddr = delayslot ? pc : predict_vaddr;
 	end else if(stall) begin
 		fetch_vaddr = fetch_vaddr_d;
 	end else begin 
@@ -77,15 +83,18 @@ always_comb begin
 	end
 end
 
+assign hold_pc = stall | queue_full;
+
 pc_generator pc_gen_inst (
 	.clk,
 	.rst_n,
-	.flush    ( flush_pc           ),
-	.hold_pc  ( queue_full | stall ),
+	.flush ( flush_pc ),
+	.hold_pc,
 	.except_valid,
 	.except_vec,
 	.predict_valid,
 	.predict_vaddr,
+	.predict_delayed,
 	.resolved_branch,
 	.pc
 );
@@ -93,12 +102,19 @@ pc_generator pc_gen_inst (
 /* ==== pipline stage 1 and 2 ==== */
 always_ff @(posedge clk or negedge rst_n) begin
 	if(~rst_n || flush_pc) begin
-		fetch_vaddr_d <= '0;
-		maybe_jump_d  <= '0;
-	end else if(~stall) begin
-		fetch_vaddr_d <= fetch_vaddr;
-		maybe_jump_d  <= maybe_jump;
+		fetch_vaddr_d   <= '0;
+		predict_vaddr_d <= '0;
+		maybe_jump_d    <= '0;
+	end else if(~hold_pc) begin
+		predict_vaddr_d <= predict_vaddr;
+		fetch_vaddr_d   <= fetch_vaddr;
+		maybe_jump_d    <= maybe_jump;
 	end
+end
+
+logic sync_rst_n;
+always_ff @(posedge clk or negedge rst_n) begin
+	sync_rst_n <= rst_n;
 end
 
 /* ==== stage 2 ====
@@ -139,11 +155,17 @@ always_comb begin
 		valid_instr_num = 1;
 	end
 
-	if(branch_flush_d) begin
+	if(branch_flush_d | ~sync_rst_n) begin
 		instr_valid = '0;
 		valid_instr_num = 0;
 	end
 end
+
+// commit flush request
+assign icache_req.flush_s1 = flush_pc
+      | (resolved_branch.valid & resolved_branch.mispredict);
+assign icache_req.flush_s2 = icache_req.flush_s1 | predict_valid;
+assign flush_que = icache_req.flush_s1;
 
 branch_predictor #(
 	.BTB_SIZE ( BTB_SIZE ),
@@ -153,7 +175,7 @@ branch_predictor #(
 	.clk,
 	.rst_n,
 	.flush           ( flush_bp              ),
-	.stall,
+	.stall           ( hold_pc               ),
 	.pc              ( aligned_fetch_vaddr_d ),
 	.resolved_branch ( resolved_branch       ),
 	.instr,
@@ -169,8 +191,8 @@ instr_queue #(
 ) ique_inst (
 	.clk,
 	.rst_n,
-	.flush     ( flush_pc    ),
-	.stall,
+	.flush     ( flush_que   ),
+	.stall     ( hold_pc     ),
 	.full      ( queue_full  ),
 	.empty     ( queue_empty ),
 	.instr     ( instr       ),

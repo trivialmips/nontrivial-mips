@@ -72,7 +72,7 @@ always_comb begin
 			ras_pop  = 1'b0;
 			ras_push = 1'b0;
 			cf[i] = ControlFlow_JumpImm;
-			predict_vaddr = pc + 4 * i + imm_jump[i];
+			predict_vaddr = { pc[31:28], imm_jump[i][27:0] };
 		end
 		4'b0100: begin // return, use RAS
 			ras_pop  = ras_predict.valid;
@@ -93,7 +93,7 @@ always_comb begin
 
 			if(taken[i]) begin
 				cf[i] = ControlFlow_Branch;
-				predict_vaddr = pc + 4 * i + imm_branch[i];
+				predict_vaddr = (pc | (i << 2)) + imm_branch[i];
 			end
 		end
 		default:; // error
@@ -145,12 +145,9 @@ for(genvar i = 0; i < `FETCH_NUM; ++i) begin : gen_branch_decoder
 	assign is_jump_i[i] = instr_valid[i] & b_jump_i[i];
 	assign is_jump_r[i] = instr_valid[i] 
 	                      & b_jump_r[i] & ~b_call[i] & ~b_return[i];
-	assign maybe_jump[i] = instr_valid[`FETCH_NUM - 1] & (
-		  b_branch[`FETCH_NUM - 1]
-		| b_return[`FETCH_NUM - 1]
-		| b_call[`FETCH_NUM - 1]
-		| b_jump_i[`FETCH_NUM - 1]
-		| b_jump_r[`FETCH_NUM - 1]
+	assign maybe_jump[i] = instr_valid[i] & (
+		  b_branch[i] | b_return[i] | b_call[i]
+		| b_jump_i[i] | b_jump_r[i]
 	);
 
 end
