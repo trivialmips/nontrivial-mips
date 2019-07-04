@@ -1,6 +1,6 @@
 `include "common_defs.svh"
 
-module cpu_top(
+module nontrivial_mips_impl(
     // external signals
     input  wire [6 :0] intr   ,
     input  wire        aclk   ,
@@ -62,7 +62,7 @@ module cpu_top(
     );
 
     // initialization of CPU
-    nontrivial_mips cpu_inst(
+    cpu_core cpu_core_inst(
         .clk(aclk),
         .rst_n(resetn),
         .ibus(ibus_if.master),
