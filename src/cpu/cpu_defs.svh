@@ -149,4 +149,24 @@ typedef struct packed {
 	logic  is_store;        // store data
 } decoded_instr_t;
 
+// pipeline data (ID -> EX)
+typedef struct packed {
+	virt_t          pc;
+	uint32_t        instr;
+	uint32_t        reg1;
+	uint32_t        reg2;
+	logic           delayslot;
+	exception_t     ex;
+	decoded_instr_t decoded;
+} pipeline_decode_t;
+
+// pipeline data (EX -> MEM)
+typedef struct packed {
+	virt_t       pc;
+	uint32_t     result;
+	logic        delayslot;
+	exception_t  ex;
+	reg_addr_t   rd;
+} pipeline_exec_t;
+
 `endif
