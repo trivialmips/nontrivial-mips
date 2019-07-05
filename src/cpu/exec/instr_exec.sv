@@ -41,7 +41,7 @@ count_bit count_clo(
 );
 
 always_comb begin
-	result.rd = data.decoded.rd;
+	result.decoded = data.decoded;
 	if(data.decoded.op == OP_MOVZ && reg2 != '0
 		|| data.decoded.op == OP_MOVN && reg2 == '0)
 		result.rd = '0;

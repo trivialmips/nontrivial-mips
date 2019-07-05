@@ -162,11 +162,19 @@ typedef struct packed {
 
 // pipeline data (EX -> MEM)
 typedef struct packed {
-	virt_t       pc;
-	uint32_t     result;
-	logic        delayslot;
-	exception_t  ex;
-	reg_addr_t   rd;
+	virt_t          pc;
+	uint32_t        result;
+	logic           delayslot;
+	exception_t     ex;
+	decoded_instr_t decoded;
 } pipeline_exec_t;
+
+// pipeline data (MEM -> WB)
+typedef struct packed {
+	reg_addr_t   rd;
+	uint32_t     wdata;
+	logic [1:0]  hilo_we;
+	uint64_t     hilo_wdata;
+} pipeline_mem_t;
 
 `endif
