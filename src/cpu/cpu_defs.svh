@@ -6,10 +6,12 @@
 	This header defines data structures and constants used in CPU internally
 */
 
-`define FETCH_NUM   2
-`define ISSUE_NUM   2
-`define BOOT_VEC    32'hbfc00000
-`define REG_NUM     32
+`define FETCH_NUM            2
+`define ISSUE_NUM            2
+`define REG_NUM              32
+`define TLB_ENTRIES_NUM      16
+`define BOOT_VEC             32'hbfc00000
+`define ENABLE_CPU_MMU       1
 
 typedef logic [$clog2(`REG_NUM)-1:0] reg_addr_t;
 
@@ -176,5 +178,29 @@ typedef struct packed {
 	logic [1:0]  hilo_we;
 	uint64_t     hilo_wdata;
 } pipeline_mem_t;
+
+// MMU/TLB
+typedef logic [$clog2(`TLB_ENTRIES_NUM)-1:0] tlb_index_t;
+typedef struct packed {
+	phys_t phy_addr;
+	logic [3:0] which;
+	logic miss, dirty, valid;
+	logic [2:0] cache_flag;
+} tlb_result_t;
+
+typedef struct packed {
+	logic [2:0] c0, c1;
+	logic [7:0] asid;
+	logic [18:0] vpn2;
+	logic [23:0] pfn0, pfn1;
+	logic d1, v1, d0, v0;
+	logic G;
+} tlb_entry_t;
+
+typedef struct packed {
+	phys_t phy_addr;
+	virt_t virt_addr;
+	logic invalid, miss, dirty, illegal;
+} mmu_result_t;
 
 `endif
