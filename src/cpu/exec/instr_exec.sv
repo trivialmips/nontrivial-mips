@@ -7,7 +7,8 @@ module instr_exec (
 
 	input  pipeline_decode_t data,
 	output pipeline_exec_t   result,
-	output logic             stall_req
+	output branch_resolved_t resolved_branch,
+	output logic             stall_req,
 
 	output virt_t       mmu_vaddr,
 	input  mmu_result_t mmu_result
@@ -85,7 +86,7 @@ always_comb begin
 
 		/* jump instructions */
 		OP_JAL, OP_BLTZAL, OP_BGEZAL, OP_JALR:
-			exec_ret = data.pc + 32'd8;
+			exec_ret = result.pc + 32'd8;
 
 		/* shift instructions */
 		OP_SLL:  exec_ret = reg2 << instr[10:6];
@@ -257,6 +258,53 @@ always_comb begin
 			default:;
 		endcase
 	end
+end
+
+/* resolve branch */
+logic reg_equal;
+virt_t pc_plus4, pc_plus8;
+virt_t default_jump_j, default_jump_i;
+assign pc_plus4       = result.pc + 32'd4;
+assign pc_plus8       = result.pc + 32'd8;
+assign default_jump_i = pc_plus4 + extended_imm;
+assign default_jump_j = { pc_plus4[31:28], instr[25:0], 2'b0 };
+assign reg_equal = (reg1 == reg2);
+
+assign resolved_branch.valid = data.decoded.is_controlflow;
+assign resolved_branch.pc    = data.fetch.vaddr;
+assign resolved_branch.mispredict = 
+     resolved_branch.cf != data.fetch.branch_predict.cf
+  || resolved_branch.target != data.fetch.branch_predict.predict_vaddr;
+always_comb begin
+	unique case(op)
+		OP_BLTZ, OP_BLTZAL: resolved_branch.taken = reg1[31];
+		OP_BGEZ, OP_BGEZAL: resolved_branch.taken = ~reg1[31];
+		OP_BEQ:  resolved_branch.taken = reg_equal;
+		OP_BNE:  resolved_branch.taken = ~reg_equal;
+		OP_BLEZ: resolved_branch.taken = reg_equal | reg1[31];
+		OP_BGTZ: resolved_branch.taken = ~reg_equal & ~reg1[31];
+		default: resolved_branch.taken = 1'b1;
+	endcase
+
+	resolved_branch.cf     = ControlFlow_None;
+	resolved_branch.target = '0;
+	unique case(op)
+		OP_BLTZ, OP_BLTZAL, OP_BGEZ, OP_BGEZAL,
+		OP_BEQ,  OP_BNE,    OP_BLEZ, OP_BGTZ: begin
+			if(resolved_branch.taken)
+				resolved_branch.cf = ControlFlow_Branch;
+			resolved_branch.target = default_jump_i;
+		end
+		OP_JAL:  begin
+			resolved_branch.cf = ControlFlow_JumpImm;
+			resolved_branch.target = default_jump_j;
+		end
+		OP_JALR: begin
+			resolved_branch.cf = ControlFlow_JumpReg;
+			resolved_branch.target = reg1;
+		end
+		default:;
+	endcase
 end
 
 endmodule

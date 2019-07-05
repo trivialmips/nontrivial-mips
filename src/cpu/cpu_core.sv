@@ -144,7 +144,8 @@ always_ff @(posedge clk or negedge rst_n) begin
 	end
 end
 
-logic [1:0] stall_req_ex;
+resolved_branch [`ISSUE_NUM-1:0] ex_resolved_branch;
+logic [`ISSUE_NUM-1:0] stall_req_ex;
 assign stall_from_ex = |stall_req_ex;
 for(genvar i = 0; i < `ISSUE_NUM; ++i) begin : gen_exec
 	instr_exec exec_inst(
@@ -155,8 +156,17 @@ for(genvar i = 0; i < `ISSUE_NUM; ++i) begin : gen_exec
 		.result     ( pipeline_exec[i]     ),
 		.stall_req  ( stall_req_ex[i]      ),
 		.mmu_vaddr  ( mmu_data_vaddr[i]    ),
-		.mmu_result ( mmu_data_result[i]   )
+		.mmu_result ( mmu_data_result[i]   ),
+		.resolved_branch ( ex_resolved_branch[i] )
 	);
+end
+
+always_comb begin
+	resolved_branch = '0;
+	for(int i = 0; i < `ISSUE_NUM; ++i) begin
+		if(ex_resolved_branch[i].valid)
+			resolved_branch = ex_resolved_branch[i];
+	end
 end
 
 // pipeline between EX and MEM
