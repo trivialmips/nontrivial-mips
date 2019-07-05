@@ -13,16 +13,18 @@ module instr_exec (
 	input  mmu_result_t mmu_result
 );
 
+oper_t op;
 exception_t ex;
 uint32_t exec_ret, reg1, reg2, instr;
 assign reg1 = data.reg1;
 assign reg2 = data.reg2;
 assign instr = data.fetch.instr;
+assign op = data.decoded.op;
 
 assign result.ex     = ex;
 assign result.result = exec_ret;
 assign result.pc     = data.fetch.vaddr;
-assign result.eret   = (data.decoded.op == OP_ERET);
+assign result.eret   = (op == OP_ERET);
 
 // unsigned register arithmetic
 uint32_t add_u, sub_u;
@@ -55,14 +57,14 @@ count_bit count_clo(
 
 always_comb begin
 	result.decoded = data.decoded;
-	if(data.decoded.op == OP_MOVZ && reg2 != '0
-		|| data.decoded.op == OP_MOVN && reg2 == '0)
+	if(op == OP_MOVZ && reg2 != '0
+		|| op == OP_MOVN && reg2 == '0)
 		result.rd = '0;
 end
 
 always_comb begin
 	exec_ret = '0;
-	unique case(data.decoded.op)
+	unique case(op)
 		/* logical instructions */
 		OP_LUI: exec_ret = { instr[15:0], 16'b0 };
 		OP_AND: exec_ret = reg1 & reg2;
@@ -115,7 +117,7 @@ assign result.memreq.wrdata = mem_wrdata;
 assign result.memreq.byteenable = mem_sel;
 
 always_comb begin
-	unique case(data.decoded.op)
+	unique case(op)
 		OP_LW, OP_LL, OP_SW, OP_SC: begin
 			mem_wrdata = reg2;
 			mem_sel = 4'b1111;
@@ -172,7 +174,7 @@ end
 /* exception */
 logic trap_valid, daddr_unaligned, invalid_instr;
 always_comb begin
-	unique case(data.decoded.op)
+	unique case(op)
 		OP_TEQ:  trap_valid = (reg1 == reg2);
 		OP_TNE:  trap_valid = (reg1 != reg2);
 		OP_TGE:  trap_valid = ~signed_lt;
@@ -204,13 +206,13 @@ assign ex_if = {
 
 assign ex_ex = {
 	trap_valid,
-	data.decoded.op == OP_BREAK,
-	data.decoded.op == OP_SYSCALL,
+	op == OP_BREAK,
+	op == OP_SYSCALL,
 	((op == OP_ADD) & ov_add) | ((op == OP_SUB) & ov_sub),
 	data.decoded.is_priv
 };
 
-assign invalid_instr = (data.decoded.op == OP_INVALID);
+assign invalid_instr = (op == OP_INVALID);
 assign ex_mm = {
 	(mmu_result.miss | mmu_result.invalid) & result.memreq.read,
 	(mmu_result.illegal | daddr_unaligned) & result.memreq.read,
