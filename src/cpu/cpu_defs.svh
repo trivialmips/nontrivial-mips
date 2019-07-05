@@ -7,6 +7,7 @@
 */
 
 `define FETCH_NUM   2
+`define ISSUE_NUM   2
 `define BOOT_VEC    32'hbfc00000
 `define REG_NUM     32
 
