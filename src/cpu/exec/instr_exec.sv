@@ -109,11 +109,12 @@ assign extended_imm = { {16{instr[15]}, instr[15:0] };
 assign mmu_vaddr = reg1 + extended_imm;
 
 // TODO: LL/SC
-assign result.memreq.read  = data.decoded.is_load;
-assign result.memreq.write = data.decoded.is_store;
-assign result.memreq.vaddr = mmu_vaddr;
-assign result.memreq.paddr = mmu_result.phy_addr;
-assign result.memreq.wrdata = mem_wrdata;
+assign result.memreq.read       = data.decoded.is_load;
+assign result.memreq.write      = data.decoded.is_store;
+assign result.memreq.uncached   = mmu_result.uncached;
+assign result.memreq.vaddr      = mmu_vaddr;
+assign result.memreq.paddr      = mmu_result.phy_addr;
+assign result.memreq.wrdata     = mem_wrdata;
 assign result.memreq.byteenable = mem_sel;
 
 always_comb begin
@@ -168,6 +169,10 @@ always_comb begin
 				2'd3: mem_sel = 4'b1000;
 			endcase
 		end
+		default: begin
+			mem_sel    = '0;
+			mem_wrdata = '0;
+		end
 	endcase
 end
 
@@ -192,18 +197,16 @@ always_comb begin
 	endcase
 end
 
+
 // ( miss | invalid, illegal | unaligned )
 logic [1:0] ex_if;  // exception in IF
-// ( trap, break, syscall, overflow, privilege )
-logic [4:0] ex_ex;  // exception in EX
-// ( miss | invalid, illegal | unaligned, readonly )
-logic [2:0] ex_mm;  // exception in MEM
-
 assign ex_if = {
 	data.fetch.iaddr_ex.miss | data.fetch.iaddr_ex.invalid,
 	data.fetch.iaddr_ex.illegal
 };
 
+// ( trap, break, syscall, overflow, privilege )
+logic [4:0] ex_ex;  // exception in EX
 assign ex_ex = {
 	trap_valid,
 	op == OP_BREAK,
@@ -213,9 +216,14 @@ assign ex_ex = {
 };
 
 assign invalid_instr = (op == OP_INVALID);
+
+logic mem_rw_valid;
+assign mem_rw_valid = result.memreq.read | result.memreq.write;
+// ( miss | invalid, illegal | unaligned, readonly )
+logic [2:0] ex_mm;  // exception in MEM
 assign ex_mm = {
-	(mmu_result.miss | mmu_result.invalid) & result.memreq.read,
-	(mmu_result.illegal | daddr_unaligned) & result.memreq.read,
+	(mmu_result.miss | mmu_result.invalid) & mem_rw_valid,
+	(mmu_result.illegal | daddr_unaligned) & mem_rw_valid,
 	~mmu_result.dirty & result.memreq.write
 };
 

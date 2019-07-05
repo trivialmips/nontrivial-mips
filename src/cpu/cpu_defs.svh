@@ -203,8 +203,6 @@ typedef struct packed {
 typedef struct packed {
 	reg_addr_t   rd;
 	uint32_t     wdata;
-	logic [1:0]  hilo_we;
-	uint64_t     hilo_wdata;
 } pipeline_memwb_t;
 
 // MMU/TLB
