@@ -8,6 +8,9 @@
 
 `define FETCH_NUM   2
 `define BOOT_VEC    32'hbfc00000
+`define REG_NUM     32
+
+typedef logic [$clog2(`REG_NUM)-1:0] reg_addr_t;
 
 // exception
 typedef struct packed {
@@ -90,5 +93,56 @@ typedef struct packed {
 	uint64_t data;
 	address_exception_t iaddr_ex;
 } instr_fetch_memres_t;
+
+// operator
+typedef enum logic {
+	/* shift */
+	OP_SLL, OP_SRL, OP_SRA, OP_SLLV, OP_SRLV, OP_SRAV,
+	/* unconditional jump (reg) */
+	OP_JALR,
+	/* conditional move */
+	OP_MOVN, OP_MOVZ,
+	/* breakpoint and syscall */
+	OP_SYSCALL, OP_BREAK,
+	/* HI/LO move */
+	OP_MFHI, OP_MFLO, OP_MTHI, OP_MTLO,
+	/* multiplication and division */
+	OP_MULT, OP_MULTU, OP_DIV, OP_DIVU,
+	OP_MADD, OP_MADDU, OP_MSUB, OP_MSUBU, OP_MUL,
+	/* add and substract */
+	OP_ADD, OP_ADDU, OP_SUB, OP_SUBU,
+	/* logical */
+	OP_AND, OP_OR, OP_XOR, OP_NOR,
+	/* compare and set */
+	OP_SLT, OP_SLTU,
+	/* trap */
+	OP_TGE, OP_TGEU, OP_TLT, OP_TLTU, OP_TEQ, OP_TNE,
+	/* count bits */
+	OP_CLZ, OP_CLO,
+	/* branch */
+	OP_BLTZ, OP_BGEZ, OP_BLTZAL, OP_BGEZAL,
+	OP_BEQ, OP_BNE, OP_BLEZ, OP_BGTZ,
+	/* set */
+	OP_LUI,
+	/* load */
+	OP_LB, OP_LH, OP_LWL, OP_LW, OP_LBU, OP_LHU, OP_LWR,
+	/* cache */
+	OP_CACHE,
+	/* LL/SC */
+	OP_LL, OP_SC,
+	/* long jump */
+	OP_JAL
+	/* invalid */
+	OP_INVALID
+} oper_t;
+
+// decode instruction
+typedef struct packed {
+	reg_addr_t   rs1;
+	reg_addr_t   rs2;
+	reg_addr_t   rd;
+	oper_t       op;
+	logic        use_imm;
+} decoded_instr_t;
 
 `endif
