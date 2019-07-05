@@ -9,6 +9,8 @@ module multi_queue #(
 	input  logic  clk,
 	input  logic  rst_n,
 	input  logic  flush,
+	input  logic  stall_push,
+	input  logic  stall_pop,
 	output logic  full,   // 1 if any channel is full
 	output logic  empty,  // 1 if all channels are empty
 
@@ -83,8 +85,8 @@ for(genvar i = 0; i < CHANNEL; ++i) begin : gen_instr_fifo
 		.usage_o     ( /* empty */    ),
 		.data_i      ( data_in[i]     ),
 		.data_o      ( data_out[i]    ),
-		.push_i      ( queue_push[i]  ),
-		.pop_i       ( queue_pop[i]   )
+		.push_i      ( ~stall_push & queue_push[i] ),
+		.pop_i       ( ~stall_pop  & queue_pop[i]  )
 	);
 end
 

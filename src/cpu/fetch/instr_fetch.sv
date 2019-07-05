@@ -11,7 +11,7 @@ module instr_fetch #(
 	input  logic    rst_n,
 	input  logic    flush_pc,
 	input  logic    flush_bp,
-	input  logic    stall,
+	input  logic    stall_s2,
 
 	// exception
 	input  logic    except_valid,
@@ -78,14 +78,14 @@ always_comb begin
 		// when the last instruction is a branch
 		// delayslot must be fetched next cycle
 		fetch_vaddr = delayslot ? pc : predict_vaddr;
-	end else if(stall) begin
+	end else if(icache_res.stall) begin
 		fetch_vaddr = fetch_vaddr_d;
 	end else begin 
 		fetch_vaddr = pc;
 	end
 end
 
-assign hold_pc = stall | queue_full;
+assign hold_pc = icache_res.stall | queue_full;
 
 pc_generator #(
 	.RESET_BASE ( RESET_BASE )
@@ -192,16 +192,17 @@ instr_queue #(
 ) ique_inst (
 	.clk,
 	.rst_n,
-	.flush     ( flush_que   ),
-	.stall     ( hold_pc     ),
-	.full      ( queue_full  ),
-	.empty     ( queue_empty ),
-	.instr     ( instr       ),
-	.vaddr     ( instr_vaddr ),
+	.flush      ( flush_que   ),
+	.stall_push ( hold_pc     ),
+	.stall_pop  ( stall_s2    ),
+	.full       ( queue_full  ),
+	.empty      ( queue_empty ),
+	.instr      ( instr       ),
+	.vaddr      ( instr_vaddr ),
 	.branch_predict,
-	.valid_num ( valid_instr_num     ),
-	.offset    ( fetch_offset        ),
-	.iaddr_ex  ( icache_res.iaddr_ex ),
+	.valid_num  ( valid_instr_num     ),
+	.offset     ( fetch_offset        ),
+	.iaddr_ex   ( icache_res.iaddr_ex ),
 	.fetch_ack,
 	.fetch_entry
 );

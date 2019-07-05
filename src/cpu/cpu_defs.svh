@@ -93,6 +93,7 @@ typedef struct packed {
 } instr_fetch_memreq_t;
 
 typedef struct packed {
+	logic stall;
 	uint64_t data;
 	address_exception_t iaddr_ex;
 } instr_fetch_memres_t;
@@ -153,13 +154,11 @@ typedef struct packed {
 
 // pipeline data (ID -> EX)
 typedef struct packed {
-	virt_t          pc;
-	uint32_t        instr;
-	uint32_t        reg1;
-	uint32_t        reg2;
-	logic           delayslot;
-	exception_t     ex;
-	decoded_instr_t decoded;
+	logic            valid;
+	uint32_t         reg1;
+	uint32_t         reg2;
+	fetch_entry_t    fetch;
+	decoded_instr_t  decoded;
 } pipeline_decode_t;
 
 // pipeline data (EX -> MEM)
@@ -177,7 +176,7 @@ typedef struct packed {
 	uint32_t     wdata;
 	logic [1:0]  hilo_we;
 	uint64_t     hilo_wdata;
-} pipeline_mem_t;
+} pipeline_memwb_t;
 
 // MMU/TLB
 typedef logic [$clog2(`TLB_ENTRIES_NUM)-1:0] tlb_index_t;

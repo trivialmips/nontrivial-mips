@@ -24,8 +24,6 @@ decode_branch branch_decoder_inst(
 	.is_return()
 );
 
-assign decoded_instr.is_controlflow = is_branch | is_jump_i | is_jump_r;
-
 always_comb begin
 	decoded_instr.rs1      = '0;
 	decoded_instr.rs2      = '0;
@@ -34,6 +32,7 @@ always_comb begin
 	decoded_instr.use_imm  = 1'b0;
 	decoded_instr.is_load  = 1'b0;
 	decoded_instr.is_store = 1'b0;
+	decoded_instr.is_controlflow = is_branch | is_jump_i | is_jump_r;
 
 	unique casez(opcode)
 		6'b000000: begin  // SPECIAL (Reg-Reg)

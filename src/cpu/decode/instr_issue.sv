@@ -6,7 +6,8 @@ module instr_issue(
 	input  decoded_instr_t [`ISSUE_NUM-1:0] id_decoded,
 	input  decoded_instr_t [`ISSUE_NUM-1:0] ex_decoded,
 	output decoded_instr_t [`ISSUE_NUM-1:0] issue_instr,
-	output logic [$clog2(`ISSUE_NUM+1)-1:0] issue_num
+	output logic [$clog2(`ISSUE_NUM+1)-1:0] issue_num,
+	output logic stall_req
 );
 
 logic instr2_not_taken;
@@ -46,8 +47,11 @@ always_comb begin
 end
 
 assign instr2_not_taken = 
-      is_data_related(id_decoded[0], id_decoded[1])
+      ~instr_valid[1]
+   || is_data_related(id_decoded[0], id_decoded[1])
    || (mem_access[0] & mem_access[1]);
+
+assign stall_req = (|load_related) | (instr_valid == '0);
 
 always_comb begin
 	issue_instr = id_decoded;
@@ -55,11 +59,6 @@ always_comb begin
 	if(instr2_not_taken) begin
 		issue_num      = 1;
 		issue_instr[1] = '0;
-	end
-
-	if(|load_related) begin
-		issue_num   = 0;
-		issue_instr = '{default: '0};
 	end
 end
 
