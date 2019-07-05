@@ -142,7 +142,10 @@ typedef struct packed {
 	reg_addr_t   rs2;
 	reg_addr_t   rd;
 	oper_t       op;
-	logic        use_imm;
+	logic  use_imm;         // use immediate as reg2
+	logic  is_controlflow;  // controlflow maybe changed
+	logic  is_load;         // load data
+	logic  is_store;        // store data
 } decoded_instr_t;
 
 `endif

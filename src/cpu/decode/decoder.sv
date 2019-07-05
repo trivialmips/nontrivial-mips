@@ -15,12 +15,25 @@ assign rt        = instr[20:16];
 assign rd        = instr[15:11];
 assign funct     = instr[5:0];
 
+logic is_branch, is_jump_i, is_jump_r;
+decode_branch branch_decoder_inst(
+	.*,
+	.imm_branch(),
+	.imm_jump(),
+	.is_call(),
+	.is_return()
+);
+
+assign decoded_instr.is_controlflow = is_branch | is_jump_i | is_jump_r;
+
 always_comb begin
-	decoded_instr.rs1     = '0;
-	decoded_instr.rs2     = '0;
-	decoded_instr.rd      = '0;
-	decoded_instr.op      = OP_SLL;
-	decoded_instr.use_imm = 1'b0;
+	decoded_instr.rs1      = '0;
+	decoded_instr.rs2      = '0;
+	decoded_instr.rd       = '0;
+	decoded_instr.op       = OP_SLL;
+	decoded_instr.use_imm  = 1'b0;
+	decoded_instr.is_load  = 1'b0;
+	decoded_instr.is_store = 1'b0;
 
 	unique casez(opcode)
 		6'b000000: begin  // SPECIAL (Reg-Reg)
@@ -143,9 +156,10 @@ always_comb begin
 		end
 
 		6'b100???: begin // load (Reg-Imm)
-			decoded_instr.rs1 = rs;
-			decoded_instr.rs2 = (opcode[1:0] == 2'b10) ? rt : '0; // LWL/LWR
-			decoded_instr.rd  = rt;
+			decoded_instr.rs1     = rs;
+			decoded_instr.rs2     = (opcode[1:0] == 2'b10) ? rt : '0;
+			decoded_instr.rd      = rt;
+			decoded_instr.is_load = 1'b1;
 			unique case(opcode[2:0])
 				3'b000: decoded_instr.op = OP_LB;
 				3'b001: decoded_instr.op = OP_LH;
@@ -159,8 +173,9 @@ always_comb begin
 		end
 
 		6'b101???: begin // store (Reg-Imm)
-			decoded_instr.rs1 = rs;
-			decoded_instr.rs2 = rt;
+			decoded_instr.rs1      = rs;
+			decoded_instr.rs2      = rt;
+			decoded_instr.is_store = 1'b1;
 			unique case(opcode[2:0])
 				3'b000:  decoded_instr.op = OP_SB;
 				3'b001:  decoded_instr.op = OP_SH;
@@ -173,16 +188,18 @@ always_comb begin
 		end
 		
 		6'b110000: begin // load linked word (Reg-Imm)
-			decoded_instr.rs1 = rs;
-			decoded_instr.rd  = rt;
-			decoded_instr.op  = OP_LL;
+			decoded_instr.rs1     = rs;
+			decoded_instr.rd      = rt;
+			decoded_instr.op      = OP_LL;
+			decoded_instr.is_load = 1'b1;
 		end
 		
 		6'b110000: begin // store conditional word (Reg-Imm)
-			decoded_instr.rs1 = rs;
-			decoded_instr.rs2 = rt;
-			decoded_instr.rd  = rt;
-			decoded_instr.op  = OP_SC;
+			decoded_instr.rs1      = rs;
+			decoded_instr.rs2      = rt;
+			decoded_instr.rd       = rt;
+			decoded_instr.op       = OP_SC;
+			decoded_instr.is_store = 1'b1;
 		end
 		
 		6'b00001?: begin // jump and link
