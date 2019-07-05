@@ -37,13 +37,8 @@ for(genvar i = 0; i < `FETCH_NUM; ++i) begin : gen_fetch_entry
 	assign fetch_entry[i].valid = pop_valid[i];
 	assign fetch_entry[i].vaddr = data_pop[i].vaddr;
 	assign fetch_entry[i].instr = data_pop[i].instr;
+	assign fetch_entry[i].iaddr_ex = data_pop[i].iaddr_ex;
 	assign fetch_entry[i].branch_predict = data_pop[i].branch_predict;
-end
-always_comb begin
-	for(int i = 0; i < `FETCH_NUM; ++i) begin
-		fetch_entry[i].ex = '0;
-		fetch_entry[i].ex.iaddr = data_pop[i].iaddr_ex;
-	end
 end
 
 for(genvar i = 0; i < `FETCH_NUM; ++i) begin : gen_push_data

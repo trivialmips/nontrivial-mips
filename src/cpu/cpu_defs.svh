@@ -13,6 +13,21 @@
 `define BOOT_VEC             32'hbfc00000
 `define ENABLE_CPU_MMU       1
 
+/* cause register exc_code field */
+`define EXCCODE_INT   5'h00  // interrupt
+`define EXCCODE_MOD   5'h01  // TLB modification exception
+`define EXCCODE_TLBL  5'h02  // TLB exception (load or instruction fetch)
+`define EXCCODE_TLBS  5'h03  // TLB exception (store)
+`define EXCCODE_ADEL  5'h04  // address exception (load or instruction fetch)
+`define EXCCODE_ADES  5'h05  // address exception (store)
+`define EXCCODE_SYS   5'h08  // syscall
+`define EXCCODE_BP    5'h09  // breakpoint
+`define EXCCODE_RI    5'h0a  // reserved instruction exception
+`define EXCCODE_CpU   5'h0b  // coprocesser unusable exception
+`define EXCCODE_OV    5'h0c  // overflow
+`define EXCCODE_TR    5'h0d  // trap
+`define EXCCODE_FPE   5'h0f  // floating point exception
+
 typedef logic [$clog2(`REG_NUM)-1:0] reg_addr_t;
 
 // exception
@@ -21,9 +36,9 @@ typedef struct packed {
 } address_exception_t;
 
 typedef struct packed {
-	address_exception_t iaddr, daddr;
-	logic syscall, breakpoint, priv_inst, overflow;
-	logic invalid_inst, trap, eret;
+	logic valid;
+	logic [4:0] exc_code;
+	uint32_t extra;
 } exception_t;
 
 // control flow type
@@ -81,7 +96,7 @@ typedef struct packed {
 	virt_t           vaddr;
 	uint32_t         instr;
 	branch_predict_t branch_predict;
-	exception_t      ex;
+	address_exception_t iaddr_ex;
 } fetch_entry_t;
 typedef logic [$clog2(`FETCH_NUM+1)-1:0] fetch_ack_t;
 
@@ -97,6 +112,15 @@ typedef struct packed {
 	uint64_t data;
 	address_exception_t iaddr_ex;
 } instr_fetch_memres_t;
+
+// memory request for load and store
+typedef struct packed {
+	logic read, write, uncached;
+	logic [3:0] byteenable;
+	virt_t vaddr;
+	phys_t paddr;
+	uint32_t wrdata;
+} data_memreq_t;
 
 // operator
 typedef enum logic {
@@ -135,7 +159,9 @@ typedef enum logic {
 	/* LL/SC */
 	OP_LL, OP_SC,
 	/* long jump */
-	OP_JAL
+	OP_JAL,
+	/* eret */
+	OP_ERET,
 	/* invalid */
 	OP_INVALID
 } oper_t;
@@ -150,6 +176,7 @@ typedef struct packed {
 	logic  is_controlflow;  // controlflow maybe changed
 	logic  is_load;         // load data
 	logic  is_store;        // store data
+	logic  is_priv;         // privileged instructions
 } decoded_instr_t;
 
 // pipeline data (ID -> EX)
@@ -166,7 +193,9 @@ typedef struct packed {
 	virt_t          pc;
 	uint32_t        result;
 	logic           delayslot;
+	logic           eret;
 	exception_t     ex;
+	data_memreq_t   memreq;
 	decoded_instr_t decoded;
 } pipeline_exec_t;
 
@@ -199,6 +228,7 @@ typedef struct packed {
 typedef struct packed {
 	phys_t phy_addr;
 	virt_t virt_addr;
+	logic uncached;
 	logic invalid, miss, dirty, illegal;
 } mmu_result_t;
 

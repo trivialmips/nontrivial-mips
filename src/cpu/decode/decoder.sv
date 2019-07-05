@@ -31,6 +31,7 @@ always_comb begin
 	decoded_instr.op       = OP_SLL;
 	decoded_instr.use_imm  = 1'b0;
 	decoded_instr.is_load  = 1'b0;
+	decoded_instr.is_priv  = 1'b0;
 	decoded_instr.is_store = 1'b0;
 	decoded_instr.is_controlflow = is_branch | is_jump_i | is_jump_r;
 

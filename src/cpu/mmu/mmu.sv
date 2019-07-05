@@ -6,10 +6,10 @@ module mmu(
 	input  logic [7:0]  asid,
 	input  logic        is_user_mode,
 	input  virt_t       inst_vaddr,
-	input  phys_t       data_vaddr,
+	input  virt_t       [`ISSUE_NUM-1:0] data_vaddr,
 
 	output mmu_result_t inst_result,
-	output mmu_result_t data_result,
+	output mmu_result_t [`ISSUE_NUM-1:0] data_result,
 
 	// for TLBR/TLBWI/TLBWR
 	input  tlb_index_t  tlbrw_index,
@@ -25,8 +25,10 @@ module mmu(
 generate if(`ENABLE_CPU_MMU)
 begin: generate_mmu_enabled_code
 
-	logic inst_mapped, data_mapped;
-	tlb_result_t inst_tlb_result, data_tlb_result;
+	logic inst_mapped;
+	logic [`ISSUE_NUM-1:0] data_mapped;
+	tlb_result_t inst_tlb_result;
+	tlb_result_t [`ISSUE_NUM-1:0] data_tlb_result;
 
 	function logic is_vaddr_mapped(
 		input virt_t vaddr
@@ -35,23 +37,33 @@ begin: generate_mmu_enabled_code
 		return (~vaddr[31] || vaddr[31:30] == 2'b11);
 	endfunction
 
-	assign inst_mapped = is_vaddr_mapped(inst_vaddr);
-	assign data_mapped = is_vaddr_mapped(data_vaddr);
+	function logic is_vaddr_uncached(
+		input virt_t vaddr
+	); 
+		return vaddr[31:29] == 3'b101;
+	endfunction
+
+	assign inst_mapped   = is_vaddr_mapped(inst_vaddr);
 
 	assign inst_result.dirty    = 1'b0;
 	assign inst_result.miss     = (inst_mapped & inst_tlb_result.miss);
 	assign inst_result.illegal  = (is_user_mode & inst_vaddr[31]);
 	assign inst_result.invalid  = (inst_mapped & ~inst_tlb_result.valid);
+	assign inst_result.uncached = is_vaddr_uncached(inst_vaddr);
 	assign inst_result.phy_addr = inst_mapped ? inst_tlb_result.phy_addr : { 3'b0, inst_vaddr[28:0] };
 	assign inst_result.virt_addr = inst_vaddr;
 
 	// note that dirty = 1 when writable
-	assign data_result.dirty    = (~data_mapped | data_tlb_result.dirty);
-	assign data_result.miss     = (data_mapped & data_tlb_result.miss);
-	assign data_result.illegal  = (is_user_mode & data_vaddr[31]);
-	assign data_result.invalid  = (data_mapped & ~data_tlb_result.valid);
-	assign data_result.phy_addr = data_mapped ? data_tlb_result.phy_addr : { 3'b0, data_vaddr[28:0] };
-	assign data_result.virt_addr = data_vaddr;
+	for(genvar i = 0; i < `ISSUE_NUM; ++i) begin : gen_data_result
+		assign data_mapped   = is_vaddr_mapped(data_vaddr[i]);
+		assign data_result[i].uncached = is_vaddr_uncached(data_vaddr[i]);
+		assign data_result[i].dirty    = (~data_mapped[i] | data_tlb_result[i].dirty);
+		assign data_result[i].miss     = (data_mapped[i] & data_tlb_result[i].miss);
+		assign data_result[i].illegal  = (is_user_mode & data_vaddr[i][31]);
+		assign data_result[i].invalid  = (data_mapped[i] & ~data_tlb_result[i].valid);
+		assign data_result[i].phy_addr = data_mapped[i] ? data_tlb_result[i].phy_addr : { 3'b0, data_vaddr[i][28:0] };
+		assign data_result[i].virt_addr = data_vaddr[i];
+	end
 
 	tlb tlb_instance(
 		.clk,
@@ -75,11 +87,13 @@ end else begin: generate_mmu_disabled_code
 	always_comb
 	begin
 		inst_result = '0;
-		data_result = '0;
 		inst_result.dirty = 1'b0;
-		data_result.dirty = 1'b1;
-		inst_result.phy_addr = inst_vaddr;
-		data_result.phy_addr = data_vaddr;
+		inst_result.phy_addr = { 1'b0, inst_vaddr[30:0] };
+		for(int i = 0; i < `ISSUE_NUM; ++i) begin
+			data_result[i] = '0;
+			data_result[i].dirty = 1'b1;
+			data_result[i].phy_addr = { 1'b0, data_vaddr[i][30:0] };
+		end
 	end
 end
 endgenerate
