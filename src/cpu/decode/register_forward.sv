@@ -37,7 +37,7 @@ always_comb begin
 	pack_reg_o[0] = reg1_i;
 	pack_reg_o[1] = reg2_i;
 
-	for(int i = 0; i < 1; ++i) begin
+	for(int i = 0; i < 2; ++i) begin
 		for(int j = 0; j < `ISSUE_NUM; ++j) begin
 			if(wb_waddr[j] == pack_rs[i])
 				pack_reg_o[i] = wb_wdata[j];

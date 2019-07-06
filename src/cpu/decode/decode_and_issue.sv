@@ -38,8 +38,8 @@ for(genvar i = 0; i < `ISSUE_NUM; ++i) begin : gen_decoder
 	assign ex_wdata[i] = pipeline_exec[i].result;
 	assign mm_waddr[i] = pipeline_mem[i].rd;
 	assign mm_wdata[i] = pipeline_mem[i].wdata;
-	assign wb_waddr[i] = pipeline_mem[i].rd;
-	assign wb_wdata[i] = pipeline_mem[i].wdata;
+	assign wb_waddr[i] = pipeline_wb[i].rd;
+	assign wb_wdata[i] = pipeline_wb[i].wdata;
 
 	register_forward reg_forward_inst(
 		.*, // forward from EX/MM/WB

@@ -20,6 +20,10 @@ reg_addr_t [1:0] reg_waddr;
 uint32_t   [3:0] reg_rdata;
 reg_addr_t [3:0] reg_raddr;
 
+// waddr is 0 if we do not write registers
+assign reg_we[0] = 1'b1;
+assign reg_we[1] = 1'b1;
+
 // pipeline data
 pipeline_decode_t [1:0] pipeline_decode, pipeline_decode_d;
 pipeline_exec_t   [1:0] pipeline_exec, pipeline_exec_d;
@@ -50,6 +54,7 @@ uint32_t     tlbp_index;
 logic [7:0] cp0_asid;
 logic    cp0_user_mode;
 uint32_t cp0_entry_hi;
+assign cp0_user_mode = 1'b0;  // TODO: set correct value
 
 /* setup I$ request/response */
 assign mmu_inst_vaddr   = icache_req.vaddr;
