@@ -21,6 +21,7 @@ assign reg1 = data.reg1;
 assign reg2 = data.reg2;
 assign instr = data.fetch.instr;
 assign op = data.decoded.op;
+assign stall_req = 1'b0;
 
 assign result.ex     = ex;
 assign result.result = exec_ret;

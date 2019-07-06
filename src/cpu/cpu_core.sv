@@ -27,17 +27,12 @@ pipeline_memwb_t  [1:0] pipeline_mem, pipeline_mem_d;
 pipeline_memwb_t  [1:0] pipeline_wb;
 assign pipeline_wb = pipeline_mem_d;
 
-// IF stage
 logic                if_except_valid;
 virt_t               if_except_vec;
 fetch_ack_t          if_fetch_ack;
 fetch_entry_t [1:0]  if_fetch_entry;
 instr_fetch_memres_t icache_res;
 instr_fetch_memreq_t icache_req;
-
-// ID/IS stage
-
-// EX stage
 branch_resolved_t resolved_branch;
 
 // MMU
@@ -67,6 +62,10 @@ assign icache_res.stall = ibus.stall;
 assign icache_res.iaddr_ex.miss    = mmu_inst_result.miss;
 assign icache_res.iaddr_ex.illegal = mmu_inst_result.illegal;
 assign icache_res.iaddr_ex.invalid = mmu_inst_result.invalid;
+
+ctrl ctrl_inst(
+	.*
+);
 
 regfile #(
 	.REG_NUM     ( `REG_NUM ),
@@ -183,7 +182,7 @@ dbus_mux dbus_mux_inst(
 	.dbus
 );
 
-assign stall_from_mem = dbus.stall | dbus.uncached_stall;
+assign stall_from_mm = dbus.stall | dbus.uncached_stall;
 for(genvar i = 0; i < `ISSUE_NUM; ++i) begin : gen_mem
 	instr_mem mem_inst(
 		.cached_rddata   ( dbus.rddata          ),
