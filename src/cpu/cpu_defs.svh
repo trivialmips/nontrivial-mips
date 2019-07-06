@@ -46,12 +46,11 @@ typedef struct packed {
 } exception_t;
 
 // control flow type
-typedef enum logic [2:0] {
+typedef enum logic [1:0] {
 	ControlFlow_None,
 	ControlFlow_Branch,
 	ControlFlow_JumpImm,
-	ControlFlow_JumpReg,
-	ControlFlow_Return
+	ControlFlow_JumpReg
 } controlflow_t;
 
 // resolved branch information (forward)

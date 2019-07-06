@@ -62,6 +62,7 @@ logic    hold_pc;
 virt_t   pc, fetch_vaddr;
 
 // pipeline registers
+logic    predict_valid_d;
 virt_t   fetch_vaddr_d, predict_vaddr_d;
 logic    [`FETCH_NUM-1:0] maybe_jump_d;
 
@@ -95,12 +96,12 @@ logic delayslot;
 assign delayslot = maybe_jump[`FETCH_NUM - 1];
 assign predict_delayed = predict_valid & delayslot;
 always_comb begin
-	if(predict_valid) begin
+	if(hold_pc) begin
+		fetch_vaddr = fetch_vaddr_d;
+	end else if(predict_valid) begin
 		// when the last instruction is a branch
 		// delayslot must be fetched next cycle
 		fetch_vaddr = delayslot ? pc : predict_vaddr;
-	end else if(icache_res.stall) begin
-		fetch_vaddr = fetch_vaddr_d;
 	end else begin 
 		fetch_vaddr = pc;
 	end
@@ -128,8 +129,10 @@ always_ff @(posedge clk or negedge rst_n) begin
 	if(~rst_n || flush_pc) begin
 		fetch_vaddr_d   <= '0;
 		predict_vaddr_d <= '0;
+		predict_valid_d <= '0;
 		maybe_jump_d    <= '0;
 	end else if(~hold_pc) begin
+		predict_valid_d <= predict_valid;
 		predict_vaddr_d <= predict_vaddr;
 		fetch_vaddr_d   <= fetch_vaddr;
 		maybe_jump_d    <= maybe_jump;
@@ -171,7 +174,7 @@ always_comb begin
 
 	valid_instr_num = `FETCH_NUM - fetch_offset;
 
-	if(delayslot_d) begin
+	if(predict_valid_d & delayslot_d) begin
 		instr_valid = '0;
 		instr_valid[fetch_offset] = 1'b1;
 		valid_instr_num = 1;

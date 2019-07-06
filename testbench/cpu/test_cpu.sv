@@ -43,9 +43,9 @@ logic [15:0] dbus_addr_delay;
 logic [31:0] dbus_data_delay;
 always @(negedge clk)
 begin
-	dbus_we_delay   <= dbus_inst.dbus.write;
+	dbus_we_delay   <= dbus_inst.dbus.write | dbus_inst.dbus.uncached_write;
 	dbus_addr_delay <= { dbus_inst.dbus.address[15:2], 2'b0 };
-	dbus_data_delay <= dbus_inst.dbus.wrdata;
+	dbus_data_delay <= dbus_inst.wrdata;
 end
 
 logic post_stall;
@@ -146,7 +146,9 @@ begin
 	unittest("inst_move");
 	unittest("inst_shift");
 	unittest("inst_jump");
-	unittest("branch_loop");
+	unittest("inst_mem_aligned");
+	unittest("inst_mem_unaligned");
+	// unittest("branch_loop");
 	// unittest("inst_multicyc");
 	$display("[Done]\n");
 	$finish;

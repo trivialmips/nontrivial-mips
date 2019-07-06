@@ -64,8 +64,8 @@ always_ff @(posedge clk or negedge rst_n) begin
 		read_ptr_now  <= '0;
 		write_ptr_now <= '0;
 	end else begin
-		read_ptr_now  <= read_ptr_now + pop_num;
-		write_ptr_now <= write_ptr_now + push_num;
+		if(~stall_pop)  read_ptr_now  <= read_ptr_now + pop_num;
+		if(~stall_push) write_ptr_now <= write_ptr_now + push_num;
 	end
 end
 

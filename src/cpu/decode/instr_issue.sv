@@ -67,7 +67,9 @@ assign instr2_not_taken =
       // mispredict but delayslot does not executed
    || delayslot_not_exec;
 
-assign stall_req = (|load_related) | (instr_valid == '0);
+assign stall_req = load_related[0]
+	| (load_related[1] & ~instr2_not_taken)
+	| (instr_valid == '0);
 
 always_comb begin
 	issue_instr = id_decoded;
