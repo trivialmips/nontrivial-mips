@@ -5,7 +5,7 @@ module instr_issue(
 	input  fetch_entry_t     [`ISSUE_NUM-1:0] fetch_entry,
 	input  decoded_instr_t   [`ISSUE_NUM-1:0] id_decoded,
 	input  decoded_instr_t   [`ISSUE_NUM-1:0] ex_decoded,
-	input  branch_resolved_t last_resolved_branch,
+	input  logic             delayslot_not_exec,
 	output decoded_instr_t   [`ISSUE_NUM-1:0] issue_instr,
 	output logic   [$clog2(`ISSUE_NUM+1)-1:0] issue_num,
 	output logic   stall_req
@@ -64,8 +64,8 @@ assign instr2_not_taken =
    || is_data_related(id_decoded[0], id_decoded[1])
    || (mem_access[0] & mem_access[1])
    || (hilo_access[0] & hilo_access[1])
-      // delayslot
-   || (last_resolved_branch.valid & last_resolved_branch.mispredict);
+      // mispredict but delayslot does not executed
+   || delayslot_not_exec;
 
 assign stall_req = (|load_related) | (instr_valid == '0);
 

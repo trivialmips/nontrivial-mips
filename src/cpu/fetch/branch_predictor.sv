@@ -9,7 +9,6 @@ module branch_predictor #(
 	input  logic   rst_n,
 	input  logic   flush,
 	input  logic   stall_s1,
-	input  logic   stall_s2,
 
 	input  virt_t            pc,   // 8-bytes aligned
 	input  branch_resolved_t resolved_branch,
@@ -113,15 +112,13 @@ always_comb begin
 end
 
 // update BTB/BHT
-assign btb_update.valid  = ~stall_s2
-       & resolved_branch.valid
+assign btb_update.valid  = resolved_branch.valid
        & resolved_branch.mispredict
        & (resolved_branch.cf == ControlFlow_JumpReg);
 assign btb_update.pc     = resolved_branch.pc;
 assign btb_update.target = resolved_branch.target;
 
-assign bht_update.valid  = ~stall_s2
-       & resolved_branch.valid 
+assign bht_update.valid  = resolved_branch.valid 
        & (resolved_branch.cf == ControlFlow_Branch);
 assign bht_update.pc     = resolved_branch.pc;
 assign bht_update.taken  = resolved_branch.taken;

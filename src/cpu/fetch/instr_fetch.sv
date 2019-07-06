@@ -11,14 +11,18 @@ module instr_fetch #(
 	input  logic    rst_n,
 	input  logic    flush_pc,
 	input  logic    flush_bp,
+
+	// stall popping instructions
 	input  logic    stall_s2,
+	// stall from EX/MM, resolved_branch does not change
+	input  logic    hold_resolved_branch,
 
 	// exception
 	input  logic    except_valid,
 	input  virt_t   except_vec,
 
-	// mispredict info
-	input  branch_resolved_t    resolved_branch,
+	// mispredict
+	input  branch_resolved_t    resolved_branch_i,
 
 	// memory request
 	input  instr_fetch_memres_t icache_res,
@@ -35,6 +39,23 @@ localparam int ADDR_ALIGN_WIDTH = FETCH_WIDTH + 2;
 function virt_t aligned_address( input virt_t addr );
 	return { addr[31:ADDR_ALIGN_WIDTH], {ADDR_ALIGN_WIDTH{1'b0}} };
 endfunction
+
+// When hold_resolved_branch_d is true, resolved_branch is used last
+// cycle and do not change due to stall signals from EX/MM.
+logic hold_resolved_branch_d;
+branch_resolved_t resolved_branch;
+always_comb begin
+	resolved_branch = resolved_branch_i;
+	resolved_branch.valid &= ~hold_resolved_branch_d;
+end
+
+always_ff @(posedge clk or negedge rst_n) begin
+	if(~rst_n || flush_pc) begin
+		hold_resolved_branch_d <= 1'b0;
+	end else begin
+		hold_resolved_branch_d <= hold_resolved_branch;
+	end
+end
 
 // program counter (stage 1)
 logic    hold_pc;
@@ -177,7 +198,6 @@ branch_predictor #(
 	.rst_n,
 	.flush           ( flush_bp              ),
 	.stall_s1        ( hold_pc               ),
-	.stall_s2        ( stall_s2              ),
 	.pc              ( aligned_fetch_vaddr_d ),
 	.resolved_branch ( resolved_branch       ),
 	.instr,

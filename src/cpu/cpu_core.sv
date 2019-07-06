@@ -13,6 +13,7 @@ logic flush_if, stall_if;
 logic flush_id, stall_id, stall_from_id;
 logic flush_ex, stall_ex, stall_from_ex;
 logic flush_mm, stall_mm, stall_from_mm;
+logic delayslot_not_exec, hold_resolved_branch;
 
 // register file
 logic      [1:0] reg_we;
@@ -137,7 +138,8 @@ instr_fetch #(
 	.stall_s2     ( stall_if        ),
 	.except_valid ( if_except_valid ),
 	.except_vec   ( if_except_vec   ),
-	.resolved_branch,
+	.resolved_branch_i ( resolved_branch ),
+	.hold_resolved_branch,
 	.icache_res,
 	.icache_req,
 	.fetch_ack    ( if_fetch_ack   ),
@@ -147,7 +149,7 @@ instr_fetch #(
 decode_and_issue decode_issue_inst(
 	.fetch_entry  ( if_fetch_entry ),
 	.issue_num    ( if_fetch_ack   ),
-	.resolved_branch ( ex_resolved_branch ),
+	.delayslot_not_exec,
 	.pipeline_exec,
 	.pipeline_mem,
 	.pipeline_wb,

@@ -38,7 +38,7 @@ always_comb begin
 		npc = predict_vaddr;
 	end
 
-	// mispredict
+	/* branch misprediction */
 	if(resolved_branch.valid & resolved_branch.mispredict) begin
 		npc = resolved_branch.taken ? resolved_branch.target : resolved_branch.pc + 32'd8;
 	end

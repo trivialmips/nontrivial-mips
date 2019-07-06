@@ -1,8 +1,8 @@
 `include "cpu_defs.svh"
 
 module decode_and_issue(
+	input  logic             delayslot_not_exec,
 	input  fetch_entry_t     [`ISSUE_NUM-1:0] fetch_entry,
-	input  branch_resolved_t [`ISSUE_NUM-1:0] resolved_branch,
 	input  pipeline_exec_t   [`ISSUE_NUM-1:0] pipeline_exec,
 	input  pipeline_memwb_t  [`ISSUE_NUM-1:0] pipeline_mem,
 	input  pipeline_memwb_t  [`ISSUE_NUM-1:0] pipeline_wb,
@@ -55,7 +55,7 @@ instr_issue issue_inst(
 	.fetch_entry,
 	.id_decoded ( decoded_instr ),
 	.ex_decoded,
-	.last_resolved_branch ( resolved_branch[`ISSUE_NUM-1] ),
+	.delayslot_not_exec,
 	.issue_instr,
 	.issue_num,
 	.stall_req
