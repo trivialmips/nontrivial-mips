@@ -26,8 +26,9 @@ interface cpu_ibus_if();
 	phys_t address;   // aligned in 8-bytes
 	uint64_t rddata;
 
-	// indicate that corresponding stage can be directly terminated.
+	// indicate that corresponding stage shall be directly terminated.
 	// flush_1 will be '1' whenever flush_2 is '1'.
+	// stall shall be '0' whenever flush_2 is '1'.
 	logic flush_1, flush_2;
 
     modport master (
