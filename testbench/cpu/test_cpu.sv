@@ -146,6 +146,7 @@ begin
 	unittest("inst_move");
 	unittest("inst_shift");
 	unittest("inst_jump");
+	unittest("branch_loop");
 	// unittest("inst_multicyc");
 	$display("[Done]\n");
 	$finish;

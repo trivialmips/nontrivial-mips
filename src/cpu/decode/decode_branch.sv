@@ -29,8 +29,13 @@ assign is_branch = (
 	opcode == 6'b000001 && instr[19:17] == 3'b0
 );
 
-// TODO: determine return/call instr
-assign is_call   = 1'b0;
-assign is_return = 1'b0;
+assign is_call   =
+      is_jump_r && (instr[15:11] == 5'd31)              // JALR reg, $31
+   || opcode == 6'b000011                               // JAL
+   || opcode == 6'b000001 && instr[20:17] == 4'b1000;   // BLTZAL, BGEZAL
+
+assign is_return = 
+      instr[31:21] == 11'b000000_11111 && instr[5:0] == 6'b001000  // JR $31
+   || is_jump_r && instr[25:21] == 5'd31;                   // JALR $31, reg
 
 endmodule

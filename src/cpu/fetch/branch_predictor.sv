@@ -77,7 +77,7 @@ always_comb begin
 		4'b0100: begin // return, use RAS
 			ras_pop  = ras_predict.valid;
 			ras_push = 1'b0;
-			cf[i] = ControlFlow_Return;
+			cf[i] = ControlFlow_JumpReg;
 			predict_vaddr = ras_predict.data;
 		end
 		4'b1000: begin // conditional jump, use BHT
@@ -93,7 +93,7 @@ always_comb begin
 
 			if(taken[i]) begin
 				cf[i] = ControlFlow_Branch;
-				predict_vaddr = (pc | (i << 2)) + imm_branch[i];
+				predict_vaddr = (pc | (i << 2)) + imm_branch[i] + 32'd4;
 			end
 		end
 		default:; // error
