@@ -7,67 +7,67 @@ create_clock -period 10.000 -name clk_in_100M -waveform {0.000 5.000} [get_ports
 
 
 # UART interface
-set_property -dict {PACKAGE_PIN H19 IOSTANDARD LVCMOS33} [get_ports uart_txd]
-set_property -dict {PACKAGE_PIN F23 IOSTANDARD LVCMOS33} [get_ports uart_rxd]
+set_property -dict {PACKAGE_PIN H19 IOSTANDARD LVCMOS33} [get_ports UART_txd]
+set_property -dict {PACKAGE_PIN F23 IOSTANDARD LVCMOS33} [get_ports UART_rxd]
 
 
 # plugable SPI flash
-set_property IOSTANDARD LVCMOS33 [get_ports spi_flash_*]
+set_property IOSTANDARD LVCMOS33 [get_ports SPI_FLASH_*]
 
-set_property PACKAGE_PIN P20 [get_ports spi_flash_sck]
-set_property PACKAGE_PIN R20 [get_ports spi_flash_ss]
-set_property PACKAGE_PIN P19 [get_ports spi_flash_miso]
-set_property PACKAGE_PIN N18 [get_ports spi_flash_mosi]
-set_property PACKAGE_PIN R18 [get_ports spi_flash_io2]
-set_property PACKAGE_PIN R21 [get_ports spi_flash_io3]
+set_property PACKAGE_PIN P20 [get_ports SPI_FLASH_sck]
+set_property PACKAGE_PIN R20 [get_ports SPI_FLASH_ss]
+set_property PACKAGE_PIN P19 [get_ports SPI_FLASH_miso]
+set_property PACKAGE_PIN N18 [get_ports SPI_FLASH_mosi]
+set_property PACKAGE_PIN R18 [get_ports SPI_FLASH_io2]
+set_property PACKAGE_PIN R21 [get_ports SPI_FLASH_io3]
 
 
 # NAND flash
 set_property IOSTANDARD LVCMOS33 [get_ports {NAND_*}]
 
-set_property PACKAGE_PIN V19  [get_ports NAND_CLE]
-set_property PACKAGE_PIN W20  [get_ports NAND_ALE]
-set_property PACKAGE_PIN AA25 [get_ports NAND_RDY]
-set_property PACKAGE_PIN AA24 [get_ports NAND_RD]
-set_property PACKAGE_PIN AB24 [get_ports NAND_CE]
-set_property PACKAGE_PIN AA22 [get_ports NAND_WR]
-set_property PACKAGE_PIN W19  [get_ports {NAND_DATA[7]}]
-set_property PACKAGE_PIN Y20  [get_ports {NAND_DATA[6]}]
-set_property PACKAGE_PIN Y21  [get_ports {NAND_DATA[5]}]
-set_property PACKAGE_PIN V18  [get_ports {NAND_DATA[4]}]
-set_property PACKAGE_PIN U19  [get_ports {NAND_DATA[3]}]
-set_property PACKAGE_PIN U20  [get_ports {NAND_DATA[2]}]
-set_property PACKAGE_PIN W21  [get_ports {NAND_DATA[1]}]
-set_property PACKAGE_PIN AC24 [get_ports {NAND_DATA[0]}]
+set_property PACKAGE_PIN V19  [get_ports NAND_cle]
+set_property PACKAGE_PIN W20  [get_ports NAND_ale]
+set_property PACKAGE_PIN AA25 [get_ports NAND_ready]
+set_property PACKAGE_PIN AA24 [get_ports NAND_re_n]
+set_property PACKAGE_PIN AB24 [get_ports NAND_ce_n]
+set_property PACKAGE_PIN AA22 [get_ports NAND_we_n]
+set_property PACKAGE_PIN W19  [get_ports {NAND_data[7]}]
+set_property PACKAGE_PIN Y20  [get_ports {NAND_data[6]}]
+set_property PACKAGE_PIN Y21  [get_ports {NAND_data[5]}]
+set_property PACKAGE_PIN V18  [get_ports {NAND_data[4]}]
+set_property PACKAGE_PIN U19  [get_ports {NAND_data[3]}]
+set_property PACKAGE_PIN U20  [get_ports {NAND_data[2]}]
+set_property PACKAGE_PIN W21  [get_ports {NAND_data[1]}]
+set_property PACKAGE_PIN AC24 [get_ports {NAND_data[0]}]
 
 
 # non-plugable CFG SPI Flash (S25FL128SAGMFI001 NOR 16Mb)
 # use clk_in as sck
-set_property -dict {PACKAGE_PIN P18 IOSTANDARD LVCMOS33} [get_ports cfg_flash_ss]
-set_property -dict {PACKAGE_PIN R15 IOSTANDARD LVCMOS33} [get_ports cfg_flash_miso]
-set_property -dict {PACKAGE_PIN R14 IOSTANDARD LVCMOS33} [get_ports cfg_flash_mosi]
+set_property -dict {PACKAGE_PIN P18 IOSTANDARD LVCMOS33} [get_ports CFG_FLASH_ss]
+set_property -dict {PACKAGE_PIN R15 IOSTANDARD LVCMOS33} [get_ports CFG_FLASH_miso]
+set_property -dict {PACKAGE_PIN R14 IOSTANDARD LVCMOS33} [get_ports CFG_FLASH_mosi]
 
 
 # VGA interface (DAC with resistors)
-set_property IOSTANDARD LVCMOS33 [get_ports {vga_*}]
+set_property IOSTANDARD LVCMOS33 [get_ports {VGA_*}]
 
-set_property PACKAGE_PIN U4 [get_ports {vga_pixel_r[3]}]
-set_property PACKAGE_PIN U2 [get_ports {vga_pixel_r[2]}]
-set_property PACKAGE_PIN T2 [get_ports {vga_pixel_r[1]}]
-set_property PACKAGE_PIN T3 [get_ports {vga_pixel_r[0]}]
+set_property PACKAGE_PIN U4 [get_ports {VGA_r[3]}]
+set_property PACKAGE_PIN U2 [get_ports {VGA_r[2]}]
+set_property PACKAGE_PIN T2 [get_ports {VGA_r[1]}]
+set_property PACKAGE_PIN T3 [get_ports {VGA_r[0]}]
 
-set_property PACKAGE_PIN R5 [get_ports {vga_pixel_g[3]}]
-set_property PACKAGE_PIN U1 [get_ports {vga_pixel_g[2]}]
-set_property PACKAGE_PIN R1 [get_ports {vga_pixel_g[1]}]
-set_property PACKAGE_PIN R2 [get_ports {vga_pixel_g[0]}]
+set_property PACKAGE_PIN R5 [get_ports {VGA_g[3]}]
+set_property PACKAGE_PIN U1 [get_ports {VGA_g[2]}]
+set_property PACKAGE_PIN R1 [get_ports {VGA_g[1]}]
+set_property PACKAGE_PIN R2 [get_ports {VGA_g[0]}]
 
-set_property PACKAGE_PIN P3 [get_ports {vga_pixel_b[3]}]
-set_property PACKAGE_PIN P1 [get_ports {vga_pixel_b[2]}]
-set_property PACKAGE_PIN N1 [get_ports {vga_pixel_b[1]}]
-set_property PACKAGE_PIN P5 [get_ports {vga_pixel_b[0]}]
+set_property PACKAGE_PIN P3 [get_ports {VGA_b[3]}]
+set_property PACKAGE_PIN P1 [get_ports {VGA_b[2]}]
+set_property PACKAGE_PIN N1 [get_ports {VGA_b[1]}]
+set_property PACKAGE_PIN P5 [get_ports {VGA_b[0]}]
 
-set_property PACKAGE_PIN U5 [get_ports vga_hsync]
-set_property PACKAGE_PIN U6 [get_ports vga_vsync]
+set_property PACKAGE_PIN U5 [get_ports VGA_hsync]
+set_property PACKAGE_PIN U6 [get_ports VGA_vsync]
 
 
 # single-color LEDS
@@ -101,7 +101,7 @@ set_property PACKAGE_PIN D6 [get_ports {led_rg1[1]}]
 
 
 # number digits
-set_property PACKAGE_PIN A2 [get_ports {num_*}]
+set_property IOSTANDARD LVCMOS33 [get_ports {num_*}]
 
 set_property PACKAGE_PIN D3  [get_ports {num_csn[7]}]
 set_property PACKAGE_PIN D25 [get_ports {num_csn[6]}]
@@ -119,20 +119,20 @@ set_property PACKAGE_PIN B4 [get_ports {num_a_g[3]}]
 set_property PACKAGE_PIN E5 [get_ports {num_a_g[4]}]
 set_property PACKAGE_PIN D4 [get_ports {num_a_g[5]}]
 set_property PACKAGE_PIN A2 [get_ports {num_a_g[6]}]
-set_property PACKAGE_PIN A2 [get_ports {num_a_g_dp}]
+set_property PACKAGE_PIN C4 [get_ports {num_a_g_dp}]
 
 
 # keyboard array
-set_property IOSTANDARD LVCMOS33 [get_ports {key_*}]
+set_property IOSTANDARD LVCMOS33 [get_ports {btn_key_*}]
 
-set_property PACKAGE_PIN V8  [get_ports {key_col[0]}]
-set_property PACKAGE_PIN V9  [get_ports {key_col[1]}]
-set_property PACKAGE_PIN Y8  [get_ports {key_col[2]}]
-set_property PACKAGE_PIN V7  [get_ports {key_col[3]}]
-set_property PACKAGE_PIN U7  [get_ports {key_row[0]}]
-set_property PACKAGE_PIN W8  [get_ports {key_row[1]}]
-set_property PACKAGE_PIN Y7  [get_ports {key_row[2]}]
-set_property PACKAGE_PIN AA8 [get_ports {key_row[3]}]
+set_property PACKAGE_PIN V8  [get_ports {btn_key_col[0]}]
+set_property PACKAGE_PIN V9  [get_ports {btn_key_col[1]}]
+set_property PACKAGE_PIN Y8  [get_ports {btn_key_col[2]}]
+set_property PACKAGE_PIN V7  [get_ports {btn_key_col[3]}]
+set_property PACKAGE_PIN U7  [get_ports {btn_key_row[0]}]
+set_property PACKAGE_PIN W8  [get_ports {btn_key_row[1]}]
+set_property PACKAGE_PIN Y7  [get_ports {btn_key_row[2]}]
+set_property PACKAGE_PIN AA8 [get_ports {btn_key_row[3]}]
 
 
 # switches
@@ -154,8 +154,8 @@ set_property -dict {PACKAGE_PIN V6 IOSTANDARD LVCMOS33} [get_ports btn_step[1]]
 
 
 # PS/2 ports
-set_property -dict {PACKAGE_PIN AD1 IOSTANDARD LVCMOS33} [get_ports ps2_dat]
-set_property -dict {PACKAGE_PIN Y2  IOSTANDARD LVCMOS33} [get_ports ps2_clk]
+set_property -dict {PACKAGE_PIN AD1 IOSTANDARD LVCMOS33} [get_ports PS2_dat]
+set_property -dict {PACKAGE_PIN Y2  IOSTANDARD LVCMOS33} [get_ports PS2_clk]
 
 
 # ethernet PHY (DM9161AEP)
@@ -175,52 +175,52 @@ set_property -dict {PACKAGE_PIN V3   IOSTANDARD LVCMOS33} [get_ports {MII_rxd[3]
 set_property -dict {PACKAGE_PIN W16  IOSTANDARD LVCMOS33} [get_ports MII_rx_er]
 set_property -dict {PACKAGE_PIN Y15  IOSTANDARD LVCMOS33} [get_ports MII_col]
 set_property -dict {PACKAGE_PIN AF20 IOSTANDARD LVCMOS33} [get_ports MII_crs]
-set_property -dict {PACKAGE_PIN W3   IOSTANDARD LVCMOS33} [get_ports mdc]
-set_property -dict {PACKAGE_PIN W1   IOSTANDARD LVCMOS33} [get_ports mdio]
 set_property -dict {PACKAGE_PIN AE26 IOSTANDARD LVCMOS33} [get_ports MII_rst_n]
+set_property -dict {PACKAGE_PIN W3   IOSTANDARD LVCMOS33} [get_ports MDIO_mdc]
+set_property -dict {PACKAGE_PIN W1   IOSTANDARD LVCMOS33} [get_ports MDIO_mdio]
 
 create_clock -period 40.000 -name mii_rxclk_0 -waveform {0.000 20.000} [get_ports MII_rx_clk]
 create_clock -period 40.000 -name mii_txclk_0 -waveform {0.000 20.000} [get_ports MII_tx_clk]
 
 
 # LCD
-set_property IOSTANDARD LVCMOS33 [get_ports lcd_*]
+set_property IOSTANDARD LVCMOS33 [get_ports LCD_*]
 
-set_property PACKAGE_PIN H9  [get_ports {lcd_data_tri_io[0]}]
-set_property PACKAGE_PIN K17 [get_ports {lcd_data_tri_io[1]}]
-set_property PACKAGE_PIN J20 [get_ports {lcd_data_tri_io[2]}]
-set_property PACKAGE_PIN M17 [get_ports {lcd_data_tri_io[3]}]
-set_property PACKAGE_PIN L17 [get_ports {lcd_data_tri_io[4]}]
-set_property PACKAGE_PIN L18 [get_ports {lcd_data_tri_io[5]}]
-set_property PACKAGE_PIN L15 [get_ports {lcd_data_tri_io[6]}]
-set_property PACKAGE_PIN M15 [get_ports {lcd_data_tri_io[7]}]
-set_property PACKAGE_PIN M16 [get_ports {lcd_data_tri_io[8]}]
-set_property PACKAGE_PIN L14 [get_ports {lcd_data_tri_io[9]}]
-set_property PACKAGE_PIN M14 [get_ports {lcd_data_tri_io[10]}]
-set_property PACKAGE_PIN F22 [get_ports {lcd_data_tri_io[11]}]
-set_property PACKAGE_PIN G22 [get_ports {lcd_data_tri_io[12]}]
-set_property PACKAGE_PIN G21 [get_ports {lcd_data_tri_io[13]}]
-set_property PACKAGE_PIN H24 [get_ports {lcd_data_tri_io[14]}]
-set_property PACKAGE_PIN J16 [get_ports {lcd_data_tri_io[15]}]
+set_property PACKAGE_PIN H9  [get_ports {LCD_data[0]}]
+set_property PACKAGE_PIN K17 [get_ports {LCD_data[1]}]
+set_property PACKAGE_PIN J20 [get_ports {LCD_data[2]}]
+set_property PACKAGE_PIN M17 [get_ports {LCD_data[3]}]
+set_property PACKAGE_PIN L17 [get_ports {LCD_data[4]}]
+set_property PACKAGE_PIN L18 [get_ports {LCD_data[5]}]
+set_property PACKAGE_PIN L15 [get_ports {LCD_data[6]}]
+set_property PACKAGE_PIN M15 [get_ports {LCD_data[7]}]
+set_property PACKAGE_PIN M16 [get_ports {LCD_data[8]}]
+set_property PACKAGE_PIN L14 [get_ports {LCD_data[9]}]
+set_property PACKAGE_PIN M14 [get_ports {LCD_data[10]}]
+set_property PACKAGE_PIN F22 [get_ports {LCD_data[11]}]
+set_property PACKAGE_PIN G22 [get_ports {LCD_data[12]}]
+set_property PACKAGE_PIN G21 [get_ports {LCD_data[13]}]
+set_property PACKAGE_PIN H24 [get_ports {LCD_data[14]}]
+set_property PACKAGE_PIN J16 [get_ports {LCD_data[15]}]
 
-set_property PACKAGE_PIN J25 [get_ports lcd_nrst]
-set_property PACKAGE_PIN G24 [get_ports lcd_csel]
-set_property PACKAGE_PIN K8  [get_ports lcd_rd]
-set_property PACKAGE_PIN K16 [get_ports lcd_rs]
-set_property PACKAGE_PIN L8  [get_ports lcd_wr]
+set_property PACKAGE_PIN J25 [get_ports LCD_nrst]
+set_property PACKAGE_PIN G24 [get_ports LCD_csel]
+set_property PACKAGE_PIN K8  [get_ports LCD_rd]
+set_property PACKAGE_PIN K16 [get_ports LCD_rs]
+set_property PACKAGE_PIN L8  [get_ports LCD_wr]
 
-set_property PACKAGE_PIN J15 [get_ports lcd_lighton]
+set_property PACKAGE_PIN J15 [get_ports LCD_lighton]
 
 
 # DDR pins are not described here but in MIG IP
 
 
 # EJTAG
-set_property PACKAGE_PIN J18 [get_ports EJTAG_TRST]
-set_property PACKAGE_PIN K18 [get_ports EJTAG_TCK]
-set_property PACKAGE_PIN K20 [get_ports EJTAG_TDI]
-set_property PACKAGE_PIN K22 [get_ports EJTAG_TMS]
-set_property PACKAGE_PIN K21 [get_ports EJTAG_TDO]
+set_property PACKAGE_PIN J18 [get_ports EJTAG_trst]
+set_property PACKAGE_PIN K18 [get_ports EJTAG_tck]
+set_property PACKAGE_PIN K20 [get_ports EJTAG_tdi]
+set_property PACKAGE_PIN K22 [get_ports EJTAG_tms]
+set_property PACKAGE_PIN K21 [get_ports EJTAG_tdo]
 
 
 # misc
