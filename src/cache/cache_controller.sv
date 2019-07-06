@@ -3,7 +3,7 @@
 module cache_controller(
     // external logics
     input  wire        clk    ,
-	input  wire        rst_n  ,
+	input  wire        rst    ,
     // AXI AR signals
     output wire [3 :0] arid   ,
     output wire [31:0] araddr ,

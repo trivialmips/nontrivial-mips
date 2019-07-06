@@ -59,7 +59,7 @@ module nontrivial_mips_impl(
     cache_controller cache_controller_inst(
         .*, // connect all AXI signals
         .clk,
-        .rst_n(~rst),
+        .rst,
         .ibus(ibus_if.slave),
         .dbus(dbus_if.slave)
     );
@@ -67,8 +67,8 @@ module nontrivial_mips_impl(
     // initialization of CPU
     cpu_core cpu_core_inst(
         .clk,
-        .intr,
         .rst_n(~rst),
+        .intr,
         .ibus(ibus_if.master),
         .dbus(dbus_if.master)
     );
