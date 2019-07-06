@@ -12,29 +12,63 @@ module ctrl(
 	output logic flush_if,
 	output logic flush_id,
 	output logic flush_ex,
-	output logic flush_mm
+	output logic flush_mm,
+
+	input  fetch_entry_t     [`FETCH_NUM-1:0] fetch_entry,
+	input  pipeline_exec_t   [1:0] pipeline_exec,
+	input  branch_resolved_t [1:0] resolved_branch_i,
+	output branch_resolved_t resolved_branch_o
 );
 
 logic [3:0] stall, flush;
 assign { stall_if, stall_id, stall_ex, stall_mm } = stall;
 assign { flush_if, flush_id, flush_ex, flush_mm } = flush;
 
+logic [1:0] mispredict;
+for(genvar i = 0; i < 2; ++i) begin : gen_mispredict
+	assign mispredict[i] = resolved_branch_i[i].valid & resolved_branch_i[i].mispredict;
+end
+
+logic delayslot_not_exec;
+logic fetch_entry_avail, wait_delayslot, flush_mispredict;
+assign delayslot_not_exec = mispredict[1] | (mispredict[0] & ~pipeline_exec[1].valid);
+assign wait_delayslot = delayslot_not_exec & ~fetch_entry_avail;
+assign flush_mispredict = (|mispredict) & ~delayslot_not_exec;
+
+always_comb begin
+	fetch_entry_avail = 1'b0;
+	for(int i = 0; i < `FETCH_NUM; ++i)
+		fetch_entry_avail |= fetch_entry[i].valid;
+end
+
+always_comb begin
+	resolved_branch_o = '0;
+	for(int i = 0; i < 2; ++i) begin
+		if(resolved_branch_i[i].valid)
+			resolved_branch_o = resolved_branch_i[i];
+	end
+
+	if(wait_delayslot) resolved_branch_o = '0;
+end
+
+always_comb begin
+	flush = '0;
+	if(flush_mispredict) begin
+		flush = 4'b1100;
+	end
+end
+
 always_comb begin
 	if(~rst_n) begin
 		stall = 4'b1111;
-		flush = '0;
 	end else if(stall_from_mm) begin
 		stall = 4'b1111;
-		flush = 4'b0000;
-	end else if(stall_from_ex) begin
+	end else if(stall_from_ex | wait_delayslot) begin
 		stall = 4'b1110;
-		flush = 4'b0000;
 	end else if(stall_from_id) begin
 		stall = 4'b1100;
-		flush = 4'b0000;
 	end else begin
 		stall = '0;
-		flush = '0;
 	end
 end
 

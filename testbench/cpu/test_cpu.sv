@@ -4,6 +4,9 @@
 
 module test_cpu_tb();
 
+cpu_interrupt_t intr;
+assign intr = '0;
+
 logic rst_n, clk;
 cpu_clock clk_inst(.*);
 
@@ -63,10 +66,12 @@ task unittest(
 	dbus_inst.mem = '{ default: '0 };
 
 	path_counter = 0;
-	path = `PATH_PREFIX;
-	while(!$fopen({ path, name, ".ans"}, "r") && path_counter < 20) begin
-		path_counter++;
-		path = { "../", path };
+	if(!$fopen({ path, name, ".ans"}, "r")) begin
+		path = `PATH_PREFIX;
+		while(!$fopen({ path, name, ".ans"}, "r") && path_counter < 20) begin
+			path_counter++;
+			path = { "../", path };
+		end
 	end
 
 	begin 
@@ -106,6 +111,11 @@ task unittest(
 				judge(fans, cycle, out);
 			end 
 
+			if(pipe_wb[0].hiloreq.we) begin
+				$sformat(out, "$hilo=0x%x", pipe_wb[0].hiloreq.wdata);
+				judge(fans, cycle, out);
+			end 
+
 			if(dbus_we_delay && ~mem_access_path1) begin
 				$sformat(out, "[0x%x]=0x%x", dbus_addr_delay[15:0], dbus_data_delay);
 				judge(fans, cycle, out);
@@ -114,6 +124,11 @@ task unittest(
 			if(pipe_wb[1].rd != '0)
 			begin
 				$sformat(out, "$%0d=0x%x", pipe_wb[1].rd, pipe_wb[1].wdata);
+				judge(fans, cycle, out);
+			end 
+
+			if(pipe_wb[1].hiloreq.we) begin
+				$sformat(out, "$hilo=0x%x", pipe_wb[1].hiloreq.wdata);
 				judge(fans, cycle, out);
 			end 
 		end
@@ -127,6 +142,11 @@ initial
 begin
 	wait(rst_n == 1'b1);
 	unittest("inst_ori");
+	unittest("inst_logical");
+	unittest("inst_move");
+	unittest("inst_shift");
+	unittest("inst_jump");
+	// unittest("inst_multicyc");
 	$display("[Done]\n");
 	$finish;
 end

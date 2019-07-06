@@ -40,7 +40,7 @@ always_comb begin
 
 	// mispredict
 	if(resolved_branch.valid & resolved_branch.mispredict) begin
-		npc = resolved_branch.target;
+		npc = resolved_branch.taken ? resolved_branch.target : resolved_branch.pc + 32'd8;
 	end
 
 	// exception

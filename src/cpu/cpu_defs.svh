@@ -202,6 +202,7 @@ typedef struct packed {
 
 // pipeline data (EX -> MEM)
 typedef struct packed {
+	logic           valid;
 	virt_t          pc;
 	uint32_t        result;
 	logic           delayslot;

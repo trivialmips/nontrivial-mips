@@ -52,7 +52,11 @@ always_comb begin
 			if(ex_waddr[j] == pack_rs[i])
 				pack_reg_o[i] = ex_wdata[j];
 		end
+
+		if(pack_rs[i] == '0)
+			pack_reg_o[i] = '0;
 	end
+
 
 	if(decoded_instr.use_imm) begin
 		pack_reg_o[1] = { 16'b0, instr[15:0] };

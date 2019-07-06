@@ -43,6 +43,7 @@ fetch_entry_t [1:0]  if_fetch_entry;
 instr_fetch_memres_t icache_res;
 instr_fetch_memreq_t icache_req;
 branch_resolved_t resolved_branch;
+branch_resolved_t [`ISSUE_NUM-1:0] ex_resolved_branch;
 
 // MMU
 virt_t       mmu_inst_vaddr;
@@ -74,7 +75,10 @@ assign icache_res.iaddr_ex.illegal = mmu_inst_result.illegal;
 assign icache_res.iaddr_ex.invalid = mmu_inst_result.invalid;
 
 ctrl ctrl_inst(
-	.*
+	.*,
+	.fetch_entry       ( if_fetch_entry     ),
+	.resolved_branch_i ( ex_resolved_branch ),
+	.resolved_branch_o ( resolved_branch    )
 );
 
 regfile #(
@@ -143,6 +147,7 @@ instr_fetch #(
 decode_and_issue decode_issue_inst(
 	.fetch_entry  ( if_fetch_entry ),
 	.issue_num    ( if_fetch_ack   ),
+	.resolved_branch ( ex_resolved_branch ),
 	.pipeline_exec,
 	.pipeline_mem,
 	.pipeline_wb,
@@ -169,7 +174,6 @@ hilo_forward hilo_forward_inst(
 	.hilo_o  ( hilo_forward )
 );
 
-branch_resolved_t [`ISSUE_NUM-1:0] ex_resolved_branch;
 logic [`ISSUE_NUM-1:0] stall_req_ex;
 assign stall_from_ex = |stall_req_ex;
 for(genvar i = 0; i < `ISSUE_NUM; ++i) begin : gen_exec
@@ -185,14 +189,6 @@ for(genvar i = 0; i < `ISSUE_NUM; ++i) begin : gen_exec
 		.mmu_result ( mmu_data_result[i]   ),
 		.resolved_branch ( ex_resolved_branch[i] )
 	);
-end
-
-always_comb begin
-	resolved_branch = '0;
-	for(int i = 0; i < `ISSUE_NUM; ++i) begin
-		if(ex_resolved_branch[i].valid)
-			resolved_branch = ex_resolved_branch[i];
-	end
 end
 
 // pipeline between EX and MEM

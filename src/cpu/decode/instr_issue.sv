@@ -2,12 +2,13 @@
 
 // only support ISSUE_NUM == 2
 module instr_issue(
-	input  fetch_entry_t   [`ISSUE_NUM-1:0] fetch_entry,
-	input  decoded_instr_t [`ISSUE_NUM-1:0] id_decoded,
-	input  decoded_instr_t [`ISSUE_NUM-1:0] ex_decoded,
-	output decoded_instr_t [`ISSUE_NUM-1:0] issue_instr,
-	output logic [$clog2(`ISSUE_NUM+1)-1:0] issue_num,
-	output logic stall_req
+	input  fetch_entry_t     [`ISSUE_NUM-1:0] fetch_entry,
+	input  decoded_instr_t   [`ISSUE_NUM-1:0] id_decoded,
+	input  decoded_instr_t   [`ISSUE_NUM-1:0] ex_decoded,
+	input  branch_resolved_t last_resolved_branch,
+	output decoded_instr_t   [`ISSUE_NUM-1:0] issue_instr,
+	output logic   [$clog2(`ISSUE_NUM+1)-1:0] issue_num,
+	output logic   stall_req
 );
 
 logic instr2_not_taken;
@@ -62,7 +63,9 @@ assign instr2_not_taken =
       ~instr_valid[1]
    || is_data_related(id_decoded[0], id_decoded[1])
    || (mem_access[0] & mem_access[1])
-   || (hilo_access[0] & hilo_access[1]);
+   || (hilo_access[0] & hilo_access[1])
+      // delayslot
+   || (last_resolved_branch.valid & last_resolved_branch.mispredict);
 
 assign stall_req = (|load_related) | (instr_valid == '0);
 

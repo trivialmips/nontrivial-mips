@@ -27,6 +27,7 @@ assign result.ex     = ex;
 assign result.result = exec_ret;
 assign result.pc     = data.fetch.vaddr;
 assign result.eret   = (op == OP_ERET);
+assign result.valid  = data.valid;
 
 // unsigned register arithmetic
 uint32_t add_u, sub_u;
@@ -302,7 +303,7 @@ virt_t pc_plus4, pc_plus8;
 virt_t default_jump_j, default_jump_i;
 assign pc_plus4       = result.pc + 32'd4;
 assign pc_plus8       = result.pc + 32'd8;
-assign default_jump_i = pc_plus4 + extended_imm;
+assign default_jump_i = pc_plus4 + { {14{instr[15]}}, instr[15:0], 2'b0 };
 assign default_jump_j = { pc_plus4[31:28], instr[25:0], 2'b0 };
 assign reg_equal = (reg1 == reg2);
 

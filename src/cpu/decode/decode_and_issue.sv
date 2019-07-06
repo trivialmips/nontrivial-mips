@@ -2,6 +2,7 @@
 
 module decode_and_issue(
 	input  fetch_entry_t     [`ISSUE_NUM-1:0] fetch_entry,
+	input  branch_resolved_t [`ISSUE_NUM-1:0] resolved_branch,
 	input  pipeline_exec_t   [`ISSUE_NUM-1:0] pipeline_exec,
 	input  pipeline_memwb_t  [`ISSUE_NUM-1:0] pipeline_mem,
 	input  pipeline_memwb_t  [`ISSUE_NUM-1:0] pipeline_wb,
@@ -23,7 +24,7 @@ uint32_t    [`ISSUE_NUM - 1:0] ex_wdata, mm_wdata, wb_wdata;
 uint32_t    [`ISSUE_NUM * 2 - 1:0] reg_forward;
 
 for(genvar i = 0; i < `ISSUE_NUM; ++i) begin : gen_decoder
-	assign ex_decoded[i]  = pipeline_exec[i].decoded;
+	assign ex_decoded[i] = pipeline_exec[i].decoded;
 
 	decoder decoder_inst(
 		.instr         ( fetch_entry[i].instr ),
@@ -54,6 +55,7 @@ instr_issue issue_inst(
 	.fetch_entry,
 	.id_decoded ( decoded_instr ),
 	.ex_decoded,
+	.last_resolved_branch ( resolved_branch[`ISSUE_NUM-1] ),
 	.issue_instr,
 	.issue_num,
 	.stall_req
