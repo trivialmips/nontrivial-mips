@@ -2,9 +2,9 @@
 
 module nontrivial_mips_impl(
     // external signals
-    input  wire [6 :0] intr   ,
     input  wire        aclk   ,
-    input  wire        resetn ,
+    input  wire        reset_n,
+    input  wire [4 :0] intr   ,
     // AXI AR signals
     output wire [3 :0] arid   ,
     output wire [31:0] araddr ,
@@ -52,19 +52,23 @@ module nontrivial_mips_impl(
     cpu_ibus_if ibus_if();
     cpu_dbus_if dbus_if();
 
+    wire clk = aclk;
+    wire rst = ~reset_n;
+
     // initialization of cache
     cache_controller cache_controller_inst(
         .*, // connect all AXI signals
-        .clk(aclk),
-        .rst_n(resetn),
+        .clk,
+        .rst_n(~rst),
         .ibus(ibus_if.slave),
         .dbus(dbus_if.slave)
     );
 
     // initialization of CPU
     cpu_core cpu_core_inst(
-        .clk(aclk),
-        .rst_n(resetn),
+        .clk,
+        .intr,
+        .rst_n(~rst),
         .ibus(ibus_if.master),
         .dbus(dbus_if.master)
     );

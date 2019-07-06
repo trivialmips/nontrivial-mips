@@ -3,9 +3,9 @@
 
 module nontrivial_mips(
     // external signals
-    input  wire [6 :0] intr   ,
+    input  wire [4 :0] intr   ,
     input  wire        aclk   ,
-    input  wire        resetn ,
+    input  wire        reset_n,
     // AXI AR signals
     output wire [3 :0] arid   ,
     output wire [31:0] araddr ,
@@ -49,11 +49,14 @@ module nontrivial_mips(
     output wire        bready
 );
 
+    // negate the polarity of reset signal
+    wire reset = ~reset_n;
+
     // connect all signals as-is
     nontrivial_mips_impl cpu_impl(
         .intr   (intr   ),
         .aclk   (aclk   ),
-        .resetn (resetn ),
+        .reset_n(reset_n),
         .arid   (arid   ),
         .araddr (araddr ),
         .arlen  (arlen  ),

@@ -244,4 +244,6 @@ typedef struct packed {
 	logic invalid, miss, dirty, illegal;
 } mmu_result_t;
 
+typedef logic [4:0] cpu_interrupt_t;
+
 `endif
