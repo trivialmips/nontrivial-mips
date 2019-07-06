@@ -1,0 +1,14 @@
+skip
+skip
+skip
+$2=0x00800000
+skip
+$3=0x00000000
+$2=0x00001111
+$3=0x00001111
+skip
+skip
+skip
+skip
+$29=0x00000000
+$1=0x0000dead
