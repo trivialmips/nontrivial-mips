@@ -8,12 +8,17 @@
       "tool_version": "2018.3"
     },
     "design_tree": {
-      "loongson_cpu_gs232_0": ""
+      "loongson_cpu_gs232_0": "",
+      "confreg_0": ""
     },
     "components": {
       "loongson_cpu_gs232_0": {
         "vlnv": "loongson.cn:user:loongson_cpu_gs232:1.0",
         "xci_name": "bd_soc_loongson_cpu_gs232_0_0"
+      },
+      "confreg_0": {
+        "vlnv": "loongson.cn:user:confreg:1.0",
+        "xci_name": "bd_soc_confreg_0_0"
       }
     },
     "addressing": {
