@@ -7,7 +7,9 @@ module instr_mem (
 	output pipeline_memwb_t  result
 );
 
+oper_t op;
 uint32_t data_rd;
+assign op = data.decoded.op;
 assign data_rd = data.memreq.uncached ? uncached_rddata : cached_rddata;
 
 logic [1:0] addr_offset;

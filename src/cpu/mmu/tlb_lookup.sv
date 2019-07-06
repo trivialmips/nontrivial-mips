@@ -32,7 +32,6 @@ begin
 end
 
 for(genvar i = 0; i < `TLB_ENTRIES_NUM; i = i + 1) begin: gen_for_tlb_match
-	assign entries[i] = flat_entries[i * $bits(tlb_entry_t) +: $bits(tlb_entry_t)];
 	assign matched[i] = (
 		entries[i].vpn2 == virt_addr[31:13] &&
 		(entries[i].asid == asid || entries[i].G)

@@ -8,7 +8,7 @@ module dbus_mux(
 logic [`ISSUE_NUM-1:0] re, we, ce;
 data_memreq_t [`ISSUE_NUM-1:0] memreq;
 for(genvar i = 0; i < `ISSUE_NUM; ++i) begin : gen_flat_memreq
-	assign memreq[i] = data.memreq[i];
+	assign memreq[i] = data[i].memreq;
 	assign re[i] = memreq[i].read;
 	assign we[i] = memreq[i].write;
 	assign ce[i] = we[i] | re[i];

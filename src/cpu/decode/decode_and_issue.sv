@@ -15,8 +15,8 @@ module decode_and_issue(
 );
 
 logic           [`ISSUE_NUM-1:0] instr_valid;
-decoded_instr_t [`ISSUE_NUM-1:0] deocded_instr;
-decoded_instr_t [`ISSUE_NUM-1:0] ex_deocded;
+decoded_instr_t [`ISSUE_NUM-1:0] decoded_instr;
+decoded_instr_t [`ISSUE_NUM-1:0] ex_decoded;
 decoded_instr_t [`ISSUE_NUM-1:0] issue_instr;
 
 reg_addr_t  [`ISSUE_NUM - 1:0] ex_waddr, mm_waddr, wb_waddr;
@@ -54,7 +54,7 @@ end
 
 instr_issue issue_inst(
 	.instr_valid,
-	.id_decoded ( decoded_instr_t ),
+	.id_decoded ( decoded_instr ),
 	.ex_decoded,
 	.issue_instr,
 	.issue_num,

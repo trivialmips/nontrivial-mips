@@ -12,6 +12,10 @@
 `define TLB_ENTRIES_NUM      16
 `define BOOT_VEC             32'hbfc00000
 `define ENABLE_CPU_MMU       1
+`define BTB_SIZE             8
+`define BHT_SIZE             1024
+`define RAS_SIZE             8
+`define INSTR_FIFO_DEPTH     4
 
 /* cause register exc_code field */
 `define EXCCODE_INT   5'h00  // interrupt
@@ -123,7 +127,7 @@ typedef struct packed {
 } data_memreq_t;
 
 // operator
-typedef enum logic {
+typedef enum logic [6:0] {
 	/* shift */
 	OP_SLL, OP_SRL, OP_SRA, OP_SLLV, OP_SRLV, OP_SRAV,
 	/* unconditional jump (reg) */
@@ -154,6 +158,8 @@ typedef enum logic {
 	OP_LUI,
 	/* load */
 	OP_LB, OP_LH, OP_LWL, OP_LW, OP_LBU, OP_LHU, OP_LWR,
+	/* store */
+	OP_SB, OP_SH, OP_SWL, OP_SW, OP_SWR,
 	/* cache */
 	OP_CACHE,
 	/* LL/SC */

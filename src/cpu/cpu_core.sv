@@ -144,7 +144,7 @@ always_ff @(posedge clk or negedge rst_n) begin
 	end
 end
 
-resolved_branch [`ISSUE_NUM-1:0] ex_resolved_branch;
+branch_resolved_t [`ISSUE_NUM-1:0] ex_resolved_branch;
 logic [`ISSUE_NUM-1:0] stall_req_ex;
 assign stall_from_ex = |stall_req_ex;
 for(genvar i = 0; i < `ISSUE_NUM; ++i) begin : gen_exec

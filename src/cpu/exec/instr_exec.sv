@@ -33,7 +33,7 @@ assign add_u = reg1 + reg2;
 assign sub_u = reg1 - reg2;
 
 // overflow checking
-Bit_t ov_add, ov_sub;
+logic ov_add, ov_sub;
 assign ov_add = (reg1[31] == reg2[31]) & (reg1[31] ^ add_u[31]);
 assign ov_sub = (reg1[31] ^ reg2[31]) & (reg1[31] ^ sub_u[31]);
 
@@ -60,7 +60,7 @@ always_comb begin
 	result.decoded = data.decoded;
 	if(op == OP_MOVZ && reg2 != '0
 		|| op == OP_MOVN && reg2 == '0)
-		result.rd = '0;
+		result.decoded.rd = '0;
 end
 
 always_comb begin
@@ -106,7 +106,7 @@ end
 /* memory operation */
 uint32_t extended_imm, mem_wrdata;
 logic [3:0] mem_sel;
-assign extended_imm = { {16{instr[15]}, instr[15:0] };
+assign extended_imm = { {16{instr[15]}}, instr[15:0] };
 assign mmu_vaddr = reg1 + extended_imm;
 
 // TODO: LL/SC
@@ -125,16 +125,16 @@ always_comb begin
 			mem_sel = 4'b1111;
 		end
 		OP_LB, OP_LBU, OP_SB: begin
-			mem_wrdata = reg2 << (mem_vaddr[1:0] * 8);
-			mem_sel = 4'b0001 << mem_vaddr[1:0];
+			mem_wrdata = reg2 << (mmu_vaddr[1:0] * 8);
+			mem_sel = 4'b0001 << mmu_vaddr[1:0];
 		end
 		OP_LH, OP_LHU, OP_SH: begin
-			mem_wrdata = mem_vaddr[1] ? (reg2 << 16) : reg2;
-			mem_sel = mem_vaddr[1] ? 4'b1100 : 4'b0011;
+			mem_wrdata = mmu_vaddr[1] ? (reg2 << 16) : reg2;
+			mem_sel = mmu_vaddr[1] ? 4'b1100 : 4'b0011;
 		end
 		OP_LWL: begin
 			mem_wrdata = reg2;
-			unique case(mem_vaddr[1:0])
+			unique case(mmu_vaddr[1:0])
 				2'd0: mem_sel = 4'b1000;
 				2'd1: mem_sel = 4'b1100;
 				2'd2: mem_sel = 4'b1110;
@@ -143,7 +143,7 @@ always_comb begin
 		end
 		OP_LWR: begin
 			mem_wrdata = reg2;
-			unique case(mem_vaddr[1:0])
+			unique case(mmu_vaddr[1:0])
 				2'd0: mem_sel = 4'b1111;
 				2'd1: mem_sel = 4'b0111;
 				2'd2: mem_sel = 4'b0011;
@@ -152,8 +152,8 @@ always_comb begin
 		end
 		OP_SWL:
 		begin
-			mem_wrdata = reg2 >> ((3 - mem_vaddr[1:0]) * 8);
-			unique case(mem_vaddr[1:0])
+			mem_wrdata = reg2 >> ((3 - mmu_vaddr[1:0]) * 8);
+			unique case(mmu_vaddr[1:0])
 				2'd0: mem_sel = 4'b0001;
 				2'd1: mem_sel = 4'b0011;
 				2'd2: mem_sel = 4'b0111;
@@ -162,8 +162,8 @@ always_comb begin
 		end
 		OP_SWR:
 		begin
-			mem_wrdata = reg2 << (mem_vaddr[1:0] * 8);
-			unique case(mem_vaddr[1:0])
+			mem_wrdata = reg2 << (mmu_vaddr[1:0] * 8);
+			unique case(mmu_vaddr[1:0])
 				2'd0: mem_sel = 4'b1111;
 				2'd1: mem_sel = 4'b1110;
 				2'd2: mem_sel = 4'b1100;
@@ -191,9 +191,9 @@ always_comb begin
 	endcase
 	unique case(op)
 		OP_LW, OP_LL, OP_SW, OP_SC:
-			daddr_unaligned = mem_addr[0] | mem_addr[1];
+			daddr_unaligned = mmu_vaddr[0] | mmu_vaddr[1];
 		OP_LH, OP_LHU, OP_SH:
-			daddr_unaligned = mem_addr[0];
+			daddr_unaligned = mmu_vaddr[0];
 		default: daddr_unaligned = 1'b0;
 	endcase
 end
@@ -250,7 +250,7 @@ always_comb begin
 			default:;
 		endcase
 	end else if(|ex_mm) begin
-		ex.extra = mem_vaddr;
+		ex.extra = mmu_vaddr;
 		unique case(ex_mm)
 			3'b100: ex.exc_code = `EXCCODE_TLBS;
 			3'b010: ex.exc_code = `EXCCODE_ADES;

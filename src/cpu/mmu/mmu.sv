@@ -55,7 +55,7 @@ begin: generate_mmu_enabled_code
 
 	// note that dirty = 1 when writable
 	for(genvar i = 0; i < `ISSUE_NUM; ++i) begin : gen_data_result
-		assign data_mapped   = is_vaddr_mapped(data_vaddr[i]);
+		assign data_mapped[i]          = is_vaddr_mapped(data_vaddr[i]);
 		assign data_result[i].uncached = is_vaddr_uncached(data_vaddr[i]);
 		assign data_result[i].dirty    = (~data_mapped[i] | data_tlb_result[i].dirty);
 		assign data_result[i].miss     = (data_mapped[i] & data_tlb_result[i].miss);
@@ -67,7 +67,7 @@ begin: generate_mmu_enabled_code
 
 	tlb tlb_instance(
 		.clk,
-		.rst,
+		.rst_n,
 		.asid,
 		.inst_vaddr,
 		.data_vaddr,

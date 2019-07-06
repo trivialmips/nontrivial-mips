@@ -20,7 +20,7 @@ module tlb(
 	output uint32_t     tlbp_index
 );
 
-tlb_entry_t entries[`TLB_ENTRIES_NUM-1:0];
+tlb_entry_t [`TLB_ENTRIES_NUM-1:0] entries;
 assign tlbrw_rdata = entries[tlbrw_index];
 
 genvar i;
@@ -57,7 +57,7 @@ end
 
 tlb_result_t tlbp_result;
 tlb_lookup tlbp_lookup(
-	.flat_entries,
+	.entries,
 	.virt_addr(tlbp_entry_hi),
 	.asid(tlbp_entry_hi[7:0]),
 	.result(tlbp_result)
