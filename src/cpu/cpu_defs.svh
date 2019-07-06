@@ -126,6 +126,12 @@ typedef struct packed {
 	uint32_t wrdata;
 } data_memreq_t;
 
+// HILO register request
+typedef struct packed {
+	logic    we;
+	uint64_t wdata;
+} hilo_req_t;
+
 // operator
 typedef enum logic [6:0] {
 	/* shift */
@@ -201,6 +207,7 @@ typedef struct packed {
 	logic           delayslot;
 	logic           eret;
 	exception_t     ex;
+	hilo_req_t      hiloreq;
 	data_memreq_t   memreq;
 	decoded_instr_t decoded;
 } pipeline_exec_t;
@@ -209,6 +216,7 @@ typedef struct packed {
 typedef struct packed {
 	reg_addr_t   rd;
 	uint32_t     wdata;
+	hilo_req_t   hiloreq;
 } pipeline_memwb_t;
 
 // MMU/TLB

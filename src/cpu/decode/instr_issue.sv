@@ -2,7 +2,7 @@
 
 // only support ISSUE_NUM == 2
 module instr_issue(
-	input                  [`ISSUE_NUM-1:0] instr_valid,
+	input  fetch_entry_t   [`ISSUE_NUM-1:0] fetch_entry,
 	input  decoded_instr_t [`ISSUE_NUM-1:0] id_decoded,
 	input  decoded_instr_t [`ISSUE_NUM-1:0] ex_decoded,
 	output decoded_instr_t [`ISSUE_NUM-1:0] issue_instr,
@@ -11,7 +11,17 @@ module instr_issue(
 );
 
 logic instr2_not_taken;
-logic [`ISSUE_NUM-1:0] load_related, mem_access;
+logic [`ISSUE_NUM-1:0] instr_valid;
+logic [`ISSUE_NUM-1:0] load_related, mem_access, hilo_access;
+
+function logic is_hilo(
+	input uint32_t instr
+);
+	// MFHI, MTHI, MFLO, MTLO, MULT, MULTU, DIV, DIVU
+	return instr[31:26] == 6'b000000 && instr[5:4] == 2'b01 && instr[2] == 1'b0
+	// MADD, MADDU, MSUB, MSUBU
+	    || instr[31:26] == 6'b011100 && instr[5:3] == 3'b000 && instr[1] == 1'b0;
+endfunction
 
 function logic is_load_related(
 	input decoded_instr_t id,
@@ -31,8 +41,10 @@ function logic is_data_related(
 	);
 endfunction
 
-for(genvar i = 0; i < `ISSUE_NUM; ++i) begin : gen_mem_access
-	assign mem_access[i] = id_decoded[i].is_load | id_decoded[i].is_store;
+for(genvar i = 0; i < `ISSUE_NUM; ++i) begin : gen_access
+	assign mem_access[i]  = id_decoded[i].is_load | id_decoded[i].is_store;
+	assign instr_valid[i] = fetch_entry[i].valid;
+	assign hilo_access[i] = is_hilo(fetch_entry[i].instr);
 end
 
 always_comb begin
@@ -49,7 +61,8 @@ end
 assign instr2_not_taken = 
       ~instr_valid[1]
    || is_data_related(id_decoded[0], id_decoded[1])
-   || (mem_access[0] & mem_access[1]);
+   || (mem_access[0] & mem_access[1])
+   || (hilo_access[0] & hilo_access[1]);
 
 assign stall_req = (|load_related) | (instr_valid == '0);
 

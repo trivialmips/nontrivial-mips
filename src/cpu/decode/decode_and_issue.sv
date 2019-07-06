@@ -14,7 +14,6 @@ module decode_and_issue(
 	input  uint32_t    [`ISSUE_NUM * 2 - 1:0] reg_rdata
 );
 
-logic           [`ISSUE_NUM-1:0] instr_valid;
 decoded_instr_t [`ISSUE_NUM-1:0] decoded_instr;
 decoded_instr_t [`ISSUE_NUM-1:0] ex_decoded;
 decoded_instr_t [`ISSUE_NUM-1:0] issue_instr;
@@ -24,7 +23,6 @@ uint32_t    [`ISSUE_NUM - 1:0] ex_wdata, mm_wdata, wb_wdata;
 uint32_t    [`ISSUE_NUM * 2 - 1:0] reg_forward;
 
 for(genvar i = 0; i < `ISSUE_NUM; ++i) begin : gen_decoder
-	assign instr_valid[i] = fetch_entry[i].valid;
 	assign ex_decoded[i]  = pipeline_exec[i].decoded;
 
 	decoder decoder_inst(
@@ -53,7 +51,7 @@ for(genvar i = 0; i < `ISSUE_NUM; ++i) begin : gen_decoder
 end
 
 instr_issue issue_inst(
-	.instr_valid,
+	.fetch_entry,
 	.id_decoded ( decoded_instr ),
 	.ex_decoded,
 	.issue_instr,

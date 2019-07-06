@@ -24,6 +24,10 @@ reg_addr_t [3:0] reg_raddr;
 assign reg_we[0] = 1'b1;
 assign reg_we[1] = 1'b1;
 
+// HILO register
+hilo_req_t hilo_req;
+uint64_t   hilo_rddata;
+
 // pipeline data
 pipeline_decode_t [1:0] pipeline_decode, pipeline_decode_d;
 pipeline_exec_t   [1:0] pipeline_exec, pipeline_exec_d;
@@ -88,6 +92,14 @@ regfile #(
 	.rdata ( reg_rdata )
 );
 
+hilo hilo_inst(
+	.clk,
+	.rst_n,
+	.we     ( hilo_req.we    ),
+	.wrdata ( hilo_req.wdata ),
+	.rddata ( hilo_rddata    )
+);
+
 mmu mmu_inst(
 	.clk,
 	.rst_n,
@@ -148,6 +160,14 @@ always_ff @(posedge clk or negedge rst_n) begin
 	end
 end
 
+uint64_t hilo_forward;
+hilo_forward hilo_forward_inst(
+	.pipe_mm ( pipeline_mem ),
+	.pipe_wb ( pipeline_wb  ),
+	.hilo_i  ( hilo_rddata  ),
+	.hilo_o  ( hilo_forward )
+);
+
 branch_resolved_t [`ISSUE_NUM-1:0] ex_resolved_branch;
 logic [`ISSUE_NUM-1:0] stall_req_ex;
 assign stall_from_ex = |stall_req_ex;
@@ -156,6 +176,7 @@ for(genvar i = 0; i < `ISSUE_NUM; ++i) begin : gen_exec
 		.clk,
 		.rst_n,
 		.flush      ( flush_ex             ),
+		.hilo       ( hilo_forward         ),
 		.data       ( pipeline_decode_d[i] ),
 		.result     ( pipeline_exec[i]     ),
 		.stall_req  ( stall_req_ex[i]      ),
@@ -210,6 +231,14 @@ end
 for(genvar i = 0; i < `ISSUE_NUM; ++i) begin : gen_write_back
 	assign reg_waddr[i] = pipeline_wb[i].rd;
 	assign reg_wdata[i] = pipeline_wb[i].wdata;
+end
+
+always_comb begin
+	hilo_req = '0;
+	for(int i = 0; i < `ISSUE_NUM; ++i) begin
+		if(pipeline_wb[i].hiloreq.we)
+			hilo_req = pipeline_wb[i].hiloreq;
+	end
 end
 
 endmodule

@@ -5,6 +5,7 @@ module instr_exec (
 	input  logic    rst_n,
 	input  logic    flush,
 
+	input  uint64_t          hilo,
 	input  pipeline_decode_t data,
 	output pipeline_exec_t   result,
 	output branch_resolved_t resolved_branch,
@@ -21,7 +22,6 @@ assign reg1 = data.reg1;
 assign reg2 = data.reg2;
 assign instr = data.fetch.instr;
 assign op = data.decoded.op;
-assign stall_req = 1'b0;
 
 assign result.ex     = ex;
 assign result.result = exec_ret;
@@ -57,6 +57,19 @@ count_bit count_clo(
 	.count(clo_cnt)
 );
 
+// multi-cycle execution
+logic multi_cyc_busy;
+uint32_t mult_word;
+uint64_t multi_cyc_ret;
+multi_cycle_exec multi_cyc_instance(
+	.*,
+	.ret     ( multi_cyc_ret  ),
+	.is_busy ( multi_cyc_busy )
+);
+
+assign stall_req = multi_cyc_busy;
+
+// conditional move
 always_comb begin
 	result.decoded = data.decoded;
 	if(op == OP_MOVZ && reg2 != '0
@@ -64,6 +77,23 @@ always_comb begin
 		result.decoded.rd = '0;
 end
 
+// setup hilo request
+always_comb begin
+	result.hiloreq.we = 1'b1;
+	unique case(op)
+		OP_MTHI: result.hiloreq.wdata = { reg1, hilo[31:0]  };
+		OP_MTLO: result.hiloreq.wdata = { hilo[63:32], reg1 };
+		OP_MADDU, OP_MADD, OP_MSUBU, OP_MSUB,
+		OP_MULT, OP_MULTU, OP_DIV, OP_DIVU:
+			result.hiloreq.wdata = multi_cyc_ret;
+		default: begin
+			result.hiloreq.we    = 1'b0;
+			result.hiloreq.wdata = '0;
+		end
+	endcase
+end
+
+// setup execution result
 always_comb begin
 	exec_ret = '0;
 	unique case(op)
@@ -84,6 +114,11 @@ always_comb begin
 
 		/* move instructions */
 		OP_MOVZ, OP_MOVN: exec_ret = reg1;
+		OP_MFHI: exec_ret = hilo[63:32];
+		OP_MFLO: exec_ret = hilo[31:0];
+
+		/* multiplication */
+		OP_MUL: exec_ret = mult_word;
 
 		/* jump instructions */
 		OP_JAL, OP_BLTZAL, OP_BGEZAL, OP_JALR:
