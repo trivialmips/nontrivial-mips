@@ -1,3 +1,6 @@
+`ifndef IOBUF_HELPER_SVH
+`define IOBUF_HELPER_SVH
+
 `define IOBUF_GEN(IN, OUT) wire OUT``_i, OUT``_o, OUT``_t; \
 IOBUF IN``_buf ( \
     .IO(IN), \
@@ -22,3 +25,5 @@ generate \
 endgenerate
 
 `define IOBUF_GEN_VEC_SIMPLE(IN) `IOBUF_GEN_VEC(IN, IN)
+
+`endif

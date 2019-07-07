@@ -2,9 +2,9 @@
 `define CPU_DEFS_SVH
 `include "common_defs.svh"
 
-/*
+/**
 	This header defines data structures and constants used in CPU internally
-*/
+**/
 
 `define FETCH_NUM            2
 `define ISSUE_NUM            2
