@@ -138,30 +138,28 @@ endtask
 initial
 begin
 	wait(rst == 1'b0);
-	unittest("inst_ori");
-	unittest("inst_logical");
-	unittest("inst_move");
-	unittest("inst_shift");
-	unittest("inst_trap");
-	unittest("inst_arith");
-	unittest("inst_jump");
-	unittest("inst_mem_aligned");
-	unittest("inst_mem_unaligned");
-	unittest("inst_llsc");
-	unittest("inst_multicyc");
-	unittest("except");
-	unittest("except_delayslot");
-	unittest("interrupt");
-	unittest("timer");
-	unittest("usermode");
-	unittest("across_tlb1");
-	unittest("across_tlb2");
-	unittest("across_tlb3");
-	unittest("across_tlb4");
-	unittest("across_tlb5");
-	unittest("across_tlb6");
-
-
+	unittest("instr/ori");
+	unittest("instr/logical");
+	unittest("instr/move");
+	unittest("instr/shift");
+	unittest("instr/trap");
+	unittest("instr/arith");
+	unittest("instr/jump");
+	unittest("instr/mem_aligned");
+	unittest("instr/mem_unaligned");
+	unittest("instr/llsc");
+	unittest("instr/multicyc");
+	unittest("except/except");
+	unittest("except/delayslot");
+	unittest("except/interrupt");
+	unittest("except/timer");
+	unittest("sys/usermode");
+	unittest("across_tlb/1");
+	unittest("across_tlb/2");
+	unittest("across_tlb/3");
+	unittest("across_tlb/4");
+	unittest("across_tlb/5");
+	unittest("across_tlb/6");
 	// unittest("branch_loop");
 	$display("[Done]\n");
 	$finish;
