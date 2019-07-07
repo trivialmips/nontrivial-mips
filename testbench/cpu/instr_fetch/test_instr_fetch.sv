@@ -17,11 +17,11 @@ endmodule
 
 module test_instr_fetch();
 
-logic rst_n, clk;
-cpu_clock clk_inst(.rst_n, .clk);
+logic rst, clk;
+cpu_clock clk_inst(.rst, .clk);
 
 cpu_ibus_if ibus();
-fake_ibus ibus_inst(.clk, .rst_n, .ibus);
+fake_ibus ibus_inst(.clk, .rst, .ibus);
 
 logic flush_pc, flush_bp, stall;
 logic except_valid;
@@ -41,7 +41,7 @@ always_ff @(posedge clk) begin
 end
 
 always_comb begin
-	if(~rst_n) begin
+	if(rst) begin
 		fetch_ack = 0;
 	end else if(fetch_entry[0].valid) begin
 		fetch_ack = 1;
@@ -131,8 +131,8 @@ begin
 end
 
 begin
-	rst_n = 1'b0;
-	#50 rst_n = 1'b1;
+	rst = 1'b1;
+	#50 rst = 1'b0;
 end
 
 $display("======= unittest: %0s =======", name);
@@ -160,7 +160,7 @@ initial begin
 	except_vec = '0;
 	resolved_branch = '0;
 
-	wait(rst_n == 1'b1);
+	wait(rst == 1'b0);
 	unittest("jump");
 	unittest("jump_reg");
 	$finish;

@@ -4,7 +4,7 @@ module instr_queue #(
 	parameter int FIFO_DEPTH = 4
 )(
 	input  logic    clk,
-	input  logic    rst_n,
+	input  logic    rst,
 	input  logic    flush,
 	input  logic    stall_push,
 	input  logic    stall_pop,
@@ -54,7 +54,7 @@ multi_queue #(
 	.dtype   ( queue_data_t )
 ) multi_queue_inst (
 	.clk,
-	.rst_n,
+	.rst,
 	.flush,
 	.full,
 	.empty,

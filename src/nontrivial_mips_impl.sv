@@ -67,7 +67,7 @@ module nontrivial_mips_impl(
     // initialization of CPU
     cpu_core cpu_core_inst(
         .clk,
-        .rst_n(~rst),
+        .rst,
         .intr,
         .ibus(ibus_if.master),
         .dbus(dbus_if.master)

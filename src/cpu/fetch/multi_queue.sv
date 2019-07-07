@@ -7,7 +7,7 @@ module multi_queue #(
 	parameter type dtype                = logic [DATA_WIDTH-1:0]
 )(
 	input  logic  clk,
-	input  logic  rst_n,
+	input  logic  rst,
 	input  logic  flush,
 	input  logic  stall_push,
 	input  logic  stall_pop,
@@ -59,8 +59,8 @@ for(genvar i = 0; i < CHANNEL; ++i) begin : gen_rw_req
 end
 
 // update index
-always_ff @(posedge clk or negedge rst_n) begin
-	if(~rst_n || flush) begin
+always_ff @(posedge clk or posedge rst) begin
+	if(rst || flush) begin
 		read_ptr_now  <= '0;
 		write_ptr_now <= '0;
 	end else begin
@@ -77,7 +77,7 @@ for(genvar i = 0; i < CHANNEL; ++i) begin : gen_instr_fifo
 		.dtype       ( dtype      )
 	) instr_fifo (
 		.clk_i       ( clk   ),
-		.rst_ni      ( rst_n ),
+		.rst_i       ( rst   ),
 		.flush_i     ( flush ),
 		.testmode_i  ( 1'b0  ),
 		.full_o      ( queue_full[i]  ),

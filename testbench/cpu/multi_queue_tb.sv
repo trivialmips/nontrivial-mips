@@ -1,7 +1,7 @@
 `include "cpu_defs.svh"
 
 module multi_queue_tb();
-	logic rst_n, clk, flush;
+	logic rst, clk, flush;
 	logic full, empty;
 	typedef logic [7:0] data_t;
 	data_t [3:0] data_push, data_pop;
@@ -41,9 +41,9 @@ module multi_queue_tb();
 		data_push[2] = 3;
 		data_push[3] = 4;
 		flush = 1'b0;
-		rst_n = 1'b0;
+		rst = 1'b1;
 		clk = 1'b0;
-		#50 rst_n = 1'b1;
+		#50 rst = 1'b0;
 
 		display_and_check_data(data_pop, pop_valid, { -1, -1, -1, -1} );
 		push_num = 1;
@@ -87,7 +87,7 @@ module multi_queue_tb();
 		.CHANNEL    ( 4 )
 	) queue_inst (
 		.clk,
-		.rst_n,
+		.rst,
 		.flush,
 		.full,
 		.empty,

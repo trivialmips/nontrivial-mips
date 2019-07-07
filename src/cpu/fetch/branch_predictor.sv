@@ -6,7 +6,7 @@ module branch_predictor #(
 	parameter int RAS_SIZE = 8
 )(
 	input  logic   clk,
-	input  logic   rst_n,
+	input  logic   rst,
 	input  logic   flush,
 	input  logic   stall_s1,
 
@@ -157,7 +157,7 @@ bht #(
 	.ENTRIES_NUM ( BHT_SIZE )
 ) bht_inst (
 	.clk,
-	.rst_n,
+	.rst,
 	.flush,
 	.pc,
 	.update  ( bht_update  ),
@@ -168,7 +168,7 @@ btb #(
 	.ENTRIES_NUM ( BTB_SIZE )
 ) btb_inst (
 	.clk,
-	.rst_n,
+	.rst,
 	.flush,
 	.pc,
 	.update  ( btb_update  ),
@@ -179,7 +179,7 @@ ras #(
 	.ENTRIES_NUM ( RAS_SIZE )
 ) ras_inst (
 	.clk,
-	.rst_n,
+	.rst,
 	.flush,
 	.push_req   ( ~stall_s1 & ras_push ),
 	.pop_req    ( ~stall_s1 & ras_pop  ),

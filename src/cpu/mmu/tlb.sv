@@ -2,7 +2,7 @@
 
 module tlb(
 	input  logic        clk,
-	input  logic        rst_n,
+	input  logic        rst,
 	input  logic [7:0]  asid,
 	input  virt_t       inst_vaddr,
 	input  virt_t       [`ISSUE_NUM-1:0] data_vaddr,
@@ -27,8 +27,8 @@ genvar i;
 generate
 	for(i = 0; i < `TLB_ENTRIES_NUM; ++i)
 	begin: gen_for_tlb
-		always_ff @(posedge clk or negedge rst_n) begin
-			if(~rst_n)
+		always_ff @(posedge clk or posedge rst) begin
+			if(rst)
 			begin
 				entries[i] <= '0;
 			end else begin

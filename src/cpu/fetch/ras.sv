@@ -4,7 +4,7 @@ module ras #(
 	parameter int ENTRIES_NUM = 4
 )(
 	input  logic   clk,
-	input  logic   rst_n,
+	input  logic   rst,
 	input  logic   flush,
 	input  logic   push_req,
 	input  logic   pop_req,
@@ -38,8 +38,8 @@ always_comb begin
 	end
 end
 
-always_ff @(posedge clk or negedge rst_n) begin
-	if(~rst_n || flush) begin
+always_ff @(posedge clk or posedge rst) begin
+	if(rst || flush) begin
 		ras_now <= '0;
 	end else begin
 		ras_now <= ras_nxt;

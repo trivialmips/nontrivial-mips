@@ -4,7 +4,7 @@ module pc_generator #(
 	parameter int unsigned RESET_BASE = `BOOT_VEC
 )(
 	input  logic   clk,
-	input  logic   rst_n,
+	input  logic   rst,
 	input  logic   hold_pc,
 
 	// exception
@@ -49,8 +49,8 @@ always_comb begin
 	end
 end
 
-always_ff @(posedge clk or negedge rst_n) begin
-	if(~rst_n) begin
+always_ff @(posedge clk or posedge rst) begin
+	if(rst) begin
 		pc_now <= RESET_BASE;
 	end else if(~hold_pc) begin
 		pc_now <= npc;

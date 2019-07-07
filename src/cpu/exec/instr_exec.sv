@@ -2,7 +2,7 @@
 
 module instr_exec (
 	input  logic    clk,
-	input  logic    rst_n,
+	input  logic    rst,
 	input  logic    flush,
 
 	input  uint64_t          hilo,

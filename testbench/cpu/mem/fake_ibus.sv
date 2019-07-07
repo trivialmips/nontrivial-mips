@@ -5,7 +5,7 @@ module fake_ibus #(
 	parameter SIZE       = 8192
 )(
 	input logic clk,
-	input logic rst_n,
+	input logic rst,
 	cpu_ibus_if.slave ibus
 );
 
@@ -15,8 +15,8 @@ reg [DATA_WIDTH-1:0] mem[SIZE-1:0];
 logic pipe_read;
 virt_t pipe_addr;
 
-always_ff @(posedge clk or negedge rst_n) begin
-	if(~rst_n) begin
+always_ff @(posedge clk or posedge rst) begin
+	if(rst) begin
 		pipe_read <= 1'b0;
 		pipe_addr <= '0;
 	end else begin
@@ -27,7 +27,7 @@ end
 
 always_comb
 begin
-	if(~rst_n || ~pipe_read)
+	if(rst || ~pipe_read)
 	begin
 		ibus.stall  = 1'b0;
 		ibus.rddata = 'x;

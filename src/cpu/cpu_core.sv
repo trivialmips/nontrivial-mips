@@ -2,7 +2,7 @@
 
 module cpu_core(
 	input  logic           clk,
-	input  logic           rst_n,
+	input  logic           rst,
 	input  cpu_interrupt_t intr,
 	cpu_ibus_if.master     ibus,
 	cpu_dbus_if.master     dbus
@@ -90,7 +90,7 @@ regfile #(
 	.ZERO_KEEP   ( 1        )
 ) regfile_inst (
 	.clk,
-	.rst_n,
+	.rst,
 	.we    ( reg_we    ),
 	.wdata ( reg_wdata ),
 	.waddr ( reg_waddr ),
@@ -100,7 +100,7 @@ regfile #(
 
 hilo hilo_inst(
 	.clk,
-	.rst_n,
+	.rst,
 	.we     ( hilo_req.we    ),
 	.wrdata ( hilo_req.wdata ),
 	.rddata ( hilo_rddata    )
@@ -108,7 +108,7 @@ hilo hilo_inst(
 
 mmu mmu_inst(
 	.clk,
-	.rst_n,
+	.rst,
 	.asid(cp0_asid),
 	.is_user_mode(cp0_user_mode),
 	.inst_vaddr(mmu_inst_vaddr),
@@ -132,7 +132,7 @@ instr_fetch #(
 	.INSTR_FIFO_DEPTH ( `INSTR_FIFO_DEPTH )
 ) instr_fetch_inst (
 	.clk,
-	.rst_n,
+	.rst,
 	.flush_pc     ( flush_if        ),
 	.flush_bp     ( 1'b0            ),
 	.stall_s2     ( stall_if        ),
@@ -160,8 +160,8 @@ decode_and_issue decode_issue_inst(
 );
 
 // pipeline between ID and EX
-always_ff @(posedge clk or negedge rst_n) begin
-	if(~rst_n || flush_id || (stall_id && ~stall_ex)) begin
+always_ff @(posedge clk or posedge rst) begin
+	if(rst || flush_id || (stall_id && ~stall_ex)) begin
 		pipeline_decode_d <= '0;
 	end else if(~stall_id) begin
 		pipeline_decode_d <= pipeline_decode;
@@ -181,7 +181,7 @@ assign stall_from_ex = |stall_req_ex;
 for(genvar i = 0; i < `ISSUE_NUM; ++i) begin : gen_exec
 	instr_exec exec_inst(
 		.clk,
-		.rst_n,
+		.rst,
 		.flush      ( flush_ex             ),
 		.hilo       ( hilo_forward         ),
 		.data       ( pipeline_decode_d[i] ),
@@ -194,8 +194,8 @@ for(genvar i = 0; i < `ISSUE_NUM; ++i) begin : gen_exec
 end
 
 // pipeline between EX and MEM
-always_ff @(posedge clk or negedge rst_n) begin
-	if(~rst_n || flush_ex || (stall_ex && ~stall_mm)) begin
+always_ff @(posedge clk or posedge rst) begin
+	if(rst || flush_ex || (stall_ex && ~stall_mm)) begin
 		pipeline_exec_d <= '0;
 	end else if(~stall_ex) begin
 		pipeline_exec_d <= pipeline_exec;
@@ -218,8 +218,8 @@ for(genvar i = 0; i < `ISSUE_NUM; ++i) begin : gen_mem
 end
 
 // pipeline between MEM and WB
-always_ff @(posedge clk or negedge rst_n) begin
-	if(~rst_n || flush_mm || stall_mm) begin
+always_ff @(posedge clk or posedge rst) begin
+	if(rst || flush_mm || stall_mm) begin
 		pipeline_mem_d <= '0;
 	end else if(~stall_mm) begin
 		pipeline_mem_d <= pipeline_mem;

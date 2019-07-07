@@ -2,7 +2,7 @@
 
 module mmu(
 	input  logic        clk,
-	input  logic        rst_n,
+	input  logic        rst,
 	input  logic [7:0]  asid,
 	input  logic        is_user_mode,
 	input  virt_t       inst_vaddr,
@@ -67,7 +67,7 @@ begin: generate_mmu_enabled_code
 
 	tlb tlb_instance(
 		.clk,
-		.rst_n,
+		.rst,
 		.asid,
 		.inst_vaddr,
 		.data_vaddr,

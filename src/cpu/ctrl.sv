@@ -1,7 +1,7 @@
 `include "cpu_defs.svh"
 
 module ctrl(
-	input  logic rst_n,
+	input  logic rst,
 	input  logic stall_from_id,
 	input  logic stall_from_ex,
 	input  logic stall_from_mm,
@@ -62,7 +62,7 @@ always_comb begin
 end
 
 always_comb begin
-	if(~rst_n) begin
+	if(rst) begin
 		stall = 4'b1111;
 	end else if(stall_from_mm) begin
 		stall = 4'b1111;

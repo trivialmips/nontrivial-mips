@@ -6,7 +6,7 @@ module regfile #(
 	parameter int ZERO_KEEP   = 1   // regs[0:ZERO_KEEP-1] = 0
 )(
 	input  logic clk,
-	input  logic rst_n,
+	input  logic rst,
 
 	input  logic [WRITE_PORTS-1:0]                      we,
 	input  logic [WRITE_PORTS-1:0][DATA_WIDTH-1:0]      wdata,
@@ -34,8 +34,8 @@ always_comb begin
 	end
 end
 
-always_ff @(posedge clk or negedge rst_n) begin
-	if(~rst_n) begin
+always_ff @(posedge clk or posedge rst) begin
+	if(rst) begin
 		regs <= '0;
 	end else begin
 		regs <= regs_new;

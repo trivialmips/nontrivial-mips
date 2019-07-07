@@ -8,7 +8,7 @@ module instr_fetch #(
 	parameter int INSTR_FIFO_DEPTH = 4
 )(
 	input  logic    clk,
-	input  logic    rst_n,
+	input  logic    rst,
 	input  logic    flush_pc,
 	input  logic    flush_bp,
 
@@ -49,8 +49,8 @@ always_comb begin
 	resolved_branch.valid &= ~hold_resolved_branch_d;
 end
 
-always_ff @(posedge clk or negedge rst_n) begin
-	if(~rst_n || flush_pc) begin
+always_ff @(posedge clk or posedge rst) begin
+	if(rst || flush_pc) begin
 		hold_resolved_branch_d <= 1'b0;
 	end else begin
 		hold_resolved_branch_d <= hold_resolved_branch;
@@ -113,7 +113,7 @@ pc_generator #(
 	.RESET_BASE ( RESET_BASE )
 ) pc_gen_inst (
 	.clk,
-	.rst_n,
+	.rst,
 	.hold_pc,
 	.except_valid,
 	.except_vec,
@@ -125,8 +125,8 @@ pc_generator #(
 );
 
 /* ==== pipline stage 1 and 2 ==== */
-always_ff @(posedge clk or negedge rst_n) begin
-	if(~rst_n || flush_pc) begin
+always_ff @(posedge clk or posedge rst) begin
+	if(rst || flush_pc) begin
 		fetch_vaddr_d   <= '0;
 		predict_vaddr_d <= '0;
 		predict_valid_d <= '0;
@@ -139,8 +139,8 @@ always_ff @(posedge clk or negedge rst_n) begin
 	end
 end
 
-always_ff @(posedge clk or negedge rst_n) begin
-	invalid_push <= ~rst_n | flush_que;
+always_ff @(posedge clk or posedge rst) begin
+	invalid_push <= rst | flush_que;
 end
 
 /* ==== stage 2 ====
@@ -198,7 +198,7 @@ branch_predictor #(
 	.RAS_SIZE ( RAS_SIZE )
 ) bp_inst (
 	.clk,
-	.rst_n,
+	.rst,
 	.flush           ( flush_bp              ),
 	.stall_s1        ( hold_pc               ),
 	.pc              ( aligned_fetch_vaddr_d ),
@@ -215,7 +215,7 @@ instr_queue #(
 	.FIFO_DEPTH ( INSTR_FIFO_DEPTH )
 ) ique_inst (
 	.clk,
-	.rst_n,
+	.rst,
 	.flush      ( flush_que   ),
 	.stall_push ( hold_pc     ),
 	.stall_pop  ( stall_s2    ),

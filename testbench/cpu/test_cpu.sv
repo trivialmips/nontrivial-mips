@@ -7,7 +7,7 @@ module test_cpu_tb();
 cpu_interrupt_t intr;
 assign intr = '0;
 
-logic rst_n, clk;
+logic rst, clk;
 cpu_clock clk_inst(.*);
 
 cpu_ibus_if ibus();
@@ -88,8 +88,8 @@ task unittest(
 	end
 
 	begin
-		rst_n = 1'b0;
-		#50 rst_n = 1'b1;
+		rst = 1'b1;
+		#50 rst = 1'b0;
 	end
 
 	$display("======= unittest: %0s =======", name);
@@ -140,7 +140,7 @@ endtask
 
 initial
 begin
-	wait(rst_n == 1'b1);
+	wait(rst == 1'b0);
 	unittest("inst_ori");
 	unittest("inst_logical");
 	unittest("inst_move");

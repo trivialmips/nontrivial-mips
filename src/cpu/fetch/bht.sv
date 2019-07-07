@@ -4,7 +4,7 @@ module bht #(
 	parameter int ENTRIES_NUM = 1024
 )(
 	input  logic         clk,
-	input  logic         rst_n,
+	input  logic         rst,
 	input  logic         flush,
 
 	input  virt_t        pc,
@@ -72,8 +72,8 @@ always_comb begin
 end
 
 // update prediction
-always_ff @(posedge clk or negedge rst_n) begin
-	if(~rst_n) begin
+always_ff @(posedge clk or posedge rst) begin
+	if(rst) begin
 		for(int i = 0; i < ROW_NUM; ++i) begin
 			bht_now[i] <= '{default: 0};
 		end

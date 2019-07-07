@@ -2,7 +2,7 @@
 
 module multi_cycle_exec(
 	input  logic     clk,
-	input  logic     rst_n,
+	input  logic     rst,
 	input  logic     flush,
 	input  oper_t    op,
 	input  uint32_t  reg1,
@@ -19,8 +19,8 @@ parameter DIV_CYC = 36;
 logic [5:0] cyc_number;
 logic [DIV_CYC:0] cyc_stage;
 assign is_busy = (cyc_number != 1 && ~cyc_stage[0]);
-always @(posedge clk or negedge rst_n) begin
-	if(~rst_n || flush) begin
+always @(posedge clk or posedge rst) begin
+	if(rst || flush) begin
 		cyc_stage <= 0;
 	end else if(cyc_stage != 0) begin
 		cyc_stage <= cyc_stage >> 1;
@@ -31,7 +31,7 @@ end
 
 always_comb
 begin
-	if(~rst_n || flush) begin
+	if(rst || flush) begin
 		cyc_number = 1;
 	end else begin
 		unique case(op)

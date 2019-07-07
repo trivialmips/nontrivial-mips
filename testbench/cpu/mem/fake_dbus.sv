@@ -5,7 +5,7 @@ module fake_dbus #(
 	parameter SIZE       = 8192
 )(
 	input logic clk,
-	input logic rst_n,
+	input logic rst,
 	cpu_dbus_if.slave dbus
 );
 
@@ -21,8 +21,8 @@ assign wrdata = {
 	dbus.byteenable[0] ? dbus.wrdata[7:0] : rddata[7:0]
 };
 
-always_ff @(posedge clk or negedge rst_n) begin
-	if(rst_n) begin
+always_ff @(posedge clk or negedge rst) begin
+	if(rst) begin
 		if(dbus.write | dbus.uncached_write) begin
 			mem[dbus.address[ADDR_WIDTH-1:2]] <= wrdata;
 		end
@@ -31,7 +31,7 @@ end
 
 always_comb
 begin
-	if(~rst_n || ~dbus.read && ~dbus.uncached_read)
+	if(rst || ~dbus.read && ~dbus.uncached_read)
 	begin
 		dbus.stall  = 1'b0;
 		dbus.rddata = 'x;
