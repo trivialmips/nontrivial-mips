@@ -31,7 +31,7 @@ always_comb begin
 	decoded_instr.op       = OP_SLL;
 	decoded_instr.use_imm  = 1'b0;
 	decoded_instr.is_load  = 1'b0;
-	decoded_instr.is_priv  = 1'b0;
+	decoded_instr.is_priv  = opcode == 6'b101111 || opcode == 6'b010000;
 	decoded_instr.is_store = 1'b0;
 	decoded_instr.is_controlflow = is_branch | is_jump_i | is_jump_r;
 
@@ -205,6 +205,30 @@ always_comb begin
 		6'b00001?: begin // jump and link
 			decoded_instr.rd  = {$bits(reg_addr_t){opcode[0]}};
 			decoded_instr.op  = OP_JAL;
+		end
+
+		6'b010000: begin // COP0
+			unique case(instr[25:21])
+				5'b00000: begin
+					decoded_instr.op = OP_MFC0;
+					decoded_instr.rd = rt;
+				end
+				5'b00100: begin
+					decoded_instr.op  = OP_MFC0;
+					decoded_instr.rs1 = rt;
+				end
+				5'b10000: begin
+					unique case(instr[5:0])
+						6'b000001: decoded_instr.op = OP_TLBR;
+						6'b000010: decoded_instr.op = OP_TLBWI;
+						6'b000110: decoded_instr.op = OP_TLBWR;
+						6'b001000: decoded_instr.op = OP_TLBP;
+						6'b011000: decoded_instr.op = OP_ERET;
+						default: decoded_instr.op = OP_INVALID;
+					endcase
+				end
+				default: decoded_instr.op = OP_INVALID;
+			endcase
 		end
 
 		default: decoded_instr.op = OP_INVALID;

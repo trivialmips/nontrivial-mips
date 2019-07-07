@@ -33,6 +33,7 @@
 `define EXCCODE_FPE   5'h0f  // floating point exception
 
 typedef logic [$clog2(`REG_NUM)-1:0] reg_addr_t;
+typedef logic [4:0] cpu_interrupt_t;
 
 // exception
 typedef struct packed {
@@ -44,6 +45,14 @@ typedef struct packed {
 	logic [4:0] exc_code;
 	uint32_t extra;
 } exception_t;
+
+typedef struct packed {
+	logic valid, delayslot, eret;
+	logic alpha_taken;
+	logic [4:0] code;
+	virt_t pc, except_vec;
+	uint32_t extra;
+} except_req_t;
 
 // control flow type
 typedef enum logic [1:0] {
@@ -131,6 +140,14 @@ typedef struct packed {
 	uint64_t wdata;
 } hilo_req_t;
 
+// CP0 requests
+typedef struct packed {
+	logic       we;
+	reg_addr_t  waddr;
+	logic [2:0] wsel;
+	uint32_t    wdata;
+} cp0_req_t;
+
 // operator
 typedef enum logic [6:0] {
 	/* shift */
@@ -165,14 +182,13 @@ typedef enum logic [6:0] {
 	OP_LB, OP_LH, OP_LWL, OP_LW, OP_LBU, OP_LHU, OP_LWR,
 	/* store */
 	OP_SB, OP_SH, OP_SWL, OP_SW, OP_SWR,
-	/* cache */
-	OP_CACHE,
 	/* LL/SC */
 	OP_LL, OP_SC,
 	/* long jump */
 	OP_JAL,
-	/* eret */
-	OP_ERET,
+	/* privileged instructions */
+	OP_CACHE, OP_ERET, OP_MFC0, OP_MTC0,
+	OP_TLBP, OP_TLBR, OP_TLBWI, OP_TLBWR, OP_WAIT,
 	/* invalid */
 	OP_INVALID
 } oper_t;
@@ -189,6 +205,11 @@ typedef struct packed {
 	logic  is_store;        // store data
 	logic  is_priv;         // privileged instructions
 } decoded_instr_t;
+
+// TLB requests
+typedef struct packed {
+	logic probe, read, tlbwr, tlbwi;
+} tlb_request_t;
 
 // pipeline data (ID -> EX)
 typedef struct packed {
@@ -210,13 +231,17 @@ typedef struct packed {
 	hilo_req_t      hiloreq;
 	data_memreq_t   memreq;
 	decoded_instr_t decoded;
+	tlb_request_t   tlbreq;
+	cp0_req_t       cp0_req;
 } pipeline_exec_t;
 
 // pipeline data (MEM -> WB)
 typedef struct packed {
-	reg_addr_t   rd;
-	uint32_t     wdata;
-	hilo_req_t   hiloreq;
+	reg_addr_t     rd;
+	uint32_t       wdata;
+	hilo_req_t     hiloreq;
+	tlb_request_t  tlbreq;
+	cp0_req_t      cp0_req;
 } pipeline_memwb_t;
 
 // MMU/TLB
@@ -244,6 +269,48 @@ typedef struct packed {
 	logic invalid, miss, dirty, illegal;
 } mmu_result_t;
 
-typedef logic [4:0] cpu_interrupt_t;
+// CP0 registers
+typedef struct packed {
+	logic cu3, cu2, cu1, cu0;
+	logic rp, fr, re, mx;
+	logic px, bev, ts, sr;
+	logic nmi, zero;
+	logic [1:0] impl;
+	logic [7:0] im;
+	logic kx, sx, ux, um;
+	logic r0, erl, exl, ie;
+} cp0_status_t;
+
+typedef struct packed {
+	logic bd, zero30;
+	logic [1:0] ce;
+	logic [3:0] zero27_24;
+	logic iv, wp;
+	logic [5:0] zero21_16;
+	logic [7:0] ip;
+	logic zero7;
+	logic [4:0] exc_code;
+	logic [1:0] zero1_0;
+} cp0_cause_t;
+
+typedef struct packed {
+	uint32_t ebase, config1;
+	/* The order of the following registers is important.
+	 * DO NOT change them. New registers must be added 
+	 * BEFORE this comment */
+	/* primary 32 registers (sel = 0) */
+	uint32_t 
+	 desave,    error_epc,  tag_hi,     tag_lo,    
+	 cache_err, err_ctl,    perf_cnt,   depc,      
+	 debug,     impl_lfsr32,  reserved21, reserved20,
+	 watch_hi,  watch_lo,   ll_addr,    config0,   
+	 prid,      epc;
+	cp0_cause_t  cause;
+	cp0_status_t status;
+	uint32_t
+	 compare,   entry_hi,   count,      bad_vaddr, 
+	 reserved7, wired,      page_mask,  context_,  
+	 entry_lo1, entry_lo0,  random,     index;
+} cp0_regs_t;
 
 `endif

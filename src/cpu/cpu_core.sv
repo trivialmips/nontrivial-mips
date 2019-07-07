@@ -58,10 +58,15 @@ tlb_entry_t  tlbrw_rdata;
 uint32_t     tlbp_index;
 
 // CP0
-logic [7:0] cp0_asid;
-logic    cp0_user_mode;
-uint32_t cp0_entry_hi;
-assign cp0_user_mode = 1'b0;  // TODO: set correct value
+logic [7:0]  cp0_asid;
+cp0_regs_t   cp0_regs;
+reg_addr_t   cp0_raddr;
+logic [2:0]  cp0_rsel;
+cp0_req_t    cp0_reg_wr;
+uint32_t     cp0_rdata;
+logic        cp0_user_mode;
+logic        cp0_timer_int;
+except_req_t except_req;
 
 /* setup I$ request/response */
 assign mmu_inst_vaddr   = icache_req.vaddr;
@@ -121,7 +126,7 @@ mmu mmu_inst(
 	.tlbrw_wdata,
 	.tlbrw_rdata,
 
-	.tlbp_entry_hi(cp0_entry_hi),
+	.tlbp_entry_hi(cp0_regs.entry_hi),
 	.tlbp_index
 );
 
@@ -176,19 +181,32 @@ hilo_forward hilo_forward_inst(
 	.hilo_o  ( hilo_forward )
 );
 
+uint32_t ex_cp0_rdata;
+logic [`ISSUE_NUM-1:0][2:0] ex_cp0_rsel;
+reg_addr_t [`ISSUE_NUM-1:0] ex_cp0_raddr;
 logic [`ISSUE_NUM-1:0] stall_req_ex;
 assign stall_from_ex = |stall_req_ex;
+// only pipeline 0 will access CP0
+assign cp0_rsel  = ex_cp0_rsel[0];
+assign cp0_raddr = ex_cp0_raddr[0];
+
 for(genvar i = 0; i < `ISSUE_NUM; ++i) begin : gen_exec
 	instr_exec exec_inst(
 		.clk,
 		.rst,
-		.flush      ( flush_ex             ),
-		.hilo       ( hilo_forward         ),
-		.data       ( pipeline_decode_d[i] ),
-		.result     ( pipeline_exec[i]     ),
-		.stall_req  ( stall_req_ex[i]      ),
-		.mmu_vaddr  ( mmu_data_vaddr[i]    ),
-		.mmu_result ( mmu_data_result[i]   ),
+		.flush       ( flush_ex                ),
+		.hilo        ( hilo_forward            ),
+		.data        ( pipeline_decode_d[i]    ),
+		.result      ( pipeline_exec[i]        ),
+		.stall_req   ( stall_req_ex[i]         ),
+		.mmu_vaddr   ( mmu_data_vaddr[i]       ),
+		.mmu_result  ( mmu_data_result[i]      ),
+		.is_usermode ( cp0_user_mode           ),
+		.mm_cp0_req  ( pipeline_mem[0].cp0_req ),
+		.wb_cp0_req  ( pipeline_wb[0].cp0_req  ),
+		.cp0_rdata_i ( ex_cp0_rdata            ),
+		.cp0_rsel    ( ex_cp0_rsel[i]          ),
+		.cp0_raddr   ( ex_cp0_raddr[i]         ),
 		.resolved_branch ( ex_resolved_branch[i] )
 	);
 end
@@ -239,5 +257,41 @@ always_comb begin
 			hilo_req = pipeline_wb[i].hiloreq;
 	end
 end
+
+// CP0
+cp0 cp0_inst(
+	.clk,
+	.rst,
+	.raddr     ( cp0_raddr     ),
+	.rsel      ( cp0_rsel      ),
+	.wreq      ( cp0_reg_wr    ),
+	.except_req,
+
+	.tlbp_res  ( tlbp_index    ),
+	.tlbr_res  ( tlbrw_rdata   ),
+	.tlbp_req  ( pipeline_wb[0].tlbreq.probe ),
+	.tlbr_req  ( pipeline_wb[0].tlbreq.read  ),
+	.tlbwr_req ( pipeline_wb[0].tlbreq.tlbwr ),
+
+	.rdata     ( cp0_rdata     ),
+	.regs      ( cp0_regs      ),
+	.asid      ( cp0_asid      ),
+	.user_mode ( cp0_user_mode ),
+	.timer_int ( cp0_timer_int )
+);
+
+assign tlbrw_we    = pipeline_wb[0].tlbreq.tlbwi | pipeline_wb[0].tlbreq.tlbwr;
+assign tlbrw_index = pipeline_wb[0].tlbreq.tlbwi ? cp0_regs.index : cp0_regs.random;
+assign tlbrw_wdata.vpn2 = cp0_regs.entry_hi[31:13];
+assign tlbrw_wdata.asid = cp0_regs.entry_hi[7:0];
+assign tlbrw_wdata.pfn1 = cp0_regs.entry_lo1[29:6];
+assign tlbrw_wdata.c1   = cp0_regs.entry_lo1[5:3];
+assign tlbrw_wdata.d1   = cp0_regs.entry_lo1[2];
+assign tlbrw_wdata.v1   = cp0_regs.entry_lo1[1];
+assign tlbrw_wdata.pfn0 = cp0_regs.entry_lo0[29:6];
+assign tlbrw_wdata.c0   = cp0_regs.entry_lo0[5:3];
+assign tlbrw_wdata.d0   = cp0_regs.entry_lo0[2];
+assign tlbrw_wdata.v0   = cp0_regs.entry_lo0[1];
+assign tlbrw_wdata.G    = cp0_regs.entry_lo0[0];
 
 endmodule

@@ -11,6 +11,13 @@ module instr_exec (
 	output branch_resolved_t resolved_branch,
 	output logic             stall_req,
 
+	input  logic        is_usermode,
+	input  cp0_req_t    mm_cp0_req,
+	input  cp0_req_t    wb_cp0_req,
+	input  uint32_t     cp0_rdata_i,
+	output logic [2:0]  cp0_rsel,
+	output reg_addr_t   cp0_raddr,
+
 	output virt_t       mmu_vaddr,
 	input  mmu_result_t mmu_result
 );
@@ -26,8 +33,12 @@ assign op = data.decoded.op;
 assign result.ex     = ex;
 assign result.result = exec_ret;
 assign result.pc     = data.fetch.vaddr;
-assign result.eret   = (op == OP_ERET);
 assign result.valid  = data.valid;
+assign result.eret   = (op == OP_ERET);
+assign result.tlbreq.probe = (op == OP_TLBP);
+assign result.tlbreq.read  = (op == OP_TLBR);
+assign result.tlbreq.tlbwr = (op == OP_TLBWR);
+assign result.tlbreq.tlbwi = (op == OP_TLBWI);
 
 // unsigned register arithmetic
 uint32_t add_u, sub_u;
@@ -94,6 +105,42 @@ always_comb begin
 	endcase
 end
 
+// CP0 operation
+uint32_t cp0_wmask, cp0_rdata;
+cp0_write_mask cp0_write_mask_inst(
+	.rst,
+	.sel  ( cp0_rsel  ),
+	.addr ( cp0_raddr ),
+	.mask ( cp0_wmask )
+);
+
+function logic cp0_match(
+	input cp0_req_t   req,
+	input reg_addr_t  addr,
+	input logic [2:0] sel
+);
+	return req.we && req.waddr == addr && req.wsel == sel;
+endfunction
+
+always_comb begin
+	if(rst) begin
+		cp0_rdata = '0;
+	end else if(cp0_match(wb_cp0_req, cp0_raddr, cp0_rsel)) begin
+		cp0_rdata = (cp0_wmask & wb_cp0_req.wdata) | (~cp0_wmask & cp0_rdata_i);
+	end else if(cp0_match(mm_cp0_req, cp0_raddr, cp0_rsel)) begin
+		cp0_rdata = (cp0_wmask & mm_cp0_req.wdata) | (~cp0_wmask & cp0_rdata_i);
+	end else begin
+		cp0_rdata = cp0_rdata_i;
+	end
+end
+
+assign cp0_raddr = instr[15:11];
+assign cp0_rsel  = instr[2:0];
+assign result.cp0_req.we    = (op == OP_MTC0);
+assign result.cp0_req.wdata = reg1;
+assign result.cp0_req.waddr = instr[15:11];
+assign result.cp0_req.wsel  = instr[2:0];
+
 // setup execution result
 always_comb begin
 	exec_ret = '0;
@@ -136,6 +183,9 @@ always_comb begin
 		/* compare and set */
 		OP_SLTU: exec_ret = { 30'b0, unsigned_lt };
 		OP_SLT:  exec_ret = { 30'b0, signed_lt   };
+
+		/* read coprocessers */
+		OP_MFC0: exec_ret = cp0_rdata;
 		default: exec_ret = '0;
 	endcase
 end
@@ -250,7 +300,7 @@ assign ex_ex = {
 	op == OP_BREAK,
 	op == OP_SYSCALL,
 	((op == OP_ADD) & ov_add) | ((op == OP_SUB) & ov_sub),
-	data.decoded.is_priv
+	data.decoded.is_priv & is_usermode
 };
 
 assign invalid_instr = (op == OP_INVALID);

@@ -108,8 +108,8 @@ module fifo_v3 #(
     end
 
     // sequential process
-    always_ff @(posedge clk_i or posedge rst) begin
-        if(rst) begin
+    always_ff @(posedge clk_i or posedge rst_i) begin
+        if(rst_i) begin
             read_pointer_q  <= '0;
             write_pointer_q <= '0;
             status_cnt_q    <= '0;
@@ -126,8 +126,8 @@ module fifo_v3 #(
         end
     end
 
-    always_ff @(posedge clk_i or posedge rst) begin
-        if(rst) begin
+    always_ff @(posedge clk_i or posedge rst_i) begin
+        if(rst_i) begin
             mem_q <= '0;
         end else if (!gate_clock) begin
             mem_q <= mem_n;
@@ -141,11 +141,11 @@ module fifo_v3 #(
     end
 
     full_write : assert property(
-        @(posedge clk_i) disable iff (rst) (full_o |-> ~push_i))
+        @(posedge clk_i) disable iff (rst_i) (full_o |-> ~push_i))
         else $fatal (1, "Trying to push new data although the FIFO is full.");
 
     empty_read : assert property(
-        @(posedge clk_i) disable iff (rst) (empty_o |-> ~pop_i))
+        @(posedge clk_i) disable iff (rst_i) (empty_o |-> ~pop_i))
         else $fatal (1, "Trying to pop data although the FIFO is empty.");
 `endif
 // pragma translate_on

@@ -21,8 +21,8 @@ assign wrdata = {
 	dbus.byteenable[0] ? dbus.wrdata[7:0] : rddata[7:0]
 };
 
-always_ff @(posedge clk or negedge rst) begin
-	if(rst) begin
+always_ff @(posedge clk or posedge rst) begin
+	if(~rst) begin
 		if(dbus.write | dbus.uncached_write) begin
 			mem[dbus.address[ADDR_WIDTH-1:2]] <= wrdata;
 		end
