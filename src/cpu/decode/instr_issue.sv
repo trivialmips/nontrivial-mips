@@ -46,7 +46,7 @@ function logic is_data_related(
 endfunction
 
 logic instr2_not_taken;
-logic priv_executing;
+logic priv_executing, nonrw_priv_executing;
 logic [`ISSUE_NUM-1:0] instr_valid;
 logic [`ISSUE_NUM-1:0] load_related, mem_access, hilo_access;
 
@@ -73,10 +73,14 @@ end
 
 always_comb begin
 	priv_executing = 1'b0;
+	nonrw_priv_executing = 1'b0;
 	for(int i = 0; i < `ISSUE_NUM; ++i) begin
 		priv_executing |= ex_decoded[i].is_priv;
-		for(int k = 0; k < `DCACHE_PIPE_DEPTH - 1; ++k)
+		nonrw_priv_executing |= ex_decoded[i].is_nonrw_priv;
+		for(int k = 0; k < `DCACHE_PIPE_DEPTH; ++k) begin
 			priv_executing |= dcache_decoded[k][i].is_priv;
+			nonrw_priv_executing |= dcache_decoded[k][i].is_nonrw_priv;
+		end
 	end
 
 end
@@ -89,11 +93,13 @@ assign instr2_not_taken =
       // mispredict but delayslot does not executed
    || delayslot_not_exec
    || (is_ssnop(fetch_entry[0]) | is_ssnop(fetch_entry[1]))
+   || (id_decoded[0].op == OP_SC || id_decoded[1].op == OP_SC)
    || (id_decoded[0].is_priv | id_decoded[1].is_priv);
 
 assign stall_req = load_related[0]
 	| (load_related[1] & ~instr2_not_taken)
-	| (id_decoded[0].op == OP_ERET && priv_executing)
+	| (id_decoded[0].is_nonrw_priv && priv_executing)
+	| nonrw_priv_executing
 	| (instr_valid == '0);
 
 always_comb begin

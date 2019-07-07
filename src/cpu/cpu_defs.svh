@@ -206,6 +206,7 @@ typedef struct packed {
 	logic  is_load;         // load data
 	logic  is_store;        // store data
 	logic  is_priv;         // privileged instructions
+	logic  is_nonrw_priv;   // privileged instructions other than MFC0 and MTC0
 } decoded_instr_t;
 
 // TLB requests

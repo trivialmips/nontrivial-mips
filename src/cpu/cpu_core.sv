@@ -30,6 +30,9 @@ assign reg_we[1] = 1'b1;
 hilo_req_t hilo_req;
 uint64_t   hilo_rddata;
 
+// LLBit
+logic llbit_value;
+
 // pipeline data
 pipeline_decode_t [1:0] pipeline_decode, pipeline_decode_d;
 pipeline_exec_t   [1:0] pipeline_exec, pipeline_exec_d;
@@ -217,6 +220,7 @@ for(genvar i = 0; i < `ISSUE_NUM; ++i) begin : gen_exec
 		.data        ( pipeline_decode_d[i]    ),
 		.result      ( pipeline_exec[i]        ),
 		.stall_req   ( stall_req_ex[i]         ),
+		.llbit_value ( llbit_value             ),
 		.mmu_vaddr   ( mmu_data_vaddr[i]       ),
 		.mmu_result  ( mmu_data_result[i]      ),
 		.is_usermode ( cp0_user_mode           ),
@@ -237,6 +241,14 @@ always_ff @(posedge clk or posedge rst) begin
 		pipeline_dcache[0] <= pipeline_exec;
 	end
 end
+
+ll_bit llbit_inst(
+	.clk,
+	.rst,
+	.except_req,
+	.pipe_mm ( pipeline_exec_d ),
+	.data    ( llbit_value     )
+);
 
 except except_inst(
 	.rst,

@@ -41,9 +41,8 @@ end
 always_comb
 begin
 	which_matched = '0;
-	for(int i = 0; i < `TLB_ENTRIES_NUM; ++i) begin
+	for(int i = `TLB_ENTRIES_NUM - 1; i >= 0; --i)
 		if(matched[i]) which_matched = i;
-	end
 end
 
 endmodule 

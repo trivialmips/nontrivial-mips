@@ -28,8 +28,7 @@ generate
 	for(i = 0; i < `TLB_ENTRIES_NUM; ++i)
 	begin: gen_for_tlb
 		always_ff @(posedge clk or posedge rst) begin
-			if(rst)
-			begin
+			if(rst) begin
 				entries[i] <= '0;
 			end else begin
 				if(tlbrw_we && i == tlbrw_index)

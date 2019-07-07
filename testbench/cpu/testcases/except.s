@@ -65,15 +65,9 @@ _start:
 	mtc0 $0, $0
 	tlbr
 	ori $1, $0, 0x0003   # ans: $1=0x00000003
-	ssnop
-	ssnop
-	ssnop
 	mtc0 $1, $2
 	mtc0 $1, $3
 	tlbwi
-	ssnop
-	ssnop
-	ssnop
 	ori $1, $0, 0x0000 # ans: $1=0x00000000
 	sw $1, 0x0($1)     # ans: [exc_code]=0x01
 	lw $1, 0x0($1)     # ans: $1=0x00000000

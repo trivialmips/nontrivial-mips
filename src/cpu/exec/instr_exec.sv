@@ -6,6 +6,7 @@ module instr_exec (
 	input  logic    flush,
 
 	input  logic             delayslot,
+	input  logic             llbit_value,
 	input  uint64_t          hilo,
 	input  pipeline_decode_t data,
 	output pipeline_exec_t   result,
@@ -185,6 +186,9 @@ always_comb begin
 		OP_SLTU: exec_ret = { 30'b0, unsigned_lt };
 		OP_SLT:  exec_ret = { 30'b0, signed_lt   };
 
+		/* conditional store */
+		OP_SC:   exec_ret = llbit_value;
+
 		/* read coprocessers */
 		OP_MFC0: exec_ret = cp0_rdata;
 		default: exec_ret = '0;
@@ -197,9 +201,9 @@ logic [3:0] mem_sel;
 assign extended_imm = { {16{instr[15]}}, instr[15:0] };
 assign mmu_vaddr = reg1 + extended_imm;
 
-// TODO: LL/SC
 assign result.memreq.read       = data.decoded.is_load;
-assign result.memreq.write      = data.decoded.is_store;
+assign result.memreq.write      = data.decoded.is_store
+                                  & (llbit_value || (op != OP_SC));
 assign result.memreq.uncached   = mmu_result.uncached;
 assign result.memreq.vaddr      = mmu_vaddr;
 assign result.memreq.paddr      = mmu_result.phy_addr;
@@ -287,7 +291,7 @@ always_comb begin
 end
 
 
-// ( miss | invalid, illegal | unaligned )
+// ( illegal | unaligned, miss | invalid )
 logic [1:0] ex_if;  // exception in IF
 assign ex_if = {
 	data.fetch.iaddr_ex.miss | data.fetch.iaddr_ex.invalid,
@@ -307,15 +311,15 @@ assign ex_ex = {
 assign invalid_instr = (op == OP_INVALID);
 
 logic mem_tlbex, mem_addrex;
-assign mem_tlbex  = mmu_result.miss | mmu_result.invalid;
+assign mem_tlbex  = (mmu_result.miss | mmu_result.invalid) & ~mem_addrex;
 assign mem_addrex = mmu_result.illegal | daddr_unaligned;
-// ( tlbex_r, addrex_r, tlbex_w, addrex_w, readonly )
+// ( addrex_r, addrex_w, tlbex_r, tlbex_w, readonly )
 logic [4:0] ex_mm;  // exception in MEM
 assign ex_mm = {
-	mem_tlbex & result.memreq.read,
 	mem_addrex & result.memreq.read,
-	mem_tlbex & result.memreq.write,
 	mem_addrex & result.memreq.write,
+	mem_tlbex & result.memreq.read,
+	mem_tlbex & result.memreq.write,
 	~mmu_result.dirty & result.memreq.write
 };
 
@@ -324,9 +328,9 @@ always_comb begin
 	ex.valid = (|ex_if) | invalid_instr | (|ex_ex) | (|ex_mm);
 	if(|ex_if) begin
 		ex.extra = data.fetch.vaddr;
-		unique case(ex_if)
-			2'b10: ex.exc_code = `EXCCODE_TLBL;
-			2'b01: ex.exc_code = `EXCCODE_ADEL;
+		unique casez(ex_if)
+			2'b1?: ex.exc_code = `EXCCODE_ADEL;
+			2'b01: ex.exc_code = `EXCCODE_TLBL;
 			default:;
 		endcase
 	end else if(invalid_instr) begin
@@ -342,11 +346,11 @@ always_comb begin
 		endcase
 	end else if(|ex_mm) begin
 		ex.extra = mmu_vaddr;
-		unique case(ex_mm)
-			5'b10000: ex.exc_code = `EXCCODE_TLBL;
-			5'b01000: ex.exc_code = `EXCCODE_ADEL;
-			5'b00100: ex.exc_code = `EXCCODE_TLBS;
-			5'b00010: ex.exc_code = `EXCCODE_ADES;
+		unique casez(ex_mm)
+			5'b1????: ex.exc_code = `EXCCODE_ADEL;
+			5'b01???: ex.exc_code = `EXCCODE_ADES;
+			5'b001??: ex.exc_code = `EXCCODE_TLBL;
+			5'b0001?: ex.exc_code = `EXCCODE_TLBS;
 			5'b00001: ex.exc_code = `EXCCODE_MOD;
 			default:;
 		endcase

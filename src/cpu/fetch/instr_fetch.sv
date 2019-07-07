@@ -107,7 +107,7 @@ always_comb begin
 	end
 end
 
-assign hold_pc = icache_res.stall | queue_full;
+assign hold_pc = (icache_res.stall | queue_full) & ~flush_pc;
 
 pc_generator #(
 	.RESET_BASE ( RESET_BASE )
