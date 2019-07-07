@@ -53,11 +53,14 @@ always @(negedge clk) begin
 end
 
 string path;
+string summary;
 
-task unittest(
-	input string name
+task unittest_(
+	input string name,
+	input integer check_total_cycles
 );
-	integer i, fans, fmem, cycle, path_counter, mem_counter;
+	integer i, fans, fmem, cycle, path_counter, mem_counter, last_write;
+	integer instr_count;
 	string ans, out, info;
 
 	ibus_inst.mem = '{ default: '0 };
@@ -92,52 +95,78 @@ task unittest(
 
 	$display("======= unittest: %0s =======", name);
 
+	instr_count = 0;
 	cycle = 0;
 	while(!$feof(fans))
 	begin @(negedge clk);
 		cycle = cycle + 1;
 		intr[0] = (40 <= cycle && cycle <= 45);
 
-		if(!post_stall) begin
-			if(dbus_we_delay && mem_access_path1) begin
-				$sformat(out, "[0x%x]=0x%x", dbus_addr_delay[15:0], dbus_data_delay);
-				judge(fans, cycle, out);
-			end 
+		if(~post_stall & pipe_exec_d[0].valid & ~pipe_exec_d[0].ex.valid) begin
+			++instr_count;
+			if(pipe_exec_d[1].valid & ~pipe_exec_d[1].ex.valid)
+				++instr_count;
+		end
 
-			if(pipe_wb[0].rd != '0) begin
-				$sformat(out, "$%0d=0x%x", pipe_wb[0].rd, pipe_wb[0].wdata);
-				judge(fans, cycle, out);
-			end 
+		if(~post_stall & dbus_we_delay && mem_access_path1) begin
+			$sformat(out, "[0x%x]=0x%x", dbus_addr_delay[15:0], dbus_data_delay);
+			judge(fans, cycle, out);
+		end 
 
-			if(pipe_wb[0].hiloreq.we) begin
-				$sformat(out, "$hilo=0x%x", pipe_wb[0].hiloreq.wdata);
-				judge(fans, cycle, out);
-			end 
+		if(pipe_wb[0].rd != '0) begin
+			$sformat(out, "$%0d=0x%x", pipe_wb[0].rd, pipe_wb[0].wdata);
+			judge(fans, cycle, out);
+			last_write = pipe_wb[0].wdata;
+		end 
 
-			if(dbus_we_delay && ~mem_access_path1) begin
-				$sformat(out, "[0x%x]=0x%x", dbus_addr_delay[15:0], dbus_data_delay);
-				judge(fans, cycle, out);
-			end 
+		if(pipe_wb[0].hiloreq.we) begin
+			$sformat(out, "$hilo=0x%x", pipe_wb[0].hiloreq.wdata);
+			judge(fans, cycle, out);
+		end 
 
-			if(pipe_wb[1].rd != '0) begin
-				$sformat(out, "$%0d=0x%x", pipe_wb[1].rd, pipe_wb[1].wdata);
-				judge(fans, cycle, out);
-			end 
+		if(~post_stall & dbus_we_delay && ~mem_access_path1) begin
+			$sformat(out, "[0x%x]=0x%x", dbus_addr_delay[15:0], dbus_data_delay);
+			judge(fans, cycle, out);
+		end 
 
-			if(pipe_wb[1].hiloreq.we) begin
-				$sformat(out, "$hilo=0x%x", pipe_wb[1].hiloreq.wdata);
-				judge(fans, cycle, out);
-			end 
+		if(pipe_wb[1].rd != '0) begin
+			$sformat(out, "$%0d=0x%x", pipe_wb[1].rd, pipe_wb[1].wdata);
+			judge(fans, cycle, out);
+			last_write = pipe_wb[1].wdata;
+		end 
+
+		if(pipe_wb[1].hiloreq.we) begin
+			$sformat(out, "$hilo=0x%x", pipe_wb[1].hiloreq.wdata);
+			judge(fans, cycle, out);
+		end 
+	end
+
+	if(check_total_cycles) begin
+		if(cycle <= last_write) begin
+			$display("[cycle check pass] uppoer bound = %0d", last_write);
+		end else begin
+			$display("[Error] cycle check failed! uppoer bound = %0d", last_write);
+			$stop;
 		end
 	end
 
 	$display("[OK] %0s\n", name);
+	$sformat(summary, "%0s%0s: CPI = %f\n", summary, name, $bitstoreal(cycle) / $bitstoreal(instr_count));
 
+endtask
+
+task unittest(input string name);
+	unittest_(name, 0);
+endtask
+
+task unittest_cycle(input string name);
+	unittest_(name, 1);
 endtask
 
 initial
 begin
 	wait(rst == 1'b0);
+	summary = "";
 	unittest("instr/ori");
 	unittest("instr/logical");
 	unittest("instr/move");
@@ -160,7 +189,9 @@ begin
 	unittest("across_tlb/4");
 	unittest("across_tlb/5");
 	unittest("across_tlb/6");
-	// unittest("branch_loop");
+	unittest_cycle("performance/loop");
+	unittest_cycle("performance/call");
+	$display(summary);
 	$display("[Done]\n");
 	$finish;
 end

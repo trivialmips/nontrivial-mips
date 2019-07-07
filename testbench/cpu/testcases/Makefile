@@ -13,7 +13,7 @@ mem: $(MEMS) $(ANSES)
 	$(ARCH)-as -mips32 -O0 -EB $< -o $@ 
 
 %.ans: %.s
-	grep -Po "(?<=# ans:\s).*" $< | awk -f extract_ans.awk | sed "s/\s*$$//" > $@
+	sh genans.sh $< $@
 
 %.mem: %.om
 	$(ARCH)-objcopy --dump-section .text=/dev/stdout $< | xxd -c 4 -g 32 | cut -f 2 -d " " > $@
