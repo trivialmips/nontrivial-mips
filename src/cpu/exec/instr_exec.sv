@@ -13,11 +13,10 @@ module instr_exec (
 	output logic             stall_req,
 
 	input  logic        is_usermode,
-	input  cp0_req_t    mm_cp0_req,
-	input  cp0_req_t    wb_cp0_req,
 	input  uint32_t     cp0_rdata_i,
 	output logic [2:0]  cp0_rsel,
 	output reg_addr_t   cp0_raddr,
+	input  cp0_req_t    [`DCACHE_PIPE_DEPTH:0] cp0_req_fwd,
 
 	output virt_t       mmu_vaddr,
 	input  mmu_result_t mmu_result
@@ -127,12 +126,12 @@ endfunction
 always_comb begin
 	if(rst) begin
 		cp0_rdata = '0;
-	end else if(cp0_match(wb_cp0_req, cp0_raddr, cp0_rsel)) begin
-		cp0_rdata = (cp0_wmask & wb_cp0_req.wdata) | (~cp0_wmask & cp0_rdata_i);
-	end else if(cp0_match(mm_cp0_req, cp0_raddr, cp0_rsel)) begin
-		cp0_rdata = (cp0_wmask & mm_cp0_req.wdata) | (~cp0_wmask & cp0_rdata_i);
 	end else begin
 		cp0_rdata = cp0_rdata_i;
+		for(int i = `DCACHE_PIPE_DEPTH; i >= 0; --i) begin
+			if(cp0_match(cp0_req_fwd[i], cp0_raddr, cp0_rsel))
+				cp0_rdata = (cp0_wmask & cp0_req_fwd[i].wdata) | (~cp0_wmask & cp0_rdata_i);
+		end
 	end
 end
 

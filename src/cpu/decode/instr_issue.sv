@@ -5,15 +5,12 @@ module instr_issue(
 	input  fetch_entry_t     [`ISSUE_NUM-1:0] fetch_entry,
 	input  decoded_instr_t   [`ISSUE_NUM-1:0] id_decoded,
 	input  decoded_instr_t   [`ISSUE_NUM-1:0] ex_decoded,
+	input  decoded_instr_t   [`DCACHE_PIPE_DEPTH-1:0][`ISSUE_NUM-1:0] dcache_decoded,
 	input  logic             delayslot_not_exec,
 	output decoded_instr_t   [`ISSUE_NUM-1:0] issue_instr,
 	output logic   [$clog2(`ISSUE_NUM+1)-1:0] issue_num,
 	output logic   stall_req
 );
-
-logic instr2_not_taken;
-logic [`ISSUE_NUM-1:0] instr_valid;
-logic [`ISSUE_NUM-1:0] load_related, mem_access, hilo_access;
 
 function logic is_hilo(
 	input uint32_t instr
@@ -48,6 +45,11 @@ function logic is_data_related(
 	);
 endfunction
 
+logic instr2_not_taken;
+logic priv_executing;
+logic [`ISSUE_NUM-1:0] instr_valid;
+logic [`ISSUE_NUM-1:0] load_related, mem_access, hilo_access;
+
 for(genvar i = 0; i < `ISSUE_NUM; ++i) begin : gen_access
 	assign mem_access[i]  = id_decoded[i].is_load | id_decoded[i].is_store;
 	assign instr_valid[i] = fetch_entry[i].valid;
@@ -60,9 +62,23 @@ always_comb begin
 		for(int j = 0; j < `ISSUE_NUM; ++j) begin
 			load_related[i] |= is_load_related(
 				id_decoded[i], ex_decoded[j]);
+			for(int k = 0; k < `DCACHE_PIPE_DEPTH - 1; ++k) begin
+				load_related[i] |= is_load_related(
+					id_decoded[i], dcache_decoded[k][j]);
+			end
 		end
 	end
 	load_related &= instr_valid;
+end
+
+always_comb begin
+	priv_executing = 1'b0;
+	for(int i = 0; i < `ISSUE_NUM; ++i) begin
+		priv_executing |= ex_decoded[i].is_priv;
+		for(int k = 0; k < `DCACHE_PIPE_DEPTH - 1; ++k)
+			priv_executing |= dcache_decoded[k][i].is_priv;
+	end
+
 end
 
 assign instr2_not_taken = 
@@ -76,8 +92,8 @@ assign instr2_not_taken =
    || (id_decoded[0].is_priv | id_decoded[1].is_priv);
 
 assign stall_req = load_related[0]
-	| (id_decoded[0].op == OP_ERET && (ex_decoded[0].is_priv | ex_decoded[1].is_priv))
 	| (load_related[1] & ~instr2_not_taken)
+	| (id_decoded[0].op == OP_ERET && priv_executing)
 	| (instr_valid == '0);
 
 always_comb begin

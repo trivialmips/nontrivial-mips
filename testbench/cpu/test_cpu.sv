@@ -41,16 +41,14 @@ endtask
 logic dbus_we_delay;
 logic [15:0] dbus_addr_delay;
 logic [31:0] dbus_data_delay;
-always @(negedge clk)
-begin
-	dbus_we_delay   <= dbus_inst.dbus.write | dbus_inst.dbus.uncached_write;
-	dbus_addr_delay <= { dbus_inst.dbus.address[15:2], 2'b0 };
+always @(negedge clk) begin
+	dbus_we_delay   <= dbus_inst.pipe_write | dbus_inst.pipe_uncached_write;
+	dbus_addr_delay <= { dbus_inst.pipe_addr[15:2], 2'b0 };
 	dbus_data_delay <= dbus_inst.wrdata;
 end
 
 logic post_stall;
-always @(negedge clk)
-begin
+always @(negedge clk) begin
 	post_stall <= dbus_inst.dbus.stall;
 end
 
@@ -105,8 +103,7 @@ task unittest(
 				judge(fans, cycle, out);
 			end 
 
-			if(pipe_wb[0].rd != '0)
-			begin
+			if(pipe_wb[0].rd != '0) begin
 				$sformat(out, "$%0d=0x%x", pipe_wb[0].rd, pipe_wb[0].wdata);
 				judge(fans, cycle, out);
 			end 
@@ -121,8 +118,7 @@ task unittest(
 				judge(fans, cycle, out);
 			end 
 
-			if(pipe_wb[1].rd != '0)
-			begin
+			if(pipe_wb[1].rd != '0) begin
 				$sformat(out, "$%0d=0x%x", pipe_wb[1].rd, pipe_wb[1].wdata);
 				judge(fans, cycle, out);
 			end 

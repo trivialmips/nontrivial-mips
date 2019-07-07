@@ -4,6 +4,7 @@ module decode_and_issue(
 	input  logic             delayslot_not_exec,
 	input  fetch_entry_t     [`ISSUE_NUM-1:0] fetch_entry,
 	input  pipeline_exec_t   [`ISSUE_NUM-1:0] pipeline_exec,
+	input  pipeline_exec_t   [`DCACHE_PIPE_DEPTH-1:0][`ISSUE_NUM-1:0] pipeline_dcache,
 	input  pipeline_memwb_t  [`ISSUE_NUM-1:0] pipeline_mem,
 	input  pipeline_memwb_t  [`ISSUE_NUM-1:0] pipeline_wb,
 	output pipeline_decode_t [`ISSUE_NUM-1:0] pipeline_decode,
@@ -17,11 +18,14 @@ module decode_and_issue(
 
 decoded_instr_t [`ISSUE_NUM-1:0] decoded_instr;
 decoded_instr_t [`ISSUE_NUM-1:0] ex_decoded;
+decoded_instr_t [`DCACHE_PIPE_DEPTH-1:0][`ISSUE_NUM-1:0] dcache_decoded;
 decoded_instr_t [`ISSUE_NUM-1:0] issue_instr;
 
-reg_addr_t  [`ISSUE_NUM - 1:0] ex_waddr, mm_waddr, wb_waddr;
-uint32_t    [`ISSUE_NUM - 1:0] ex_wdata, mm_wdata, wb_wdata;
-uint32_t    [`ISSUE_NUM * 2 - 1:0] reg_forward;
+reg_addr_t [`DCACHE_PIPE_DEPTH-1:0][`ISSUE_NUM-1:0] dcache_waddr;
+uint32_t   [`DCACHE_PIPE_DEPTH-1:0][`ISSUE_NUM-1:0] dcache_wdata;
+reg_addr_t [`ISSUE_NUM - 1:0] ex_waddr, mm_waddr, wb_waddr;
+uint32_t   [`ISSUE_NUM - 1:0] ex_wdata, mm_wdata, wb_wdata;
+uint32_t   [`ISSUE_NUM * 2 - 1:0] reg_forward;
 
 for(genvar i = 0; i < `ISSUE_NUM; ++i) begin : gen_decoder
 	assign ex_decoded[i] = pipeline_exec[i].decoded;
@@ -39,9 +43,14 @@ for(genvar i = 0; i < `ISSUE_NUM; ++i) begin : gen_decoder
 	assign mm_wdata[i] = pipeline_mem[i].wdata;
 	assign wb_waddr[i] = pipeline_wb[i].rd;
 	assign wb_wdata[i] = pipeline_wb[i].wdata;
+	for(genvar j = 0; j < `DCACHE_PIPE_DEPTH; ++j) begin : gen_dcache_reg
+		assign dcache_waddr[j][i] = pipeline_dcache[j][i].decoded.rd;
+		assign dcache_wdata[j][i] = pipeline_dcache[j][i].result;
+		assign dcache_decoded[j][i] = pipeline_dcache[j][i].decoded;
+	end
 
 	register_forward reg_forward_inst(
-		.*, // forward from EX/MM/WB
+		.*, // forward from EX/D$/MM/WB
 		.instr         ( fetch_entry[i].instr   ),
 		.decoded_instr ( decoded_instr[i]       ),
 		.reg1_i        ( reg_rdata[i * 2]       ),
@@ -55,6 +64,7 @@ instr_issue issue_inst(
 	.fetch_entry,
 	.id_decoded ( decoded_instr ),
 	.ex_decoded,
+	.dcache_decoded,
 	.delayslot_not_exec,
 	.issue_instr,
 	.issue_num,

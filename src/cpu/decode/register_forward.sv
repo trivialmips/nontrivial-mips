@@ -8,6 +8,10 @@ module register_forward(
 	input  reg_addr_t [`ISSUE_NUM-1:0] ex_waddr,
 	input  uint32_t   [`ISSUE_NUM-1:0] ex_wdata,
 
+	// from D$
+	input  reg_addr_t [`DCACHE_PIPE_DEPTH-1:0][`ISSUE_NUM-1:0] dcache_waddr,
+	input  uint32_t   [`DCACHE_PIPE_DEPTH-1:0][`ISSUE_NUM-1:0] dcache_wdata,
+
 	// from MM
 	input  reg_addr_t [`ISSUE_NUM-1:0] mm_waddr,
 	input  uint32_t   [`ISSUE_NUM-1:0] mm_wdata,
@@ -46,6 +50,13 @@ always_comb begin
 		for(int j = 0; j < `ISSUE_NUM; ++j) begin
 			if(mm_waddr[j] == pack_rs[i])
 				pack_reg_o[i] = mm_wdata[j];
+		end
+
+		for(int k = `DCACHE_PIPE_DEPTH - 2; k >= 0; --k) begin
+			for(int j = 0; j < `ISSUE_NUM; ++j) begin
+				if(dcache_waddr[k][j] == pack_rs[i])
+					pack_reg_o[i] = dcache_wdata[k][j];
+			end
 		end
 
 		for(int j = 0; j < `ISSUE_NUM; ++j) begin

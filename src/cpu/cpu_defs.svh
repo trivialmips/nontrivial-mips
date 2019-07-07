@@ -16,6 +16,7 @@
 `define BHT_SIZE             1024
 `define RAS_SIZE             8
 `define INSTR_FIFO_DEPTH     4
+`define DCACHE_PIPE_DEPTH    2
 
 /* cause register exc_code field */
 `define EXCCODE_INT   5'h00  // interrupt
