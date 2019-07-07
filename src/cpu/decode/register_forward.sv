@@ -59,7 +59,7 @@ always_comb begin
 
 
 	if(decoded_instr.use_imm) begin
-		pack_reg_o[1] = { 16'b0, instr[15:0] };
+		pack_reg_o[1] = { {16{instr[15] & decoded_instr.imm_signed}}, instr[15:0] };
 	end
 end
 

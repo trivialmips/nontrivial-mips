@@ -5,6 +5,7 @@ module instr_exec (
 	input  logic    rst,
 	input  logic    flush,
 
+	input  logic             delayslot,
 	input  uint64_t          hilo,
 	input  pipeline_decode_t data,
 	output pipeline_exec_t   result,
@@ -30,11 +31,12 @@ assign reg2 = data.reg2;
 assign instr = data.fetch.instr;
 assign op = data.decoded.op;
 
+assign result.valid  = data.valid;
 assign result.ex     = ex;
 assign result.result = exec_ret;
 assign result.pc     = data.fetch.vaddr;
-assign result.valid  = data.valid;
 assign result.eret   = (op == OP_ERET);
+assign result.delayslot    = delayslot;
 assign result.tlbreq.probe = (op == OP_TLBP);
 assign result.tlbreq.read  = (op == OP_TLBR);
 assign result.tlbreq.tlbwr = (op == OP_TLBWR);
@@ -305,13 +307,16 @@ assign ex_ex = {
 
 assign invalid_instr = (op == OP_INVALID);
 
-logic mem_rw_valid;
-assign mem_rw_valid = result.memreq.read | result.memreq.write;
-// ( miss | invalid, illegal | unaligned, readonly )
-logic [2:0] ex_mm;  // exception in MEM
+logic mem_tlbex, mem_addrex;
+assign mem_tlbex  = mmu_result.miss | mmu_result.invalid;
+assign mem_addrex = mmu_result.illegal | daddr_unaligned;
+// ( tlbex_r, addrex_r, tlbex_w, addrex_w, readonly )
+logic [4:0] ex_mm;  // exception in MEM
 assign ex_mm = {
-	(mmu_result.miss | mmu_result.invalid) & mem_rw_valid,
-	(mmu_result.illegal | daddr_unaligned) & mem_rw_valid,
+	mem_tlbex & result.memreq.read,
+	mem_addrex & result.memreq.read,
+	mem_tlbex & result.memreq.write,
+	mem_addrex & result.memreq.write,
 	~mmu_result.dirty & result.memreq.write
 };
 
@@ -339,9 +344,11 @@ always_comb begin
 	end else if(|ex_mm) begin
 		ex.extra = mmu_vaddr;
 		unique case(ex_mm)
-			3'b100: ex.exc_code = `EXCCODE_TLBS;
-			3'b010: ex.exc_code = `EXCCODE_ADES;
-			3'b001: ex.exc_code = `EXCCODE_MOD;
+			5'b10000: ex.exc_code = `EXCCODE_TLBL;
+			5'b01000: ex.exc_code = `EXCCODE_ADEL;
+			5'b00100: ex.exc_code = `EXCCODE_TLBS;
+			5'b00010: ex.exc_code = `EXCCODE_ADES;
+			5'b00001: ex.exc_code = `EXCCODE_MOD;
 			default:;
 		endcase
 	end

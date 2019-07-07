@@ -24,6 +24,12 @@ function logic is_hilo(
 	    || instr[31:26] == 6'b011100 && instr[5:3] == 3'b000 && instr[1] == 1'b0;
 endfunction
 
+function logic is_ssnop(
+	input fetch_entry_t entry
+);
+	return entry.valid & entry.instr == 32'h40;
+endfunction
+
 function logic is_load_related(
 	input decoded_instr_t id,
 	input decoded_instr_t ex
@@ -65,9 +71,12 @@ assign instr2_not_taken =
    || (mem_access[0] & mem_access[1])
    || (hilo_access[0] & hilo_access[1])
       // mispredict but delayslot does not executed
-   || delayslot_not_exec;
+   || delayslot_not_exec
+   || (is_ssnop(fetch_entry[0]) | is_ssnop(fetch_entry[1]))
+   || (id_decoded[0].is_priv | id_decoded[1].is_priv);
 
 assign stall_req = load_related[0]
+	| (id_decoded[0].op == OP_ERET && (ex_decoded[0].is_priv | ex_decoded[1].is_priv))
 	| (load_related[1] & ~instr2_not_taken)
 	| (instr_valid == '0);
 

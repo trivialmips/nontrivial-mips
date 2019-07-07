@@ -37,8 +37,6 @@ pipeline_memwb_t  [1:0] pipeline_mem, pipeline_mem_d;
 pipeline_memwb_t  [1:0] pipeline_wb;
 assign pipeline_wb = pipeline_mem_d;
 
-logic                if_except_valid;
-virt_t               if_except_vec;
 fetch_ack_t          if_fetch_ack;
 fetch_entry_t [1:0]  if_fetch_entry;
 instr_fetch_memres_t icache_res;
@@ -138,12 +136,12 @@ instr_fetch #(
 ) instr_fetch_inst (
 	.clk,
 	.rst,
-	.flush_pc     ( flush_if        ),
-	.flush_bp     ( 1'b0            ),
-	.stall_s2     ( stall_if        ),
-	.except_valid ( if_except_valid ),
-	.except_vec   ( if_except_vec   ),
-	.resolved_branch_i ( resolved_branch ),
+	.flush_pc     ( flush_if              ),
+	.flush_bp     ( 1'b0                  ),
+	.stall_s2     ( stall_if              ),
+	.except_valid ( except_req.valid      ),
+	.except_vec   ( except_req.except_vec ),
+	.resolved_branch_i ( resolved_branch  ),
 	.hold_resolved_branch,
 	.icache_res,
 	.icache_req,
@@ -181,7 +179,7 @@ hilo_forward hilo_forward_inst(
 	.hilo_o  ( hilo_forward )
 );
 
-uint32_t ex_cp0_rdata;
+logic [`ISSUE_NUM-1:0] resolved_delayslot;
 logic [`ISSUE_NUM-1:0][2:0] ex_cp0_rsel;
 reg_addr_t [`ISSUE_NUM-1:0] ex_cp0_raddr;
 logic [`ISSUE_NUM-1:0] stall_req_ex;
@@ -189,6 +187,15 @@ assign stall_from_ex = |stall_req_ex;
 // only pipeline 0 will access CP0
 assign cp0_rsel  = ex_cp0_rsel[0];
 assign cp0_raddr = ex_cp0_raddr[0];
+
+resolve_delayslot resolve_delayslot_inst(
+	.clk,
+	.rst,
+	.flush ( flush_ex ),
+	.stall ( stall_ex ),
+	.data  ( pipeline_decode_d ),
+	.resolved_delayslot
+);
 
 for(genvar i = 0; i < `ISSUE_NUM; ++i) begin : gen_exec
 	instr_exec exec_inst(
@@ -204,9 +211,10 @@ for(genvar i = 0; i < `ISSUE_NUM; ++i) begin : gen_exec
 		.is_usermode ( cp0_user_mode           ),
 		.mm_cp0_req  ( pipeline_mem[0].cp0_req ),
 		.wb_cp0_req  ( pipeline_wb[0].cp0_req  ),
-		.cp0_rdata_i ( ex_cp0_rdata            ),
+		.cp0_rdata_i ( cp0_rdata               ),
 		.cp0_rsel    ( ex_cp0_rsel[i]          ),
 		.cp0_raddr   ( ex_cp0_raddr[i]         ),
+		.delayslot   ( resolved_delayslot[i]   ),
 		.resolved_branch ( ex_resolved_branch[i] )
 	);
 end
@@ -221,6 +229,7 @@ always_ff @(posedge clk or posedge rst) begin
 end
 
 dbus_mux dbus_mux_inst(
+	.except_req,
 	.data ( pipeline_exec_d ),
 	.dbus
 );
@@ -235,12 +244,25 @@ for(genvar i = 0; i < `ISSUE_NUM; ++i) begin : gen_mem
 	);
 end
 
+except except_inst(
+	.rst,
+	.pipe_mm ( pipeline_exec_d ),
+	.cp0_regs,
+	.interrupt_flag ( '0 ), // TODO:
+	.except_req
+);
+
 // pipeline between MEM and WB
 always_ff @(posedge clk or posedge rst) begin
 	if(rst || flush_mm || stall_mm) begin
 		pipeline_mem_d <= '0;
 	end else if(~stall_mm) begin
-		pipeline_mem_d <= pipeline_mem;
+		if(except_req.valid & ~except_req.alpha_taken) begin
+			pipeline_mem_d[0] <= pipeline_mem[0];
+			pipeline_mem_d[1] <= '0;
+		end else begin
+			pipeline_mem_d <= pipeline_mem;
+		end
 	end
 end
 
@@ -249,6 +271,8 @@ for(genvar i = 0; i < `ISSUE_NUM; ++i) begin : gen_write_back
 	assign reg_waddr[i] = pipeline_wb[i].rd;
 	assign reg_wdata[i] = pipeline_wb[i].wdata;
 end
+
+assign cp0_reg_wr = pipeline_wb[0].cp0_req;
 
 always_comb begin
 	hilo_req = '0;

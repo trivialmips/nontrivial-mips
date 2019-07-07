@@ -1,6 +1,7 @@
 `include "cpu_defs.svh"
 
 module dbus_mux(
+	input  except_req_t    except_req,
 	input  pipeline_exec_t [`ISSUE_NUM-1:0] data,
 	cpu_dbus_if.master     dbus
 );
@@ -26,10 +27,10 @@ always_comb begin
 	dbus.address        = '0;
 	dbus.byteenable     = '0;
 	for(int i = 0; i < `ISSUE_NUM; ++i) begin
-		dbus.read  |= re[i] & ~memreq[i].uncached;
-		dbus.write |= we[i] & ~memreq[i].uncached;
-		dbus.uncached_read  |= re[i] & memreq[i].uncached;
-		dbus.uncached_write |= we[i] & memreq[i].uncached;
+		dbus.read  |= re[i] & ~memreq[i].uncached & ~except_req.valid;
+		dbus.write |= we[i] & ~memreq[i].uncached & ~except_req.valid;
+		dbus.uncached_read  |= re[i] & memreq[i].uncached & ~except_req.valid;
+		dbus.uncached_write |= we[i] & memreq[i].uncached & ~except_req.valid;
 		dbus.wrdata     |= {32{we[i]}} & memreq[i].wrdata;
 		dbus.address    |= {32{ce[i]}} & memreq[i].paddr;
 		dbus.byteenable |= {4{ce[i]}}  & memreq[i].byteenable;

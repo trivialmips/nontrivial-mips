@@ -199,6 +199,7 @@ typedef struct packed {
 	reg_addr_t   rs2;
 	reg_addr_t   rd;
 	oper_t       op;
+	logic  imm_signed;      // use sign-extened immediate
 	logic  use_imm;         // use immediate as reg2
 	logic  is_controlflow;  // controlflow maybe changed
 	logic  is_load;         // load data

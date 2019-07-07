@@ -145,11 +145,27 @@ begin
 	unittest("inst_logical");
 	unittest("inst_move");
 	unittest("inst_shift");
+	unittest("inst_trap");
+	unittest("inst_arith");
 	unittest("inst_jump");
 	unittest("inst_mem_aligned");
 	unittest("inst_mem_unaligned");
+	unittest("inst_llsc");
+	unittest("inst_multicyc");
+	unittest("except");
+	unittest("except_delayslot");
+	unittest("interrupt");
+	unittest("timer");
+	unittest("usermode");
+	unittest("across_tlb1");
+	unittest("across_tlb2");
+	unittest("across_tlb3");
+	unittest("across_tlb4");
+	unittest("across_tlb5");
+	unittest("across_tlb6");
+
+
 	// unittest("branch_loop");
-	// unittest("inst_multicyc");
 	$display("[Done]\n");
 	$finish;
 end

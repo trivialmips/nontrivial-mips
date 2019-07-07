@@ -14,6 +14,7 @@ module ctrl(
 	output logic flush_ex,
 	output logic flush_mm,
 
+	input  except_req_t      except_req,
 	input  fetch_entry_t     [`FETCH_NUM-1:0] fetch_entry,
 	input  pipeline_exec_t   [1:0] pipeline_exec,
 	input  branch_resolved_t [1:0] resolved_branch_i,
@@ -56,23 +57,23 @@ end
 
 always_comb begin
 	flush = '0;
-	if(flush_mispredict) begin
+	if(except_req.valid) begin
+		flush = { 3'b111, except_req.alpha_taken };
+	end else if(flush_mispredict) begin
 		flush = 4'b1100;
 	end
 end
 
 always_comb begin
-	if(rst) begin
+	if(rst)
 		stall = 4'b1111;
-	end else if(stall_from_mm) begin
+	else if(stall_from_mm)
 		stall = 4'b1111;
-	end else if(stall_from_ex | wait_delayslot) begin
+	else if(stall_from_ex | wait_delayslot)
 		stall = 4'b1110;
-	end else if(stall_from_id) begin
+	else if(stall_from_id)
 		stall = 4'b1100;
-	end else begin
-		stall = '0;
-	end
+	else stall = '0;
 end
 
 endmodule

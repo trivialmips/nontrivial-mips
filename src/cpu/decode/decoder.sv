@@ -25,14 +25,15 @@ decode_branch branch_decoder_inst(
 );
 
 always_comb begin
-	decoded_instr.rs1      = '0;
-	decoded_instr.rs2      = '0;
-	decoded_instr.rd       = '0;
-	decoded_instr.op       = OP_SLL;
-	decoded_instr.use_imm  = 1'b0;
-	decoded_instr.is_load  = 1'b0;
-	decoded_instr.is_priv  = opcode == 6'b101111 || opcode == 6'b010000;
-	decoded_instr.is_store = 1'b0;
+	decoded_instr.rs1        = '0;
+	decoded_instr.rs2        = '0;
+	decoded_instr.rd         = '0;
+	decoded_instr.op         = OP_SLL;
+	decoded_instr.use_imm    = 1'b0;
+	decoded_instr.imm_signed = 1'b1;
+	decoded_instr.is_load    = 1'b0;
+	decoded_instr.is_priv    = opcode == 6'b101111 || opcode == 6'b010000;
+	decoded_instr.is_store   = 1'b0;
 	decoded_instr.is_controlflow = is_branch | is_jump_i | is_jump_r;
 
 	unique casez(opcode)
@@ -142,7 +143,8 @@ always_comb begin
 		6'b001???: begin // logic and arithmetic (Reg-Imm)
 			decoded_instr.rs1 = rs;
 			decoded_instr.rd  = rt;
-			decoded_instr.use_imm = 1'b1;
+			decoded_instr.use_imm    = 1'b1;
+			decoded_instr.imm_signed = ~opcode[2];
 			unique case(opcode[2:0])
 				3'b100: decoded_instr.op = OP_AND;
 				3'b101: decoded_instr.op = OP_OR;
@@ -194,7 +196,7 @@ always_comb begin
 			decoded_instr.is_load = 1'b1;
 		end
 		
-		6'b110000: begin // store conditional word (Reg-Imm)
+		6'b111000: begin // store conditional word (Reg-Imm)
 			decoded_instr.rs1      = rs;
 			decoded_instr.rs2      = rt;
 			decoded_instr.rd       = rt;
@@ -214,7 +216,7 @@ always_comb begin
 					decoded_instr.rd = rt;
 				end
 				5'b00100: begin
-					decoded_instr.op  = OP_MFC0;
+					decoded_instr.op  = OP_MTC0;
 					decoded_instr.rs1 = rt;
 				end
 				5'b10000: begin
