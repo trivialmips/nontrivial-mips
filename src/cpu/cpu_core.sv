@@ -242,6 +242,21 @@ always_ff @(posedge clk or posedge rst) begin
 	end
 end
 
+// resolve interrupt requests
+logic [7:0] pipe_interrupt, interrupt_flag;
+assign interrupt_flag = cp0_regs.status.im & {
+	cp0_timer_int,
+	intr[4:0],
+	cp0_regs.cause.ip[1:0]
+};
+
+always_ff @(posedge clk or posedge rst) begin
+	if(rst || except_req.valid)
+		pipe_interrupt <= '0;
+	else if(pipe_interrupt == '0)
+		pipe_interrupt <= interrupt_flag;
+end
+
 ll_bit llbit_inst(
 	.clk,
 	.rst,
@@ -252,9 +267,9 @@ ll_bit llbit_inst(
 
 except except_inst(
 	.rst,
-	.pipe_mm ( pipeline_exec_d ),
 	.cp0_regs,
-	.interrupt_flag ( '0 ), // TODO:
+	.pipe_mm        ( pipeline_exec_d ),
+	.interrupt_flag ( pipe_interrupt  ),
 	.except_req
 );
 

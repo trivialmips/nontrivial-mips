@@ -13,9 +13,11 @@ virt_t pc;
 logic interrupt_occur;
 assign interrupt_occur = (
 	// TODO: check whether DM bit in debug is zero
-	cp0_regs.status.ie &&
-	~cp0_regs.status.exl && ~cp0_regs.status.erl &&
-	interrupt_flag != 8'b0
+	cp0_regs.status.ie
+	&& ~cp0_regs.status.exl
+	&& ~cp0_regs.status.erl
+	&& interrupt_flag != 8'b0
+	&& (pipe_mm[0].valid || pipe_mm[1].valid)
 );
 
 assign except_req.eret = pipe_mm[0].eret;

@@ -96,6 +96,7 @@ task unittest(
 	while(!$feof(fans))
 	begin @(negedge clk);
 		cycle = cycle + 1;
+		intr[0] = (40 <= cycle && cycle <= 45);
 
 		if(!post_stall) begin
 			if(dbus_we_delay && mem_access_path1) begin
