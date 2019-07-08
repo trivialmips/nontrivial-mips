@@ -1,11 +1,13 @@
 `include "common_defs.svh"
 `include "cache/defs.sv"
 
+// DATA_WIDTH should be multiples of 32
 module cache_controller #(
+    parameter DATA_WIDTH = 64,
     parameter LINE_WIDTH = 32,
-    parameter LINE_COUNT = 1024,
 
-    parameter ADDR_LEN = 64
+    parameter ADDR_LEN = 32,
+    parameter INDEX_LEN = 16
 ) (
     // external logics
     input  wire        clk    ,
@@ -59,45 +61,62 @@ module cache_controller #(
 enum logic [3:0] {
     FLUSH,
     IDLE,
-    CMP,
-    REFILL,
+    FILL,
     RECV
 } state_d, state;
 
-localparam int unsigned TAG_OFFSET = $clog2(LINE_WIDTH/ 8);
-localparam int unsigned TAG_LEN = ADDR_LEN - TAG_OFFSET;
+localparam int unsigned WAY_LEN = $clog2(LINE_WIDTH/ 8);
+localparam int unsigned TAG_LEN = ADDR_LEN - INDEX_LEN;
+localparam int unsigned MEM_ADDR_LEN = INDEX_LEN - WAY_LEN;
+localparam int unsigned MEM_SIZE = 2**MEM_ADDR_LEN;
+localparam int unsigned DATA_CELL_LEN = DATA_WIDTH / 32;
 
 // Tags
-logic [TAG_LEN - 1 : 0] query; // tag query
-logic [TAG_OFFSET - 1 : 0] way_idx; // Way index
+logic [MEM_ADDR_LEN- 1 : 0] query_addr; // tag query
+logic [TAG_LEN - 1 : 0] query_tag; // tag query
+logic [WAY_LEN - 1 : 0] query_way; // Way index
+logic hit;
 
-logic [LINE_COUNT - 1:0][TAG_LEN - 1:0] tags;
-// TODO: valid
-logic [LINE_COUNT - 1:0] hit;
-logic [LINE_COUNT - 1:0][LINE_WIDTH - 1:0] selected_way;
+logic [TAG_LEN - 1:0] tag_rdata;
+logic [TAG_LEN - 1:0] tag_wdata;
+logic tag_write;
 
 // Data
 logic [$clog2(LINE_WIDTH)-1:0] burst_cnt, burst_cnt_d;
-logic [LINE_COUNT - 1:0][LINE_WIDTH-1:0][31:0] data;
+logic [LINE_WIDTH*(DATA_WIDTH/32)-1:0][31:0] wdata;
+logic [LINE_WIDTH-1:0][DATA_WIDTH:0] rdata;
+logic data_write;
+typedef logic [LINE_WIDTH:0][64:0] line_64_view_t;
 
 // Tag query
+assign query_addr = ibus.address[INDEX_LEN - 1:WAY_LEN];
+assign query_tag = ibus.address[ADDR_LEN - 1:INDEX_LEN];
+assign query_way = ibus.address[WAY_LEN - 1 : 0];
 
-assign query = ibus.address[ADDR_LEN - 1:TAG_OFFSET];
-assign way_idx = ibus.address[TAG_OFFSET - 1 : 0];
+mem #(
+    .WIDTH (TAG_LEN),
+    .SIZE (MEM_SIZE)
+) mem_tag (
+    .clk (clk),
+    .write (tag_write),
+    .addr (query_addr),
+    .wdata (tag_wdata),
+    .rdata (tag_rdata)
+);
 
-generate
-for(genvar i = 0; i < LINE_COUNT; i++) begin
-    assign hit[i] = tags[i] == query;
-    assign selected_way[i] = (hit[i]) ? data[i][way_idx] : '0;
-end
-endgenerate
+mem #(
+    .WIDTH (DATA_WIDTH),
+    .SIZE (MEM_SIZE)
+) mem_data (
+    .clk (clk),
+    .write (data_write),
+    .addr (query_addr),
+    .wdata (line_64_view_t'(wdata)),
+    .rdata (rdata)
+);
 
-always_comb begin
-    ibus.rddata = '0;
-    for(int i = 0; i < LINE_COUNT; i++) begin
-        ibus.rdata |= selected_way[i];
-    end
-end
+assign hit = tag_rdata == query_tag;
+assign ibus.rdata = (hit) ? rdata : '0;
 
 // AXI req register
 axi_req_t axi_req;
@@ -140,10 +159,14 @@ assign axi_req.bvalid = 1'b0;
 
 always_comb begin
     state_d = state;
+    burst_cnt_d = burst_cnt;
+
+    tag_write = 1'b0;
+    data_write = 1'b0;
 
     // AXI defaults
     axi_req.arvalid = 1'b0;
-    axi_req.arlen = LINE_COUNT - 1;
+    axi_req.arlen = LINE_WIDTH  * (DATA_WIDTH / 32) - 1;
     axi_req.arsize = 3'b011; // 4 bytes
     axi_req.araddr = '0;
     axi_req.arburst = 2'b01; // INCR
@@ -163,21 +186,13 @@ always_comb begin
             state_d = IDLE;
         end
         IDLE: begin
-            ibus.stall = 1'b0;
-
-            // TODO: saved tag
-            if(ibus.read) begin
-                state_d = CMP;
-            end
-        end
-        CMP: begin
             if(hit) begin
-
+                ibus.stall = 1'b0;
+            end else if(ibus.read) begin
+                state_d = FILL;
             end
-
-            state_d = REFILL;
         end
-        REFILL: begin
+        FILL: begin
             axi_req.arvalid = 1'b1;
             axi_req.araddr = ibus.address;
             burst_cnt_d = '0;
@@ -185,17 +200,22 @@ always_comb begin
             // Wait for slave
             if(arready) begin
                 state_d = RECV;
+
+                tag_write = 1'b1;
+                tag_wdata = query_tag;
             end
         end
         RECV: begin
             if(rvalid) begin
                 axi_req.rready = 1'b1;
-                data[burst_cnt] = rdata;
+                data_write = 1'b1;
+                wdata[burst_cnt] = rdata;
                 burst_cnt_d = burst_cnt + 1;
             end
 
             if(rvalid && rlast) begin
-                state_d = CMP;
+                state_d = IDLE;
+                burst_cnt_d = 0;
             end
         end
     endcase
@@ -204,8 +224,10 @@ end
 always_ff @(posedge clk or posedge rst) begin
     if(rst) begin
         state <= FLUSH;
+        burst_cnt_d = 0;
     end else begin
         state <= state_d;
+        burst_cnt = burst_cnt_d;
     end
 end
 
