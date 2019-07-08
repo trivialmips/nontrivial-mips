@@ -191,6 +191,7 @@ begin
 	unittest("across_tlb/6");
 	unittest_cycle("performance/loop");
 	unittest_cycle("performance/call_ras");
+	unittest_cycle("performance/call_ras_unaligned");
 	unittest_cycle("performance/call_btb");
 	unittest_cycle("performance/call_btb_conflict");
 	$display(summary);
