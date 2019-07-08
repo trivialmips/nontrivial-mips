@@ -19,6 +19,7 @@ localparam INDEX_OFFSET  = OFFSET + ROW_ADDR_BITS;
 localparam ADDR_BITS     = $clog2(ENTRIES_NUM) + OFFSET;
 
 typedef struct packed {
+	// TODO: we can remove the `valid` field
 	logic valid;
 	logic [1:0] counter;
 } bht_status_t;
