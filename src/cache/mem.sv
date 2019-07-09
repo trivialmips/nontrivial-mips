@@ -9,8 +9,8 @@ module mem #(
     input wire [$clog2(SIZE)-1:0] addr,
     input wire [WIDTH-1:0] wdata,
     // input wire [WIDTH/8-1:0] byteenable,
-    output [WIDTH-1:0] rdata,
-)
+    output logic [WIDTH-1:0] rdata
+);
 
 logic [WIDTH-1:0] mem [SIZE-1:0];
 
