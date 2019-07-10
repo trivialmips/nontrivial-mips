@@ -12,7 +12,7 @@
       "loongson_confrreg": "",
       "ddr_controller": "",
       "main_mmcm": "",
-      "proc_sys_reset_0": "",
+      "sys_reset_controller": "",
       "mmcm_locked_signal": "",
       "processor_bus": {
         "xbar": "",
@@ -46,7 +46,10 @@
       "spi_flash_controller": "",
       "cfg_flash_controller": "",
       "interrupt_signals": "",
-      "external_interrupt_controller": ""
+      "external_interrupt_controller": "",
+      "jtag_sys": "",
+      "bootrom_impl": "",
+      "axi_bram_ctrl_0": ""
     },
     "interface_ports": {
       "UART": {
@@ -294,7 +297,7 @@
           }
         }
       },
-      "proc_sys_reset_0": {
+      "sys_reset_controller": {
         "vlnv": "xilinx.com:ip:proc_sys_reset:5.0",
         "xci_name": "bd_soc_proc_sys_reset_0_0",
         "parameters": {
@@ -2174,6 +2177,89 @@
       "external_interrupt_controller": {
         "vlnv": "xilinx.com:ip:axi_intc:4.1",
         "xci_name": "bd_soc_axi_intc_0_0"
+      },
+      "jtag_sys": {
+        "vlnv": "xilinx.com:ip:jtag_axi:1.2",
+        "xci_name": "bd_soc_jtag_axi_0_0"
+      },
+      "bootrom_impl": {
+        "vlnv": "xilinx.com:ip:blk_mem_gen:8.4",
+        "xci_name": "bd_soc_blk_mem_gen_0_0",
+        "parameters": {
+          "Assume_Synchronous_Clk": {
+            "value": "false"
+          },
+          "Byte_Size": {
+            "value": "8"
+          },
+          "Coe_File": {
+            "value": "../../../../../../bootrom.coe"
+          },
+          "EN_SAFETY_CKT": {
+            "value": "false"
+          },
+          "Enable_32bit_Address": {
+            "value": "false"
+          },
+          "Enable_B": {
+            "value": "Use_ENB_Pin"
+          },
+          "Fill_Remaining_Memory_Locations": {
+            "value": "true"
+          },
+          "Load_Init_File": {
+            "value": "true"
+          },
+          "Memory_Type": {
+            "value": "True_Dual_Port_RAM"
+          },
+          "Port_B_Clock": {
+            "value": "100"
+          },
+          "Port_B_Enable_Rate": {
+            "value": "100"
+          },
+          "Port_B_Write_Rate": {
+            "value": "50"
+          },
+          "Read_Width_A": {
+            "value": "32"
+          },
+          "Read_Width_B": {
+            "value": "32"
+          },
+          "Register_PortA_Output_of_Memory_Primitives": {
+            "value": "false"
+          },
+          "Register_PortB_Output_of_Memory_Primitives": {
+            "value": "false"
+          },
+          "Use_Byte_Write_Enable": {
+            "value": "true"
+          },
+          "Use_RSTA_Pin": {
+            "value": "true"
+          },
+          "Use_RSTB_Pin": {
+            "value": "true"
+          },
+          "Write_Depth_A": {
+            "value": "32768"
+          },
+          "Write_Width_A": {
+            "value": "32"
+          },
+          "Write_Width_B": {
+            "value": "32"
+          },
+          "use_bram_block": {
+            "value": "Stand_Alone"
+          }
+        }
+      },
+      "axi_bram_ctrl_0": {
+        "vlnv": "xilinx.com:ip:axi_bram_ctrl:4.1",
+        "xci_name": "bd_soc_axi_bram_ctrl_0_0"
       }
     },
     "interface_nets": {
@@ -2279,6 +2365,18 @@
           "external_interrupt_controller/s_axi"
         ]
       },
+      "axi_bram_ctrl_0_BRAM_PORTA": {
+        "interface_ports": [
+          "axi_bram_ctrl_0/BRAM_PORTA",
+          "bootrom_impl/BRAM_PORTA"
+        ]
+      },
+      "jtag_sys_M_AXI": {
+        "interface_ports": [
+          "jtag_sys/M_AXI",
+          "processor_bus/S02_AXI"
+        ]
+      },
       "EJTAG_1": {
         "interface_ports": [
           "EJTAG",
@@ -2295,6 +2393,12 @@
         "interface_ports": [
           "DDR3",
           "ddr_controller/DDR3"
+        ]
+      },
+      "processor_bus_M02_AXI": {
+        "interface_ports": [
+          "processor_bus/M02_AXI",
+          "axi_bram_ctrl_0/S_AXI"
         ]
       }
     },
@@ -2371,7 +2475,7 @@
         "ports": [
           "main_mmcm/clk_cpu",
           "loongson_gs232/coreclock",
-          "proc_sys_reset_0/slowest_sync_clk",
+          "sys_reset_controller/slowest_sync_clk",
           "processor_bus/S00_ACLK"
         ]
       },
@@ -2391,13 +2495,13 @@
         "ports": [
           "ddr_controller/ui_clk_sync_rst",
           "main_mmcm/reset",
-          "proc_sys_reset_0/ext_reset_in"
+          "sys_reset_controller/ext_reset_in"
         ]
       },
       "mig_7series_0_init_calib_complete": {
         "ports": [
           "ddr_controller/init_calib_complete",
-          "proc_sys_reset_0/aux_reset_in"
+          "sys_reset_controller/aux_reset_in"
         ]
       },
       "clk_wiz_0_locked": {
@@ -2415,12 +2519,12 @@
       "util_vector_logic_0_Res": {
         "ports": [
           "mmcm_locked_signal/Res",
-          "proc_sys_reset_0/dcm_locked"
+          "sys_reset_controller/dcm_locked"
         ]
       },
       "proc_sys_reset_0_mb_reset": {
         "ports": [
-          "proc_sys_reset_0/mb_reset",
+          "sys_reset_controller/mb_reset",
           "loongson_gs232/areset_n",
           "processor_bus/S00_ARESETN"
         ]
@@ -2443,12 +2547,17 @@
           "peripheral_bus/M02_ACLK",
           "spi_flash_controller/s_axi_aclk",
           "cfg_flash_controller/s_axi4_aclk",
-          "external_interrupt_controller/s_axi_aclk"
+          "external_interrupt_controller/s_axi_aclk",
+          "jtag_sys/aclk",
+          "processor_bus/S02_ACLK",
+          "processor_bus/M00_ACLK",
+          "processor_bus/M01_ACLK",
+          "axi_bram_ctrl_0/s_axi_aclk"
         ]
       },
       "proc_sys_reset_0_interconnect_aresetn": {
         "ports": [
-          "proc_sys_reset_0/interconnect_aresetn",
+          "sys_reset_controller/interconnect_aresetn",
           "processor_bus/ARESETN",
           "memory_bus/aresetn",
           "peripheral_bus/ARESETN"
@@ -2456,7 +2565,7 @@
       },
       "proc_sys_reset_0_peripheral_aresetn": {
         "ports": [
-          "proc_sys_reset_0/peripheral_aresetn",
+          "sys_reset_controller/peripheral_aresetn",
           "peripheral_bus/S00_ARESETN",
           "uart_controller/s_axi_aresetn",
           "ethernet_controller/s_axi_aresetn",
@@ -2469,7 +2578,12 @@
           "peripheral_bus/M02_ARESETN",
           "spi_flash_controller/s_axi_aresetn",
           "cfg_flash_controller/s_axi4_aresetn",
-          "external_interrupt_controller/s_axi_aresetn"
+          "external_interrupt_controller/s_axi_aresetn",
+          "jtag_sys/aresetn",
+          "processor_bus/S02_ARESETN",
+          "processor_bus/M00_ARESETN",
+          "processor_bus/M01_ARESETN",
+          "axi_bram_ctrl_0/s_axi_aresetn"
         ]
       },
       "xlconstant_0_dout": {
@@ -2534,6 +2648,14 @@
       "/vga_controller": {
         "address_spaces": {
           "Video_data": {
+            "range": "4G",
+            "width": "32"
+          }
+        }
+      },
+      "/jtag_sys": {
+        "address_spaces": {
+          "Data": {
             "range": "4G",
             "width": "32"
           }

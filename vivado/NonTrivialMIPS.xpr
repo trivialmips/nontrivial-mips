@@ -426,6 +426,12 @@
           <Attr Name="ScopedToCell" Val="bd_soc_mig_7series_0_1"/>
         </FileInfo>
       </File>
+      <File Path="$PPRDIR/bootrom.coe">
+        <FileInfo>
+          <Attr Name="UsedIn" Val="synthesis"/>
+          <Attr Name="UsedIn" Val="simulation"/>
+        </FileInfo>
+      </File>
       <Config>
         <Option Name="DesignMode" Val="RTL"/>
         <Option Name="TopModule" Val="nscscc_soc_top"/>
