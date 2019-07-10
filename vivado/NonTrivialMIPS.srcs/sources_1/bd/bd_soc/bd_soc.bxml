@@ -176,7 +176,7 @@
         <UsedIn Val="SIMULATION"/>
       </File>
       <File Name="ip\bd_soc_axi_bram_ctrl_0_0\bd_soc_axi_bram_ctrl_0_0.xci" Type="IP">
-        <Instance HierarchyPath="axi_bram_ctrl_0"/>
+        <Instance HierarchyPath="bootrom_controller"/>
         <Properties IsEditable="false" IsVisible="true" Timestamp="0" IsTrackable="true" IsStatusTracked="true"/>
         <Library Name="xil_defaultlib"/>
         <UsedIn Val="SYNTHESIS"/>

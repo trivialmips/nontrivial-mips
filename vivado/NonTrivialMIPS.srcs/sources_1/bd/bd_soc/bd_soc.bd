@@ -49,7 +49,7 @@
       "external_interrupt_controller": "",
       "jtag_sys": "",
       "bootrom_impl": "",
-      "axi_bram_ctrl_0": ""
+      "bootrom_controller": ""
     },
     "interface_ports": {
       "UART": {
@@ -2257,7 +2257,7 @@
           }
         }
       },
-      "axi_bram_ctrl_0": {
+      "bootrom_controller": {
         "vlnv": "xilinx.com:ip:axi_bram_ctrl:4.1",
         "xci_name": "bd_soc_axi_bram_ctrl_0_0"
       }
@@ -2367,7 +2367,7 @@
       },
       "axi_bram_ctrl_0_BRAM_PORTA": {
         "interface_ports": [
-          "axi_bram_ctrl_0/BRAM_PORTA",
+          "bootrom_controller/BRAM_PORTA",
           "bootrom_impl/BRAM_PORTA"
         ]
       },
@@ -2398,7 +2398,7 @@
       "processor_bus_M02_AXI": {
         "interface_ports": [
           "processor_bus/M02_AXI",
-          "axi_bram_ctrl_0/S_AXI"
+          "bootrom_controller/S_AXI"
         ]
       }
     },
@@ -2552,11 +2552,17 @@
           "processor_bus/S02_ACLK",
           "processor_bus/M00_ACLK",
           "processor_bus/M01_ACLK",
-          "axi_bram_ctrl_0/s_axi_aclk",
+          "bootrom_controller/s_axi_aclk",
           "peripheral_bus/M04_ACLK",
           "peripheral_bus/M05_ACLK",
           "peripheral_bus/M06_ACLK",
-          "processor_bus/M02_ACLK"
+          "processor_bus/M02_ACLK",
+          "cfg_flash_controller/s_axi_aclk",
+          "peripheral_bus/M07_ACLK",
+          "peripheral_bus/M08_ACLK",
+          "peripheral_bus/M09_ACLK",
+          "processor_bus/S01_ACLK",
+          "processor_bus/M03_ACLK"
         ]
       },
       "proc_sys_reset_0_interconnect_aresetn": {
@@ -2587,7 +2593,7 @@
           "processor_bus/S02_ARESETN",
           "processor_bus/M00_ARESETN",
           "processor_bus/M01_ARESETN",
-          "axi_bram_ctrl_0/s_axi_aresetn",
+          "bootrom_controller/s_axi_aresetn",
           "peripheral_bus/M04_ARESETN",
           "peripheral_bus/M05_ARESETN",
           "peripheral_bus/M06_ARESETN",
@@ -2649,7 +2655,54 @@
         "address_spaces": {
           "interface_aximm": {
             "range": "4G",
-            "width": "32"
+            "width": "32",
+            "segments": {
+              "SEG_bootrom_controller_Mem0": {
+                "address_block": "/bootrom_controller/S_AXI/Mem0",
+                "offset": "0x1FC00000",
+                "range": "128K"
+              },
+              "SEG_cfg_flash_controller_MEM0": {
+                "address_block": "/cfg_flash_controller/aximm/MEM0",
+                "offset": "0x1A000000",
+                "range": "16M"
+              },
+              "SEG_ddr_controller_memaddr": {
+                "address_block": "/ddr_controller/memmap/memaddr",
+                "offset": "0x80000000",
+                "range": "128M"
+              },
+              "SEG_ethernet_controller_Reg": {
+                "address_block": "/ethernet_controller/S_AXI/Reg",
+                "offset": "0x1C000000",
+                "range": "64K"
+              },
+              "SEG_external_interrupt_controller_Reg": {
+                "address_block": "/external_interrupt_controller/S_AXI/Reg",
+                "offset": "0x1D000000",
+                "range": "64K"
+              },
+              "SEG_loongson_confrreg_reg0": {
+                "address_block": "/loongson_confrreg/interface_aximm/reg0",
+                "offset": "0x1FD0E000",
+                "range": "8K"
+              },
+              "SEG_spi_flash_controller_Reg": {
+                "address_block": "/spi_flash_controller/AXI_LITE/Reg",
+                "offset": "0x1E000000",
+                "range": "4K"
+              },
+              "SEG_uart_controller_Reg": {
+                "address_block": "/uart_controller/S_AXI/Reg",
+                "offset": "0x1FD02000",
+                "range": "8K"
+              },
+              "SEG_vga_controller_Reg": {
+                "address_block": "/vga_controller/S_AXI_MM/Reg",
+                "offset": "0x1C010000",
+                "range": "64K"
+              }
+            }
           }
         }
       },
@@ -2657,7 +2710,14 @@
         "address_spaces": {
           "Video_data": {
             "range": "4G",
-            "width": "32"
+            "width": "32",
+            "segments": {
+              "SEG_ddr_controller_memaddr": {
+                "address_block": "/ddr_controller/memmap/memaddr",
+                "offset": "0x00000000",
+                "range": "128M"
+              }
+            }
           }
         }
       },
@@ -2665,7 +2725,54 @@
         "address_spaces": {
           "Data": {
             "range": "4G",
-            "width": "32"
+            "width": "32",
+            "segments": {
+              "SEG_bootrom_controller_Mem0": {
+                "address_block": "/bootrom_controller/S_AXI/Mem0",
+                "offset": "0xC0000000",
+                "range": "8K"
+              },
+              "SEG_cfg_flash_controller_MEM0": {
+                "address_block": "/cfg_flash_controller/aximm/MEM0",
+                "offset": "0x1FD10000",
+                "range": "64K"
+              },
+              "SEG_ddr_controller_memaddr": {
+                "address_block": "/ddr_controller/memmap/memaddr",
+                "offset": "0x80000000",
+                "range": "128M"
+              },
+              "SEG_ethernet_controller_Reg": {
+                "address_block": "/ethernet_controller/S_AXI/Reg",
+                "offset": "0x1FD40000",
+                "range": "64K"
+              },
+              "SEG_external_interrupt_controller_Reg": {
+                "address_block": "/external_interrupt_controller/S_AXI/Reg",
+                "offset": "0x1FD60000",
+                "range": "64K"
+              },
+              "SEG_loongson_confrreg_reg0": {
+                "address_block": "/loongson_confrreg/interface_aximm/reg0",
+                "offset": "0x40000000",
+                "range": "1G"
+              },
+              "SEG_spi_flash_controller_Reg": {
+                "address_block": "/spi_flash_controller/AXI_LITE/Reg",
+                "offset": "0x1FD30000",
+                "range": "64K"
+              },
+              "SEG_uart_controller_Reg": {
+                "address_block": "/uart_controller/S_AXI/Reg",
+                "offset": "0x1FD20000",
+                "range": "64K"
+              },
+              "SEG_vga_controller_Reg": {
+                "address_block": "/vga_controller/S_AXI_MM/Reg",
+                "offset": "0x1FD50000",
+                "range": "64K"
+              }
+            }
           }
         }
       }
