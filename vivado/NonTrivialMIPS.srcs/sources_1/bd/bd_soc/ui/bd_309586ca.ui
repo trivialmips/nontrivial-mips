@@ -33,18 +33,18 @@ preplace portBus btn_step -pg 1 -y -250 -defaultsOSRD
 preplace inst mig_7series_0 -pg 1 -lvl 1 -y -70 -defaultsOSRD
 preplace inst loongson_cpu_gs232_0 -pg 1 -lvl 2 -y -80 -defaultsOSRD
 preplace inst confreg_0 -pg 1 -lvl 3 -y -90 -defaultsOSRD
-preplace netloc confreg_0_num_a_g 1 3 1 910
-preplace netloc switch_1 1 0 3 NJ -230 NJ -230 510
-preplace netloc mig_7series_0_DDR3 1 1 3 210J -210 NJ -210 870
-preplace netloc confreg_0_led 1 3 1 870
-preplace netloc btn_step_1 1 0 3 NJ -250 NJ -250 500
-preplace netloc confreg_0_num_csn 1 3 1 900
-preplace netloc confreg_0_btn_key_col 1 3 1 920
-preplace netloc clk_1 1 0 3 NJ -310 NJ -310 530
-preplace netloc confreg_0_led_rg0 1 3 1 880
-preplace netloc confreg_0_led_rg1 1 3 1 890
-preplace netloc btn_key_row_1 1 0 3 NJ -270 NJ -270 520
-levelinfo -pg 1 -70 80 360 700 990 -top -330 -bot 240
+preplace netloc confreg_0_num_a_g 1 3 1 920
+preplace netloc switch_1 1 0 3 NJ -230 NJ -230 520
+preplace netloc mig_7series_0_DDR3 1 1 3 210J -210 NJ -210 880
+preplace netloc confreg_0_led 1 3 1 880
+preplace netloc btn_step_1 1 0 3 NJ -250 NJ -250 510
+preplace netloc confreg_0_num_csn 1 3 1 910
+preplace netloc confreg_0_btn_key_col 1 3 1 930
+preplace netloc clk_1 1 0 3 NJ -310 NJ -310 540
+preplace netloc confreg_0_led_rg0 1 3 1 890
+preplace netloc confreg_0_led_rg1 1 3 1 900
+preplace netloc btn_key_row_1 1 0 3 NJ -270 NJ -270 530
+levelinfo -pg 1 -80 80 370 710 990 -top -330 -bot 240
 "
 }
 0

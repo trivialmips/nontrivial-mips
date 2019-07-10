@@ -51,6 +51,9 @@
         "type": "clk",
         "direction": "I",
         "parameters": {
+          "ASSOCIATED_RESET": {
+            "value": "rst_n"
+          },
           "FREQ_HZ": {
             "value": "100000000"
           }

@@ -129,5 +129,8 @@ module nscscc_soc_top(
     endgenerate
 
     // TODO: initialize block design here
+    bd_soc bd_soc_inst(
+        .*
+    );
 
 endmodule

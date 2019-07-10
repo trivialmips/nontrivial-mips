@@ -56,6 +56,19 @@
   <FileSets Version="1" Minor="31">
     <FileSet Name="sources_1" Type="DesignSrcs" RelSrcDir="$PSRCDIR/sources_1">
       <Filter Type="Srcs"/>
+      <File Path="$PSRCDIR/sources_1/bd/bd_soc/bd_soc.bd">
+        <FileInfo>
+          <Attr Name="UsedIn" Val="synthesis"/>
+          <Attr Name="UsedIn" Val="implementation"/>
+          <Attr Name="UsedIn" Val="simulation"/>
+        </FileInfo>
+        <CompFileExtendedInfo CompFileName="bd_soc.bd" FileRelPathName="ip/bd_soc_confreg_0_0/bd_soc_confreg_0_0.xci">
+          <Proxy FileSetName="bd_soc_confreg_0_0"/>
+        </CompFileExtendedInfo>
+        <CompFileExtendedInfo CompFileName="bd_soc.bd" FileRelPathName="ip/bd_soc_loongson_cpu_gs232_0_0/bd_soc_loongson_cpu_gs232_0_0.xci">
+          <Proxy FileSetName="bd_soc_loongson_cpu_gs232_0_0"/>
+        </CompFileExtendedInfo>
+      </File>
       <File Path="$PPRDIR/../src/common_defs.svh">
         <FileInfo>
           <Attr Name="UsedIn" Val="synthesis"/>
@@ -320,20 +333,6 @@
           <Attr Name="UsedIn" Val="simulation"/>
         </FileInfo>
       </File>
-      <File Path="$PSRCDIR/sources_1/bd/bd_soc/bd_soc.bd">
-        <FileInfo>
-          <Attr Name="AutoDisabled" Val="1"/>
-          <Attr Name="UsedIn" Val="synthesis"/>
-          <Attr Name="UsedIn" Val="implementation"/>
-          <Attr Name="UsedIn" Val="simulation"/>
-        </FileInfo>
-        <CompFileExtendedInfo CompFileName="bd_soc.bd" FileRelPathName="ip/bd_soc_confreg_0_0/bd_soc_confreg_0_0.xci">
-          <Proxy FileSetName="bd_soc_confreg_0_0"/>
-        </CompFileExtendedInfo>
-        <CompFileExtendedInfo CompFileName="bd_soc.bd" FileRelPathName="ip/bd_soc_loongson_cpu_gs232_0_0/bd_soc_loongson_cpu_gs232_0_0.xci">
-          <Proxy FileSetName="bd_soc_loongson_cpu_gs232_0_0"/>
-        </CompFileExtendedInfo>
-      </File>
       <File Path="$PPRDIR/../src/cpu/cp0/cp0.sv">
         <FileInfo>
           <Attr Name="AutoDisabled" Val="1"/>
@@ -424,6 +423,7 @@
       <File Path="$PSRCDIR/sources_1/bd/bd_soc/ip/bd_soc_mig_7series_0_1/mig_a.prj">
         <FileInfo>
           <Attr Name="UsedIn" Val="synthesis"/>
+          <Attr Name="ScopedToCell" Val="bd_soc_mig_7series_0_1"/>
         </FileInfo>
       </File>
       <Config>
@@ -660,19 +660,21 @@
       <ReportStrategy Name="Vivado Synthesis Default Reports" Flow="Vivado Synthesis 2018"/>
       <Report Name="ROUTE_DESIGN.REPORT_METHODOLOGY" Enabled="1"/>
     </Run>
-    <Run Id="bd_soc_confreg_0_0_synth_1" Type="Ft3:Synth" SrcSet="bd_soc_confreg_0_0" Part="xc7a200tfbg676-2" ConstrsSet="bd_soc_confreg_0_0" Description="Vivado Synthesis Defaults" AutoIncrementalCheckpoint="false" WriteIncrSynthDcp="false" IncludeInArchive="true">
+    <Run Id="bd_soc_confreg_0_0_synth_1" Type="Ft3:Synth" SrcSet="bd_soc_confreg_0_0" Part="xc7a200tfbg676-2" ConstrsSet="bd_soc_confreg_0_0" Description="Vivado Synthesis Defaults" AutoIncrementalCheckpoint="false" WriteIncrSynthDcp="false" Dir="$PRUNDIR/bd_soc_confreg_0_0_synth_1" IncludeInArchive="true">
       <Strategy Version="1" Minor="2">
         <StratHandle Name="Vivado Synthesis Defaults" Flow="Vivado Synthesis 2018"/>
         <Step Id="synth_design"/>
       </Strategy>
+      <GeneratedRun Dir="$PRUNDIR" File="gen_run.xml"/>
       <ReportStrategy Name="Vivado Synthesis Default Reports" Flow="Vivado Synthesis 2018"/>
       <Report Name="ROUTE_DESIGN.REPORT_METHODOLOGY" Enabled="1"/>
     </Run>
-    <Run Id="bd_soc_loongson_cpu_gs232_0_0_synth_1" Type="Ft3:Synth" SrcSet="bd_soc_loongson_cpu_gs232_0_0" Part="xc7a200tfbg676-2" ConstrsSet="bd_soc_loongson_cpu_gs232_0_0" Description="Vivado Synthesis Defaults" AutoIncrementalCheckpoint="false" WriteIncrSynthDcp="false" IncludeInArchive="true">
+    <Run Id="bd_soc_loongson_cpu_gs232_0_0_synth_1" Type="Ft3:Synth" SrcSet="bd_soc_loongson_cpu_gs232_0_0" Part="xc7a200tfbg676-2" ConstrsSet="bd_soc_loongson_cpu_gs232_0_0" Description="Vivado Synthesis Defaults" AutoIncrementalCheckpoint="false" WriteIncrSynthDcp="false" Dir="$PRUNDIR/bd_soc_loongson_cpu_gs232_0_0_synth_1" IncludeInArchive="true">
       <Strategy Version="1" Minor="2">
         <StratHandle Name="Vivado Synthesis Defaults" Flow="Vivado Synthesis 2018"/>
         <Step Id="synth_design"/>
       </Strategy>
+      <GeneratedRun Dir="$PRUNDIR" File="gen_run.xml"/>
       <ReportStrategy Name="Vivado Synthesis Default Reports" Flow="Vivado Synthesis 2018"/>
       <Report Name="ROUTE_DESIGN.REPORT_METHODOLOGY" Enabled="1"/>
     </Run>
