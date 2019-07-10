@@ -12,6 +12,129 @@
       "confreg_0": "",
       "mig_7series_0": ""
     },
+    "interface_ports": {
+      "UART": {
+        "mode": "Master",
+        "vlnv": "xilinx.com:interface:uart_rtl:1.0"
+      },
+      "VGA": {
+        "mode": "Master",
+        "vlnv": "xilinx.com:interface:vga_rtl:1.0"
+      },
+      "MII": {
+        "mode": "Master",
+        "vlnv": "xilinx.com:interface:mii_rtl:1.0"
+      },
+      "MDIO": {
+        "mode": "Master",
+        "vlnv": "xilinx.com:interface:mdio_rtl:1.0"
+      },
+      "SPI_FLASH": {
+        "mode": "Master",
+        "vlnv": "xilinx.com:interface:spi_rtl:1.0"
+      },
+      "CFG_FLASH": {
+        "mode": "Master",
+        "vlnv": "xilinx.com:interface:spi_rtl:1.0"
+      },
+      "DDR3": {
+        "mode": "Master",
+        "vlnv": "xilinx.com:interface:ddrx_rtl:1.0"
+      },
+      "EJTAG": {
+        "mode": "Master",
+        "vlnv": "xilinx.com:interface:jtag_rtl:2.0"
+      }
+    },
+    "ports": {
+      "clk": {
+        "type": "clk",
+        "direction": "I",
+        "parameters": {
+          "FREQ_HZ": {
+            "value": "100000000"
+          }
+        }
+      },
+      "rst_n": {
+        "type": "rst",
+        "direction": "I"
+      },
+      "led": {
+        "direction": "O",
+        "left": "15",
+        "right": "0"
+      },
+      "led_rg0": {
+        "direction": "O",
+        "left": "1",
+        "right": "0"
+      },
+      "led_rg1": {
+        "direction": "O",
+        "left": "1",
+        "right": "0"
+      },
+      "num_csn": {
+        "direction": "O",
+        "left": "7",
+        "right": "0"
+      },
+      "num_a_g": {
+        "direction": "O",
+        "left": "6",
+        "right": "0"
+      },
+      "btn_key_col": {
+        "direction": "O",
+        "left": "3",
+        "right": "0"
+      },
+      "btn_key_row": {
+        "direction": "I",
+        "left": "3",
+        "right": "0"
+      },
+      "btn_step": {
+        "direction": "I",
+        "left": "1",
+        "right": "0"
+      },
+      "switch": {
+        "direction": "I",
+        "left": "7",
+        "right": "0"
+      },
+      "PS2_clk": {
+        "direction": "IO"
+      },
+      "PS2_dat": {
+        "direction": "IO"
+      },
+      "LCD_data": {
+        "direction": "IO",
+        "left": "15",
+        "right": "0"
+      },
+      "LCD_nrst": {
+        "direction": "O"
+      },
+      "LCD_csel": {
+        "direction": "O"
+      },
+      "LCD_rd": {
+        "direction": "O"
+      },
+      "LCD_rs": {
+        "direction": "O"
+      },
+      "LCD_wr": {
+        "direction": "O"
+      },
+      "LCD_lighton": {
+        "direction": "O"
+      }
+    },
     "components": {
       "loongson_cpu_gs232_0": {
         "vlnv": "loongson.cn:user:loongson_cpu_gs232:1.0",
@@ -38,6 +161,76 @@
             "value": "mig_a.prj"
           }
         }
+      }
+    },
+    "interface_nets": {
+      "mig_7series_0_DDR3": {
+        "interface_ports": [
+          "DDR3",
+          "mig_7series_0/DDR3"
+        ]
+      }
+    },
+    "nets": {
+      "confreg_0_led": {
+        "ports": [
+          "confreg_0/led",
+          "led"
+        ]
+      },
+      "confreg_0_led_rg0": {
+        "ports": [
+          "confreg_0/led_rg0",
+          "led_rg0"
+        ]
+      },
+      "confreg_0_led_rg1": {
+        "ports": [
+          "confreg_0/led_rg1",
+          "led_rg1"
+        ]
+      },
+      "confreg_0_num_csn": {
+        "ports": [
+          "confreg_0/num_csn",
+          "num_csn"
+        ]
+      },
+      "confreg_0_num_a_g": {
+        "ports": [
+          "confreg_0/num_a_g",
+          "num_a_g"
+        ]
+      },
+      "confreg_0_btn_key_col": {
+        "ports": [
+          "confreg_0/btn_key_col",
+          "btn_key_col"
+        ]
+      },
+      "btn_step_1": {
+        "ports": [
+          "btn_step",
+          "confreg_0/btn_step"
+        ]
+      },
+      "btn_key_row_1": {
+        "ports": [
+          "btn_key_row",
+          "confreg_0/btn_key_row"
+        ]
+      },
+      "switch_1": {
+        "ports": [
+          "switch",
+          "confreg_0/switch"
+        ]
+      },
+      "clk_1": {
+        "ports": [
+          "clk",
+          "confreg_0/timer_clk"
+        ]
       }
     },
     "addressing": {
