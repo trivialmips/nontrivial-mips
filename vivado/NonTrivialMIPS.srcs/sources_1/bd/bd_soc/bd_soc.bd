@@ -42,7 +42,7 @@
         "vlnv": "xilinx.com:interface:ddrx_rtl:1.0"
       },
       "EJTAG": {
-        "mode": "Master",
+        "mode": "Slave",
         "vlnv": "xilinx.com:interface:jtag_rtl:2.0"
       }
     },
@@ -136,6 +136,9 @@
       },
       "LCD_lighton": {
         "direction": "O"
+      },
+      "EJTAG_trst": {
+        "direction": "I"
       }
     },
     "components": {
@@ -167,6 +170,12 @@
       }
     },
     "interface_nets": {
+      "EJTAG_1": {
+        "interface_ports": [
+          "EJTAG",
+          "loongson_cpu_gs232_0/EJTAG"
+        ]
+      },
       "mig_7series_0_DDR3": {
         "interface_ports": [
           "DDR3",
@@ -232,7 +241,14 @@
       "clk_1": {
         "ports": [
           "clk",
-          "confreg_0/timer_clk"
+          "confreg_0/timer_clk",
+          "mig_7series_0/sys_clk_i"
+        ]
+      },
+      "EJTAG_trst_1": {
+        "ports": [
+          "EJTAG_trst",
+          "loongson_cpu_gs232_0/EJTAG_TRST"
         ]
       }
     },
