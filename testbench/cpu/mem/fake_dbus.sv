@@ -2,15 +2,18 @@
 
 module fake_dbus #(
 	parameter DATA_WIDTH = 32,
+	parameter CACHE_LINE = 4,
 	parameter SIZE       = 8192
 )(
 	input logic clk,
 	input logic rst,
+	input logic fake_stall_en,
 	cpu_dbus_if.slave dbus
 );
 
 localparam int ADDR_WIDTH = $clog2(SIZE) + 2;
 reg [DATA_WIDTH-1:0] mem[SIZE-1:0];
+reg [SIZE / $clog2(CACHE_LINE)-1:0] hit;
 
 logic pipe_read, pipe_write, pipe_uncached_read, pipe_uncached_write;
 uint32_t pipe_addr;
@@ -42,7 +45,7 @@ end else begin : dcache_pipe2
 			pipe_sel    <= '0;
 			pipe_uncached_read  <= '0;
 			pipe_uncached_write <= '0;
-		end else begin
+		end else if(~dbus.stall) begin
 			pipe_wrdata <= dbus.wrdata;
 			pipe_read   <= dbus.read;
 			pipe_write  <= dbus.write;
@@ -56,10 +59,32 @@ end
 endgenerate
 
 always_ff @(posedge clk or posedge rst) begin
+	if(rst) begin
+		hit       <= '0;
+	end else if(pipe_read | pipe_write | pipe_uncached_read | pipe_uncached_write) begin
+		hit[pipe_addr[ADDR_WIDTH-1:2+$clog2(CACHE_LINE)]] <= 1'b1;
+	end
+end
+
+always_ff @(posedge clk or posedge rst) begin
 	if(~rst) begin
 		if(pipe_write | pipe_uncached_write) begin
 			mem[pipe_addr[ADDR_WIDTH-1:2]] <= wrdata;
 		end
+	end
+end
+
+logic cache_miss;
+assign cache_miss = (pipe_read | pipe_write | pipe_uncached_read | pipe_uncached_write) & ~hit[pipe_addr[ADDR_WIDTH-1:2+$clog2(CACHE_LINE)]];
+
+logic [4:0] stall;
+always_ff @(posedge clk or posedge rst) begin
+	if(rst) begin
+		stall <= '0;
+	end else if(cache_miss & ~(|stall)) begin
+		stall <= 5'b10000;
+	end else begin
+		stall <= stall >> 1;
 	end
 end
 
@@ -72,9 +97,9 @@ begin
 		dbus.uncached_stall  = 1'b0;
 		dbus.uncached_rddata = 'x;
 	end else begin
-		dbus.stall  = 1'b0;
+		dbus.stall  = (cache_miss | (|stall)) & fake_stall_en;
 		dbus.rddata = pipe_read ? rddata : 'x;
-		dbus.uncached_stall  = 1'b0;
+		dbus.uncached_stall  = (cache_miss | (|stall)) & fake_stall_en;
 		dbus.uncached_rddata = pipe_uncached_read ? rddata : 'x;
 	end
 end
