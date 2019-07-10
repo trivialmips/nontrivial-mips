@@ -2552,7 +2552,11 @@
           "processor_bus/S02_ACLK",
           "processor_bus/M00_ACLK",
           "processor_bus/M01_ACLK",
-          "axi_bram_ctrl_0/s_axi_aclk"
+          "axi_bram_ctrl_0/s_axi_aclk",
+          "peripheral_bus/M04_ACLK",
+          "peripheral_bus/M05_ACLK",
+          "peripheral_bus/M06_ACLK",
+          "processor_bus/M02_ACLK"
         ]
       },
       "proc_sys_reset_0_interconnect_aresetn": {
@@ -2583,7 +2587,11 @@
           "processor_bus/S02_ARESETN",
           "processor_bus/M00_ARESETN",
           "processor_bus/M01_ARESETN",
-          "axi_bram_ctrl_0/s_axi_aresetn"
+          "axi_bram_ctrl_0/s_axi_aresetn",
+          "peripheral_bus/M04_ARESETN",
+          "peripheral_bus/M05_ARESETN",
+          "peripheral_bus/M06_ARESETN",
+          "processor_bus/M02_ARESETN"
         ]
       },
       "xlconstant_0_dout": {
