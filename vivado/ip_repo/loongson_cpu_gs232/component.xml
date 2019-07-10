@@ -1238,17 +1238,17 @@
     <spirit:fileSet>
       <spirit:name>xilinx_anylanguagesynthesis_view_fileset</spirit:name>
       <spirit:file>
-        <spirit:name>global.h</spirit:name>
+        <spirit:name>../../../loongson/cpu_gs232/global.h</spirit:name>
         <spirit:fileType>verilogSource</spirit:fileType>
         <spirit:isIncludeFile>true</spirit:isIncludeFile>
       </spirit:file>
       <spirit:file>
-        <spirit:name>reg.h</spirit:name>
+        <spirit:name>../../../loongson/cpu_gs232/reg.h</spirit:name>
         <spirit:fileType>verilogSource</spirit:fileType>
         <spirit:isIncludeFile>true</spirit:isIncludeFile>
       </spirit:file>
       <spirit:file>
-        <spirit:name>bus.h</spirit:name>
+        <spirit:name>../../../loongson/cpu_gs232/bus.h</spirit:name>
         <spirit:fileType>verilogSource</spirit:fileType>
         <spirit:isIncludeFile>true</spirit:isIncludeFile>
       </spirit:file>
