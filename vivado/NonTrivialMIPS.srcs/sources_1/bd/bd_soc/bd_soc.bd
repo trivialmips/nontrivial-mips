@@ -5,11 +5,12 @@
       "device": "xc7a200tfbg676-2",
       "name": "bd_soc",
       "synth_flow_mode": "Hierarchical",
-      "tool_version": "2018.3"
+      "tool_version": "2018.3_AR71898"
     },
     "design_tree": {
       "loongson_cpu_gs232_0": "",
-      "confreg_0": ""
+      "confreg_0": "",
+      "mig_7series_0": ""
     },
     "components": {
       "loongson_cpu_gs232_0": {
@@ -19,6 +20,24 @@
       "confreg_0": {
         "vlnv": "loongson.cn:user:confreg:1.0",
         "xci_name": "bd_soc_confreg_0_0"
+      },
+      "mig_7series_0": {
+        "vlnv": "xilinx.com:ip:mig_7series:4.2",
+        "xci_name": "bd_soc_mig_7series_0_1",
+        "parameters": {
+          "BOARD_MIG_PARAM": {
+            "value": "Custom"
+          },
+          "MIG_DONT_TOUCH_PARAM": {
+            "value": "Custom"
+          },
+          "RESET_BOARD_INTERFACE": {
+            "value": "Custom"
+          },
+          "XML_INPUT_FILE": {
+            "value": "mig_a.prj"
+          }
+        }
       }
     },
     "addressing": {

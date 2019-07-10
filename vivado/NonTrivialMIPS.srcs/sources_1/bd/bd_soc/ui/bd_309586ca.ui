@@ -1,10 +1,11 @@
 {
    "ExpandedHierarchyInLayout":"",
-   "guistr":"# # String gsaved with Nlview 6.8.11  2018-08-07 bk=1.4403 VDI=40 GEI=35 GUI=JA:9.0 non-TLS-threadsafe
+   "guistr":"# # String gsaved with Nlview 6.8.11  2018-08-07 bk=1.4403 VDI=40 GEI=35 GUI=JA:9.0 non-TLS
 #  -string -flagsOSRD
-preplace inst loongson_cpu_gs232_0 -pg 1 -lvl 1 -y -80 -defaultsOSRD
-preplace inst confreg_0 -pg 1 -lvl 2 -y -90 -defaultsOSRD
-levelinfo -pg 1 -30 150 540 990 -top -270 -bot 240
+preplace inst mig_7series_0 -pg 1 -lvl 1 -y -70 -defaultsOSRD
+preplace inst loongson_cpu_gs232_0 -pg 1 -lvl 2 -y -80 -defaultsOSRD
+preplace inst confreg_0 -pg 1 -lvl 3 -y -90 -defaultsOSRD
+levelinfo -pg 1 -60 80 360 680 990 -top -330 -bot 240
 "
 }
 0
