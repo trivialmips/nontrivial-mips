@@ -53,6 +53,7 @@ always_ff @(posedge clk or posedge rst) begin
 		if(flush) begin
 			for(int i = 0; i < ROW_NUM; ++i) begin
 				for(int j = 0; j < `FETCH_NUM; ++j) begin
+					// TODO: we can remove the `valid` field
 					btb_now[i][j].valid <= 1'b0;
 				end
 			end
