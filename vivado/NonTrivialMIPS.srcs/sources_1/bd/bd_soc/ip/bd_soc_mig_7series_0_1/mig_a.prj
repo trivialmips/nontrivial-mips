@@ -1,4 +1,4 @@
-ï»¿<?xml version="1.0" encoding="UTF-8" standalone="no" ?>
+ï»?<?xml version="1.0" encoding="UTF-8" standalone="no" ?>
 <Project NoOfControllers="1">
 
   <ModuleName>bd_soc_mig_7series_0_1</ModuleName>
@@ -142,7 +142,7 @@
       <C0_S_AXI_ADDR_WIDTH>27</C0_S_AXI_ADDR_WIDTH>
       <C0_S_AXI_DATA_WIDTH>128</C0_S_AXI_DATA_WIDTH>
       <C0_S_AXI_ID_WIDTH>4</C0_S_AXI_ID_WIDTH>
-      <C0_S_AXI_SUPPORTS_NARROW_BURST>1</C0_S_AXI_SUPPORTS_NARROW_BURST>
+      <C0_S_AXI_SUPPORTS_NARROW_BURST>0</C0_S_AXI_SUPPORTS_NARROW_BURST>
     </AXIParameters>
   </Controller>
 

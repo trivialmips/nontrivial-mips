@@ -2,10 +2,10 @@
 <Root MajorVersion="0" MinorVersion="36">
   <CompositeFile CompositeFileTopName="bd_soc" CanBeSetAsTop="false" CanDisplayChildGraph="true">
     <Description>Composite Fileset</Description>
-    <Generation Name="SYNTHESIS" State="STALE" Timestamp="1562231479"/>
-    <Generation Name="IMPLEMENTATION" State="STALE" Timestamp="1562231479"/>
-    <Generation Name="SIMULATION" State="STALE" Timestamp="1562231479"/>
-    <Generation Name="HW_HANDOFF" State="STALE" Timestamp="1562231479"/>
+    <Generation Name="SYNTHESIS" State="STALE" Timestamp="1562779540"/>
+    <Generation Name="IMPLEMENTATION" State="STALE" Timestamp="1562779540"/>
+    <Generation Name="SIMULATION" State="STALE" Timestamp="1562779540"/>
+    <Generation Name="HW_HANDOFF" State="STALE" Timestamp="1562779540"/>
     <FileCollection Name="SOURCES" Type="SOURCES">
       <File Name="ip\bd_soc_loongson_cpu_gs232_0_0\bd_soc_loongson_cpu_gs232_0_0.xci" Type="IP">
         <Instance HierarchyPath="loongson_gs232"/>
@@ -177,6 +177,118 @@
       </File>
       <File Name="ip\bd_soc_axi_bram_ctrl_0_0\bd_soc_axi_bram_ctrl_0_0.xci" Type="IP">
         <Instance HierarchyPath="bootrom_controller"/>
+        <Properties IsEditable="false" IsVisible="true" Timestamp="0" IsTrackable="true" IsStatusTracked="true"/>
+        <Library Name="xil_defaultlib"/>
+        <UsedIn Val="SYNTHESIS"/>
+        <UsedIn Val="IMPLEMENTATION"/>
+        <UsedIn Val="SIMULATION"/>
+      </File>
+      <File Name="ip\bd_soc_s00_data_fifo_1\bd_soc_s00_data_fifo_1.xci" Type="IP">
+        <Instance HierarchyPath="processor_bus/s00_couplers/s00_data_fifo"/>
+        <Properties IsEditable="false" IsVisible="true" Timestamp="0" IsTrackable="true" IsStatusTracked="true"/>
+        <Library Name="xil_defaultlib"/>
+        <UsedIn Val="SYNTHESIS"/>
+        <UsedIn Val="IMPLEMENTATION"/>
+        <UsedIn Val="SIMULATION"/>
+      </File>
+      <File Name="ip\bd_soc_auto_cc_0\bd_soc_auto_cc_0.xci" Type="IP">
+        <Instance HierarchyPath="processor_bus/s00_couplers/auto_cc"/>
+        <Properties IsEditable="false" IsVisible="true" Timestamp="0" IsTrackable="true" IsStatusTracked="true"/>
+        <Library Name="xil_defaultlib"/>
+        <UsedIn Val="SYNTHESIS"/>
+        <UsedIn Val="IMPLEMENTATION"/>
+        <UsedIn Val="SIMULATION"/>
+      </File>
+      <File Name="ip\bd_soc_auto_pc_0\bd_soc_auto_pc_0.xci" Type="IP">
+        <Instance HierarchyPath="processor_bus/s00_couplers/auto_pc"/>
+        <Properties IsEditable="false" IsVisible="true" Timestamp="0" IsTrackable="true" IsStatusTracked="true"/>
+        <Library Name="xil_defaultlib"/>
+        <UsedIn Val="SYNTHESIS"/>
+        <UsedIn Val="IMPLEMENTATION"/>
+        <UsedIn Val="SIMULATION"/>
+      </File>
+      <File Name="ip\bd_soc_s01_data_fifo_0\bd_soc_s01_data_fifo_0.xci" Type="IP">
+        <Instance HierarchyPath="processor_bus/s01_couplers/s01_data_fifo"/>
+        <Properties IsEditable="false" IsVisible="true" Timestamp="0" IsTrackable="true" IsStatusTracked="true"/>
+        <Library Name="xil_defaultlib"/>
+        <UsedIn Val="SYNTHESIS"/>
+        <UsedIn Val="IMPLEMENTATION"/>
+        <UsedIn Val="SIMULATION"/>
+      </File>
+      <File Name="ip\bd_soc_s02_data_fifo_0\bd_soc_s02_data_fifo_0.xci" Type="IP">
+        <Instance HierarchyPath="processor_bus/s02_couplers/s02_data_fifo"/>
+        <Properties IsEditable="false" IsVisible="true" Timestamp="0" IsTrackable="true" IsStatusTracked="true"/>
+        <Library Name="xil_defaultlib"/>
+        <UsedIn Val="SYNTHESIS"/>
+        <UsedIn Val="IMPLEMENTATION"/>
+        <UsedIn Val="SIMULATION"/>
+      </File>
+      <File Name="ip\bd_soc_s00_mmu_0\bd_soc_s00_mmu_0.xci" Type="IP">
+        <Instance HierarchyPath="processor_bus/s00_mmu"/>
+        <Properties IsEditable="false" IsVisible="true" Timestamp="0" IsTrackable="true" IsStatusTracked="true"/>
+        <Library Name="xil_defaultlib"/>
+        <UsedIn Val="SYNTHESIS"/>
+        <UsedIn Val="IMPLEMENTATION"/>
+        <UsedIn Val="SIMULATION"/>
+      </File>
+      <File Name="ip\bd_soc_s02_mmu_0\bd_soc_s02_mmu_0.xci" Type="IP">
+        <Instance HierarchyPath="processor_bus/s02_mmu"/>
+        <Properties IsEditable="false" IsVisible="true" Timestamp="0" IsTrackable="true" IsStatusTracked="true"/>
+        <Library Name="xil_defaultlib"/>
+        <UsedIn Val="SYNTHESIS"/>
+        <UsedIn Val="IMPLEMENTATION"/>
+        <UsedIn Val="SIMULATION"/>
+      </File>
+      <File Name="ip\bd_soc_s00_data_fifo_0\bd_soc_s00_data_fifo_0.xci" Type="IP">
+        <Instance HierarchyPath="peripheral_bus/s00_couplers/s00_data_fifo"/>
+        <Properties IsEditable="false" IsVisible="true" Timestamp="0" IsTrackable="true" IsStatusTracked="true"/>
+        <Library Name="xil_defaultlib"/>
+        <UsedIn Val="SYNTHESIS"/>
+        <UsedIn Val="IMPLEMENTATION"/>
+        <UsedIn Val="SIMULATION"/>
+      </File>
+      <File Name="ip\bd_soc_auto_pc_1\bd_soc_auto_pc_1.xci" Type="IP">
+        <Instance HierarchyPath="peripheral_bus/m00_couplers/auto_pc"/>
+        <Properties IsEditable="false" IsVisible="true" Timestamp="0" IsTrackable="true" IsStatusTracked="true"/>
+        <Library Name="xil_defaultlib"/>
+        <UsedIn Val="SYNTHESIS"/>
+        <UsedIn Val="IMPLEMENTATION"/>
+        <UsedIn Val="SIMULATION"/>
+      </File>
+      <File Name="ip\bd_soc_auto_pc_2\bd_soc_auto_pc_2.xci" Type="IP">
+        <Instance HierarchyPath="peripheral_bus/m01_couplers/auto_pc"/>
+        <Properties IsEditable="false" IsVisible="true" Timestamp="0" IsTrackable="true" IsStatusTracked="true"/>
+        <Library Name="xil_defaultlib"/>
+        <UsedIn Val="SYNTHESIS"/>
+        <UsedIn Val="IMPLEMENTATION"/>
+        <UsedIn Val="SIMULATION"/>
+      </File>
+      <File Name="ip\bd_soc_auto_pc_3\bd_soc_auto_pc_3.xci" Type="IP">
+        <Instance HierarchyPath="peripheral_bus/m02_couplers/auto_pc"/>
+        <Properties IsEditable="false" IsVisible="true" Timestamp="0" IsTrackable="true" IsStatusTracked="true"/>
+        <Library Name="xil_defaultlib"/>
+        <UsedIn Val="SYNTHESIS"/>
+        <UsedIn Val="IMPLEMENTATION"/>
+        <UsedIn Val="SIMULATION"/>
+      </File>
+      <File Name="ip\bd_soc_auto_pc_4\bd_soc_auto_pc_4.xci" Type="IP">
+        <Instance HierarchyPath="peripheral_bus/m04_couplers/auto_pc"/>
+        <Properties IsEditable="false" IsVisible="true" Timestamp="0" IsTrackable="true" IsStatusTracked="true"/>
+        <Library Name="xil_defaultlib"/>
+        <UsedIn Val="SYNTHESIS"/>
+        <UsedIn Val="IMPLEMENTATION"/>
+        <UsedIn Val="SIMULATION"/>
+      </File>
+      <File Name="ip\bd_soc_auto_pc_5\bd_soc_auto_pc_5.xci" Type="IP">
+        <Instance HierarchyPath="peripheral_bus/m06_couplers/auto_pc"/>
+        <Properties IsEditable="false" IsVisible="true" Timestamp="0" IsTrackable="true" IsStatusTracked="true"/>
+        <Library Name="xil_defaultlib"/>
+        <UsedIn Val="SYNTHESIS"/>
+        <UsedIn Val="IMPLEMENTATION"/>
+        <UsedIn Val="SIMULATION"/>
+      </File>
+      <File Name="ip\bd_soc_util_vector_logic_0_1\bd_soc_util_vector_logic_0_1.xci" Type="IP">
+        <Instance HierarchyPath="reset_negate"/>
         <Properties IsEditable="false" IsVisible="true" Timestamp="0" IsTrackable="true" IsStatusTracked="true"/>
         <Library Name="xil_defaultlib"/>
         <UsedIn Val="SYNTHESIS"/>
