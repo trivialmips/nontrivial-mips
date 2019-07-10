@@ -8,6 +8,8 @@
 !*/
 *.runs/
 *.hw/
+*.sim/
+*.tmp/
 *.cache/
 *.Xil/
 *.ip_user_files/

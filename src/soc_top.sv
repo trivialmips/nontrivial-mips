@@ -37,10 +37,10 @@ module nscscc_soc_top(
     output wire [15:0] led,
     output wire [ 1:0] led_rg0,
     output wire [ 1:0] led_rg1,
-    input  wire [ 7:0] num_csn,
-    input  wire [ 7:0] num_a_g,
-    input  wire        num_a_g_dp,
-    input  wire [ 3:0] btn_key_col,
+    output wire [ 7:0] num_csn,
+    output wire [ 6:0] num_a_g,
+    output wire        num_a_g_dp,
+    output wire [ 3:0] btn_key_col,
     input  wire [ 3:0] btn_key_row,
     input  wire [ 1:0] btn_step,
     input  wire [ 7:0] switch,
@@ -114,7 +114,6 @@ module nscscc_soc_top(
 
     // LCD
     `IOBUF_GEN_VEC_SIMPLE(LCD_data);
-    assign LCD_lighton = 1'b1;
 
     // VGA
     wire [5:0] VGA_red, VGA_green, VGA_blue;
@@ -128,6 +127,113 @@ module nscscc_soc_top(
     end
     endgenerate
 
-    // TODO: initialize block design here
+    // initialize block design
+    bd_soc bd_soc_inst(
+        .clk,
+        .rst,
+        // UART
+        .UART_txd,
+        .UART_rxd,
+        .UART_ctsn(1'b0),
+        .UART_dcdn(1'b0),
+        .UART_dsrn(1'b0),
+        .UART_ri  (1'b1), //actually rin
+        // plugable SPI flash
+        .SPI_FLASH_io0_i,
+        .SPI_FLASH_io0_o,
+        .SPI_FLASH_io0_t,
+        .SPI_FLASH_io1_i,
+        .SPI_FLASH_io1_o,
+        .SPI_FLASH_io1_t,
+        .SPI_FLASH_io2_i,
+        .SPI_FLASH_io2_o,
+        .SPI_FLASH_io2_t,
+        .SPI_FLASH_io3_i,
+        .SPI_FLASH_io3_o,
+        .SPI_FLASH_io3_t,
+        .SPI_FLASH_sck_i,
+        .SPI_FLASH_sck_o,
+        .SPI_FLASH_sck_t,
+        .SPI_FLASH_ss_i,
+        .SPI_FLASH_ss_o,
+        .SPI_FLASH_ss_t,
+        // non-plugable CFG SPI flash
+        .CFG_FLASH_io0_i,
+        .CFG_FLASH_io0_o,
+        .CFG_FLASH_io0_t,
+        .CFG_FLASH_io1_i,
+        .CFG_FLASH_io1_o,
+        .CFG_FLASH_io1_t,
+        .CFG_FLASH_ss_i,
+        .CFG_FLASH_ss_o,
+        .CFG_FLASH_ss_t,
+        // VGA (non-pixel)
+        .VGA_hsync,
+        .VGA_vsync,
+        .VGA_clk(),
+        .VGA_de (),
+        .VGA_dps(),
+        // GPIO
+        .led,
+        .led_rg0,
+        .led_rg1,
+        .num_csn,
+        .num_a_g,
+        .num_a_g_dp,
+        .btn_key_col,
+        .btn_key_row,
+        .btn_step,
+        .switch,
+        // PS/2
+        .PS2_clk_i,
+        .PS2_clk_o,
+        .PS2_clk_t,
+        .PS2_dat_i,
+        .PS2_dat_o,
+        .PS2_dat_t,
+        // DDR3,
+        .DDR3_dq,
+        .DDR3_addr,
+        .DDR3_ba,
+        .DDR3_ras_n,
+        .DDR3_cas_n,
+        .DDR3_we_n,
+        .DDR3_odt,
+        .DDR3_reset_n,
+        .DDR3_cke,
+        .DDR3_dm,
+        .DDR3_dqs_p,
+        .DDR3_dqs_n,
+        .DDR3_ck_p,
+        .DDR3_ck_n,
+        // ethernet
+        .MDIO_mdc,
+        .MDIO_mdio,
+        .MII_col,
+        .MII_crs,
+        .MII_rst_n,
+        .MII_rx_clk,
+        .MII_rx_dv,
+        .MII_rx_er,
+        .MII_rxd,
+        .MII_tx_clk,
+        .MII_tx_en,
+        .MII_tx_er,
+        .MII_txd,
+        // LCD
+        .LCD_data,
+        .LCD_nrst,
+        .LCD_csel,
+        .LCD_rd,
+        .LCD_rs,
+        .LCD_wr,
+        .LCD_lighton,
+        // EJTAG
+        .EJTAG_trst,
+        .EJTAG_tck,
+        .EJTAG_tdi,
+        .EJTAG_tms,
+        .EJTAG_tdo
+    );
 
 endmodule
