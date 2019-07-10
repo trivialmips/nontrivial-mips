@@ -192,14 +192,6 @@
           <Attr Name="UsedIn" Val="simulation"/>
         </FileInfo>
       </File>
-      <File Path="$PPRDIR/../src/cpu/hilo.sv">
-        <FileInfo>
-          <Attr Name="AutoDisabled" Val="1"/>
-          <Attr Name="UsedIn" Val="synthesis"/>
-          <Attr Name="UsedIn" Val="implementation"/>
-          <Attr Name="UsedIn" Val="simulation"/>
-        </FileInfo>
-      </File>
       <File Path="$PPRDIR/../src/cpu/exec/hilo_forward.sv">
         <FileInfo>
           <Attr Name="AutoDisabled" Val="1"/>
@@ -296,14 +288,6 @@
           <Attr Name="UsedIn" Val="simulation"/>
         </FileInfo>
       </File>
-      <File Path="$PPRDIR/../src/cpu/regfile.sv">
-        <FileInfo>
-          <Attr Name="AutoDisabled" Val="1"/>
-          <Attr Name="UsedIn" Val="synthesis"/>
-          <Attr Name="UsedIn" Val="implementation"/>
-          <Attr Name="UsedIn" Val="simulation"/>
-        </FileInfo>
-      </File>
       <File Path="$PPRDIR/../src/cpu/decode/register_forward.sv">
         <FileInfo>
           <Attr Name="AutoDisabled" Val="1"/>
@@ -343,11 +327,11 @@
           <Attr Name="UsedIn" Val="implementation"/>
           <Attr Name="UsedIn" Val="simulation"/>
         </FileInfo>
-        <CompFileExtendedInfo CompFileName="bd_soc.bd" FileRelPathName="ip/bd_soc_loongson_cpu_gs232_0_0/bd_soc_loongson_cpu_gs232_0_0.xci">
-          <Proxy FileSetName="bd_soc_loongson_cpu_gs232_0_0"/>
-        </CompFileExtendedInfo>
         <CompFileExtendedInfo CompFileName="bd_soc.bd" FileRelPathName="ip/bd_soc_confreg_0_0/bd_soc_confreg_0_0.xci">
           <Proxy FileSetName="bd_soc_confreg_0_0"/>
+        </CompFileExtendedInfo>
+        <CompFileExtendedInfo CompFileName="bd_soc.bd" FileRelPathName="ip/bd_soc_loongson_cpu_gs232_0_0/bd_soc_loongson_cpu_gs232_0_0.xci">
+          <Proxy FileSetName="bd_soc_loongson_cpu_gs232_0_0"/>
         </CompFileExtendedInfo>
       </File>
       <File Path="$PPRDIR/../src/cpu/cp0/cp0.sv">
@@ -589,6 +573,7 @@
       </Config>
     </FileSet>
     <FileSet Name="cache_test" Type="SimulationSrcs" RelSrcDir="$PSRCDIR/cache_test">
+      <Filter Type="Srcs"/>
       <File Path="$PPRDIR/../src/cache/cache_controller.sv">
         <FileInfo>
           <Attr Name="UsedIn" Val="synthesis"/>
