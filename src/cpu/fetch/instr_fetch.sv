@@ -40,21 +40,10 @@ function virt_t aligned_address( input virt_t addr );
 	return { addr[31:ADDR_ALIGN_WIDTH], {ADDR_ALIGN_WIDTH{1'b0}} };
 endfunction
 
-// When hold_resolved_branch_d is true, resolved_branch is used last
-// cycle and do not change due to stall signals from EX/MM.
-logic hold_resolved_branch_d;
 branch_resolved_t resolved_branch;
 always_comb begin
 	resolved_branch = resolved_branch_i;
-	resolved_branch.valid &= ~hold_resolved_branch_d;
-end
-
-always_ff @(posedge clk or posedge rst) begin
-	if(rst || flush_pc) begin
-		hold_resolved_branch_d <= 1'b0;
-	end else begin
-		hold_resolved_branch_d <= hold_resolved_branch;
-	end
+	resolved_branch.valid &= ~hold_resolved_branch;
 end
 
 // program counter (stage 1)
@@ -63,7 +52,7 @@ virt_t   pc, fetch_vaddr;
 
 // pipeline registers
 logic    predict_valid_d;
-virt_t   fetch_vaddr_d, predict_vaddr_d;
+virt_t   fetch_vaddr_d;
 logic    [`FETCH_NUM-1:0] maybe_jump_d;
 
 // fetched instructions (stage 2)
@@ -128,12 +117,10 @@ pc_generator #(
 always_ff @(posedge clk or posedge rst) begin
 	if(rst || flush_pc) begin
 		fetch_vaddr_d   <= '0;
-		predict_vaddr_d <= '0;
 		predict_valid_d <= '0;
 		maybe_jump_d    <= '0;
 	end else if(~hold_pc) begin
 		predict_valid_d <= predict_valid;
-		predict_vaddr_d <= predict_vaddr;
 		fetch_vaddr_d   <= fetch_vaddr;
 		maybe_jump_d    <= maybe_jump;
 	end
@@ -187,10 +174,9 @@ always_comb begin
 end
 
 // commit flush request
-assign icache_req.flush_s2 = flush_pc
-      | (resolved_branch.valid & resolved_branch.mispredict);
-assign icache_req.flush_s1 = icache_req.flush_s2; // | predict_valid;
-assign flush_que = icache_req.flush_s2;
+assign flush_que = flush_pc | (resolved_branch.valid & resolved_branch.mispredict);
+assign icache_req.flush_s1 = flush_que;
+assign icache_req.flush_s2 = flush_que;
 
 branch_predictor #(
 	.BTB_SIZE ( BTB_SIZE ),

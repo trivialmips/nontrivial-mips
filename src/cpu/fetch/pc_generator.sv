@@ -38,6 +38,11 @@ always_comb begin
 		npc = predict_vaddr;
 	end
 
+	// hold pc
+	if(hold_pc) begin
+		npc = pc_now;
+	end
+
 	/* branch misprediction */
 	if(resolved_branch.valid & resolved_branch.mispredict) begin
 		npc = resolved_branch.taken ? resolved_branch.target : resolved_branch.pc + 32'd8;
@@ -52,7 +57,7 @@ end
 always_ff @(posedge clk or posedge rst) begin
 	if(rst) begin
 		pc_now <= RESET_BASE;
-	end else if(~hold_pc) begin
+	end else begin
 		pc_now <= npc;
 	end
 end

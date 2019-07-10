@@ -7,7 +7,8 @@ module test_cpu_tb();
 cpu_interrupt_t intr;
 assign intr = '0;
 
-logic rst, clk;
+logic rst, clk, fake_stall_en;
+assign fake_stall_en = 1'b1;
 cpu_clock clk_inst(.*);
 
 cpu_ibus_if ibus();
