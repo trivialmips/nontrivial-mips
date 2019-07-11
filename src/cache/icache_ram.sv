@@ -2,11 +2,11 @@ module icache_ram #(
 	// default data width if the fifo is of type logic
 	parameter int unsigned DATA_WIDTH = 32,
 	// $bits(dtype) * SIZE = bits of the block RAM
-    parameter int unsigned SIZE       = 1024,
+	parameter int unsigned SIZE       = 1024,
 	parameter type dtype              = logic [DATA_WIDTH-1:0]
 ) (
-    input  logic  clk,
-    input  logic  rst,
+	input  logic  clk,
+	input  logic  rst,
 	input  logic  we,
 	input  logic  [$clog2(SIZE)-1:0] addr,
 	input  dtype  din,
