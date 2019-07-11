@@ -1,5 +1,5 @@
 // TODO: ASSOC
-// TODO: flush
+// TODO: RST
 // TODO: prefetch 32bit
 // TODO: split into icache file
 
@@ -64,8 +64,9 @@ module cache_controller #(
 );
 
 enum logic [3:0] {
-    FLUSH,
+    RST,
     IDLE,
+    CMP,
     FILL,
     RECV
 } state_d, state;
@@ -78,9 +79,11 @@ localparam int unsigned SKIP_LEN = $clog2(DATA_WIDTH / 8);
 localparam int unsigned LINE_LEN = $clog2(LINE_WIDTH / 8);
 localparam int unsigned TAG_LEN = ADDR_LEN - INDEX_LEN - LINE_LEN;
 
+logic [ADDR_LEN-1:0] address;
+
 // Tags
+logic [MEM_ADDR_LEN- 1 : 0] next_addr;
 logic [MEM_ADDR_LEN- 1 : 0] query_addr; // tag query
-logic [MEM_ADDR_LEN-1: 0] last_addr; // last query addr
 logic [TAG_LEN - 1 : 0] query_tag; // tag query
 logic [WAY_LEN - 1 : 0] query_way; // Way index
 logic hit;
@@ -97,9 +100,10 @@ logic data_write;
 typedef logic [0:LINE_WIDTH/DATA_WIDTH-1][DATA_WIDTH-1:0] data_view_t;
 
 // Tag query
-assign query_addr = ibus.address[INDEX_LEN-1+SKIP_LEN:WAY_LEN+SKIP_LEN];
-assign query_tag = ibus.address[ADDR_LEN-1+SKIP_LEN:INDEX_LEN+SKIP_LEN];
-assign query_way = ibus.address[WAY_LEN-1+SKIP_LEN:SKIP_LEN]; // 4 Bytes in a group
+assign next_addr = ibus.address[INDEX_LEN-1+SKIP_LEN:WAY_LEN+SKIP_LEN];
+assign query_addr = address[INDEX_LEN-1+SKIP_LEN:WAY_LEN+SKIP_LEN];
+assign query_tag = address[ADDR_LEN-1+SKIP_LEN:INDEX_LEN+SKIP_LEN];
+assign query_way = address[WAY_LEN-1+SKIP_LEN:SKIP_LEN]; // 4 Bytes in a group
 
 mem #(
     .WIDTH (TAG_LEN),
@@ -107,7 +111,7 @@ mem #(
 ) mem_tag (
     .clk (clk),
     .write (tag_write),
-    .addr (query_addr),
+    .addr (next_addr),
     .wdata (tag_wdata),
     .rdata (tag_rdata)
 );
@@ -118,7 +122,7 @@ mem #(
 ) mem_data (
     .clk (clk),
     .write (data_write),
-    .addr (query_addr),
+    .addr (next_addr),
     .wdata (data_view_t'(content_wdata)),
     .rdata (content_rdata)
 );
@@ -186,15 +190,25 @@ always_comb begin
     // ibus defaults
     ibus.stall = 1'b1;
 
-    // TODO: consider flush_1 flush_2
     case(state)
-        FLUSH: begin
+        RST: begin
             state_d = IDLE;
         end
         IDLE: begin
-            if(|hit) begin
+            if(ibus.flush_1) begin
+                state_d = IDLE;
+            end else if(next_addr == query_addr && |hit) begin
                 ibus.stall = 1'b0;
             end else if(ibus.read) begin
+                state_d = CMP;
+            end
+        end
+        CMP: begin
+            // Now tag is valid
+            if(|hit) begin
+                ibus.stall = 1'b0;
+                state_d = IDLE;
+            end else begin
                 state_d = FILL;
             end
         end
@@ -233,9 +247,11 @@ end
 
 always_ff @(posedge clk or posedge rst) begin
     if(rst) begin
-        state <= FLUSH;
+        address <= '0;
+        state <= RST;
         burst_cnt <= 0;
     end else begin
+        address <= ibus.address;
         state <= state_d;
         burst_cnt <= burst_cnt_d;
     end

@@ -28,7 +28,7 @@ wrapped_cache cache (
 
 initial
 begin
-    clk = 1'b0;
+    clk = 1'b1;
     rst = 1'b1;
     dbus.read = 1'b0;
     dbus.write = 1'b0;
@@ -37,14 +37,17 @@ begin
 
     ibus.read = 1'b0;
 
-    #50 rst = 1'b0;
+    #51 rst = 1'b0;
 
     #10 ibus.address = 'h13579BD0;
     ibus.read = 1'b1;
 
     #400 ibus.address = 'h13579BE0;
     #400 ibus.address = 'h13579BE8;
-    #100 ibus.address = 'h13579BD8;
+    #10 ibus.address = 'h13579BF0;
+    #10 ibus.address = 'h13579BF8;
+
+    #10 ibus.address = 'h13579BD8;
 end
 
 endmodule
