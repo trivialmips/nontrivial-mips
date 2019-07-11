@@ -410,7 +410,7 @@
         <spirit:parameters>
           <spirit:parameter>
             <spirit:name>viewChecksum</spirit:name>
-            <spirit:value>90513965</spirit:value>
+            <spirit:value>f3d580ec</spirit:value>
           </spirit:parameter>
         </spirit:parameters>
       </spirit:view>
@@ -429,7 +429,7 @@
         <spirit:parameters>
           <spirit:parameter>
             <spirit:name>viewChecksum</spirit:name>
-            <spirit:value>90513965</spirit:value>
+            <spirit:value>f3d580ec</spirit:value>
           </spirit:parameter>
         </spirit:parameters>
       </spirit:view>
@@ -1199,6 +1199,22 @@
     <spirit:fileSet>
       <spirit:name>xilinx_anylanguagesynthesis_view_fileset</spirit:name>
       <spirit:file>
+        <spirit:name>src/sram_128x64/sram_128x64.xci</spirit:name>
+        <spirit:userFileType>xci</spirit:userFileType>
+      </spirit:file>
+      <spirit:file>
+        <spirit:name>src/sram_128x22/sram_128x22.xci</spirit:name>
+        <spirit:userFileType>xci</spirit:userFileType>
+      </spirit:file>
+      <spirit:file>
+        <spirit:name>src/sram_128x32/sram_128x32.xci</spirit:name>
+        <spirit:userFileType>xci</spirit:userFileType>
+      </spirit:file>
+      <spirit:file>
+        <spirit:name>src/sram_32x52bit/sram_32x52bit.xci</spirit:name>
+        <spirit:userFileType>xci</spirit:userFileType>
+      </spirit:file>
+      <spirit:file>
         <spirit:name>../../../loongson/cpu_gs232/global.h</spirit:name>
         <spirit:fileType>verilogSource</spirit:fileType>
         <spirit:isIncludeFile>true</spirit:isIncludeFile>
@@ -1315,6 +1331,22 @@
     </spirit:fileSet>
     <spirit:fileSet>
       <spirit:name>xilinx_anylanguagebehavioralsimulation_view_fileset</spirit:name>
+      <spirit:file>
+        <spirit:name>src/sram_128x64/sram_128x64.xci</spirit:name>
+        <spirit:userFileType>xci</spirit:userFileType>
+      </spirit:file>
+      <spirit:file>
+        <spirit:name>src/sram_128x22/sram_128x22.xci</spirit:name>
+        <spirit:userFileType>xci</spirit:userFileType>
+      </spirit:file>
+      <spirit:file>
+        <spirit:name>src/sram_128x32/sram_128x32.xci</spirit:name>
+        <spirit:userFileType>xci</spirit:userFileType>
+      </spirit:file>
+      <spirit:file>
+        <spirit:name>src/sram_32x52bit/sram_32x52bit.xci</spirit:name>
+        <spirit:userFileType>xci</spirit:userFileType>
+      </spirit:file>
       <spirit:file>
         <spirit:name>../../../loongson/cpu_gs232/global.h</spirit:name>
         <spirit:fileType>verilogSource</spirit:fileType>
@@ -1459,11 +1491,11 @@
       </xilinx:taxonomies>
       <xilinx:displayName>Loongson GS232 CPU</xilinx:displayName>
       <xilinx:definitionSource>package_project</xilinx:definitionSource>
-      <xilinx:coreRevision>4</xilinx:coreRevision>
+      <xilinx:coreRevision>5</xilinx:coreRevision>
       <xilinx:upgrades>
         <xilinx:canUpgradeFrom>xilinx.com:user:godson_cpu_mid:1.0</xilinx:canUpgradeFrom>
       </xilinx:upgrades>
-      <xilinx:coreCreationDateTime>2019-07-11T17:15:20Z</xilinx:coreCreationDateTime>
+      <xilinx:coreCreationDateTime>2019-07-11T17:30:36Z</xilinx:coreCreationDateTime>
       <xilinx:tags>
         <xilinx:tag xilinx:name="nopcore"/>
         <xilinx:tag xilinx:name="ui.data.coregen.dd@27f90f9a_ARCHIVE_LOCATION">c:/Users/Harry Chen/Documents/Workspace/nontrivial-mips/loongson/cpu_gs232</xilinx:tag>
@@ -1520,13 +1552,32 @@
         <xilinx:tag xilinx:name="ui.data.coregen.dd@69ed1d9d_ARCHIVE_LOCATION">c:/Workspace/nontrivial-mips/vivado/ip_repo/loongson_cpu_gs232</xilinx:tag>
         <xilinx:tag xilinx:name="ui.data.coregen.dd@299a4fe8_ARCHIVE_LOCATION">c:/Workspace/nontrivial-mips/vivado/ip_repo/loongson_cpu_gs232</xilinx:tag>
         <xilinx:tag xilinx:name="ui.data.coregen.dd@21e010b5_ARCHIVE_LOCATION">c:/Workspace/nontrivial-mips/vivado/ip_repo/loongson_cpu_gs232</xilinx:tag>
+        <xilinx:tag xilinx:name="ui.data.coregen.dd@2c96255_ARCHIVE_LOCATION">c:/Workspace/nontrivial-mips/vivado/ip_repo/loongson_cpu_gs232</xilinx:tag>
+        <xilinx:tag xilinx:name="ui.data.coregen.dd@2cab6c66_ARCHIVE_LOCATION">c:/Workspace/nontrivial-mips/vivado/ip_repo/loongson_cpu_gs232</xilinx:tag>
+        <xilinx:tag xilinx:name="ui.data.coregen.dd@75c1b71d_ARCHIVE_LOCATION">c:/Workspace/nontrivial-mips/vivado/ip_repo/loongson_cpu_gs232</xilinx:tag>
+        <xilinx:tag xilinx:name="ui.data.coregen.dd@61b05ef_ARCHIVE_LOCATION">c:/Workspace/nontrivial-mips/vivado/ip_repo/loongson_cpu_gs232</xilinx:tag>
+        <xilinx:tag xilinx:name="ui.data.coregen.dd@23952274_ARCHIVE_LOCATION">c:/Workspace/nontrivial-mips/vivado/ip_repo/loongson_cpu_gs232</xilinx:tag>
+        <xilinx:tag xilinx:name="ui.data.coregen.dd@2bd7f26b_ARCHIVE_LOCATION">c:/Workspace/nontrivial-mips/vivado/ip_repo/loongson_cpu_gs232</xilinx:tag>
+        <xilinx:tag xilinx:name="ui.data.coregen.dd@2b9e7322_ARCHIVE_LOCATION">c:/Workspace/nontrivial-mips/vivado/ip_repo/loongson_cpu_gs232</xilinx:tag>
+        <xilinx:tag xilinx:name="ui.data.coregen.dd@1a058ab9_ARCHIVE_LOCATION">c:/Workspace/nontrivial-mips/vivado/ip_repo/loongson_cpu_gs232</xilinx:tag>
+        <xilinx:tag xilinx:name="ui.data.coregen.dd@6569ed51_ARCHIVE_LOCATION">c:/Workspace/nontrivial-mips/vivado/ip_repo/loongson_cpu_gs232</xilinx:tag>
+        <xilinx:tag xilinx:name="ui.data.coregen.dd@4b29e8c4_ARCHIVE_LOCATION">c:/Workspace/nontrivial-mips/vivado/ip_repo/loongson_cpu_gs232</xilinx:tag>
+        <xilinx:tag xilinx:name="ui.data.coregen.dd@5363d6fc_ARCHIVE_LOCATION">c:/Workspace/nontrivial-mips/vivado/ip_repo/loongson_cpu_gs232</xilinx:tag>
+        <xilinx:tag xilinx:name="ui.data.coregen.dd@428a48c0_ARCHIVE_LOCATION">c:/Workspace/nontrivial-mips/vivado/ip_repo/loongson_cpu_gs232</xilinx:tag>
+        <xilinx:tag xilinx:name="ui.data.coregen.dd@38d2f9ef_ARCHIVE_LOCATION">c:/Workspace/nontrivial-mips/vivado/ip_repo/loongson_cpu_gs232</xilinx:tag>
+        <xilinx:tag xilinx:name="ui.data.coregen.dd@66a11d9_ARCHIVE_LOCATION">c:/Workspace/nontrivial-mips/vivado/ip_repo/loongson_cpu_gs232</xilinx:tag>
+        <xilinx:tag xilinx:name="ui.data.coregen.dd@49a5a574_ARCHIVE_LOCATION">c:/Workspace/nontrivial-mips/vivado/ip_repo/loongson_cpu_gs232</xilinx:tag>
+        <xilinx:tag xilinx:name="ui.data.coregen.dd@1f2604e0_ARCHIVE_LOCATION">c:/Workspace/nontrivial-mips/vivado/ip_repo/loongson_cpu_gs232</xilinx:tag>
+        <xilinx:tag xilinx:name="ui.data.coregen.dd@2bda3551_ARCHIVE_LOCATION">c:/Workspace/nontrivial-mips/vivado/ip_repo/loongson_cpu_gs232</xilinx:tag>
+        <xilinx:tag xilinx:name="ui.data.coregen.dd@7c1190f2_ARCHIVE_LOCATION">c:/Workspace/nontrivial-mips/vivado/ip_repo/loongson_cpu_gs232</xilinx:tag>
+        <xilinx:tag xilinx:name="ui.data.coregen.dd@7d7733e9_ARCHIVE_LOCATION">c:/Workspace/nontrivial-mips/vivado/ip_repo/loongson_cpu_gs232</xilinx:tag>
       </xilinx:tags>
     </xilinx:coreExtensions>
     <xilinx:packagingInfo>
       <xilinx:xilinxVersion>2018.3_AR71898</xilinx:xilinxVersion>
       <xilinx:checksum xilinx:scope="busInterfaces" xilinx:value="f6acc9c4"/>
       <xilinx:checksum xilinx:scope="addressSpaces" xilinx:value="3b42acec"/>
-      <xilinx:checksum xilinx:scope="fileGroups" xilinx:value="56f68a30"/>
+      <xilinx:checksum xilinx:scope="fileGroups" xilinx:value="0df8c509"/>
       <xilinx:checksum xilinx:scope="ports" xilinx:value="755a6b22"/>
       <xilinx:checksum xilinx:scope="parameters" xilinx:value="e1000038"/>
     </xilinx:packagingInfo>
