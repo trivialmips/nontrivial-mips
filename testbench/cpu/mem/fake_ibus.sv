@@ -58,7 +58,7 @@ begin
 		ibus.stall  = 1'b0;
 		ibus.rddata = 'x;
 	end else begin
-		ibus.stall  = (cache_miss | (|stall)) & fake_stall_en;
+		ibus.stall  = (cache_miss | (|stall)) & fake_stall_en & ~ibus.flush_2;
 		ibus.rddata[63:32] = mem[pipe_addr[ADDR_WIDTH-1:2] + 1];
 		ibus.rddata[31:0]  = mem[pipe_addr[ADDR_WIDTH-1:2]];
 	end
