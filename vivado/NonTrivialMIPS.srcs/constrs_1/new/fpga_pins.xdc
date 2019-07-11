@@ -179,9 +179,6 @@ set_property -dict {PACKAGE_PIN AE26 IOSTANDARD LVCMOS33} [get_ports MII_rst_n]
 set_property -dict {PACKAGE_PIN W3   IOSTANDARD LVCMOS33} [get_ports MDIO_mdc]
 set_property -dict {PACKAGE_PIN W1   IOSTANDARD LVCMOS33} [get_ports MDIO_mdio]
 
-create_clock -period 40.000 -name mii_rxclk_0 -waveform {0.000 20.000} [get_ports MII_rx_clk]
-create_clock -period 40.000 -name mii_txclk_0 -waveform {0.000 20.000} [get_ports MII_tx_clk]
-
 
 # LCD
 set_property IOSTANDARD LVCMOS33 [get_ports LCD_*]
