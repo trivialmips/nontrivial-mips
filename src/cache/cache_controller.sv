@@ -1,10 +1,15 @@
+// TODO: ASSOC
+// TODO: flush
+// TODO: prefetch 32bit
+// TODO: split into icache file
+
 `include "common_defs.svh"
-`include "cache/defs.sv"
+`include "defs.sv"
 
 // DATA_WIDTH should be multiples of 32
 module cache_controller #(
-    parameter DATA_WIDTH = 64,
-    parameter LINE_WIDTH = 32,
+    parameter DATA_WIDTH = 64, // 2 * 32-bit instruction
+    parameter LINE_WIDTH = 256, // max burst size is 16, so LINE_WIDTH should <= 8*32 = 256
 
     parameter ADDR_LEN = 32,
     parameter INDEX_LEN = 16
@@ -65,14 +70,17 @@ enum logic [3:0] {
     RECV
 } state_d, state;
 
-localparam int unsigned WAY_LEN = $clog2(LINE_WIDTH/ 8);
-localparam int unsigned TAG_LEN = ADDR_LEN - INDEX_LEN;
+localparam int unsigned WAY_LEN = $clog2(LINE_WIDTH / DATA_WIDTH);
 localparam int unsigned MEM_ADDR_LEN = INDEX_LEN - WAY_LEN;
 localparam int unsigned MEM_SIZE = 2**MEM_ADDR_LEN;
 localparam int unsigned DATA_CELL_LEN = DATA_WIDTH / 32;
+localparam int unsigned SKIP_LEN = $clog2(DATA_WIDTH / 8);
+localparam int unsigned LINE_LEN = $clog2(LINE_WIDTH / 8);
+localparam int unsigned TAG_LEN = ADDR_LEN - INDEX_LEN - LINE_LEN;
 
 // Tags
 logic [MEM_ADDR_LEN- 1 : 0] query_addr; // tag query
+logic [MEM_ADDR_LEN-1: 0] last_addr; // last query addr
 logic [TAG_LEN - 1 : 0] query_tag; // tag query
 logic [WAY_LEN - 1 : 0] query_way; // Way index
 logic hit;
@@ -82,16 +90,16 @@ logic [TAG_LEN - 1:0] tag_wdata;
 logic tag_write;
 
 // Data
-logic [$clog2(LINE_WIDTH)-1:0] burst_cnt, burst_cnt_d;
-logic [LINE_WIDTH*(DATA_WIDTH/32)-1:0][31:0] wdata;
-logic [LINE_WIDTH-1:0][DATA_WIDTH:0] rdata;
+logic [$clog2(LINE_WIDTH/8)-1:0] burst_cnt, burst_cnt_d;
+logic [0:LINE_WIDTH/32-1][31:0] content_wdata;
+logic [0:LINE_WIDTH/DATA_WIDTH-1][DATA_WIDTH-1:0] content_rdata;
 logic data_write;
-typedef logic [LINE_WIDTH:0][64:0] line_64_view_t;
+typedef logic [0:LINE_WIDTH/DATA_WIDTH-1][DATA_WIDTH-1:0] data_view_t;
 
 // Tag query
-assign query_addr = ibus.address[INDEX_LEN - 1:WAY_LEN];
-assign query_tag = ibus.address[ADDR_LEN - 1:INDEX_LEN];
-assign query_way = ibus.address[WAY_LEN - 1 : 0];
+assign query_addr = ibus.address[INDEX_LEN-1+SKIP_LEN:WAY_LEN+SKIP_LEN];
+assign query_tag = ibus.address[ADDR_LEN-1+SKIP_LEN:INDEX_LEN+SKIP_LEN];
+assign query_way = ibus.address[WAY_LEN-1+SKIP_LEN:SKIP_LEN]; // 4 Bytes in a group
 
 mem #(
     .WIDTH (TAG_LEN),
@@ -105,18 +113,18 @@ mem #(
 );
 
 mem #(
-    .WIDTH (DATA_WIDTH),
+    .WIDTH (DATA_WIDTH * LINE_WIDTH/8),
     .SIZE (MEM_SIZE)
 ) mem_data (
     .clk (clk),
     .write (data_write),
     .addr (query_addr),
-    .wdata (line_64_view_t'(wdata)),
-    .rdata (rdata)
+    .wdata (data_view_t'(content_wdata)),
+    .rdata (content_rdata)
 );
 
-assign hit = tag_rdata == query_tag;
-assign ibus.rdata = (hit) ? rdata : '0;
+assign hit = (tag_rdata == query_tag) ? 1'b1 : 1'b0;
+assign ibus.rddata = (|hit) ? content_rdata[query_way] : '0;
 
 // AXI req register
 axi_req_t axi_req;
@@ -150,12 +158,10 @@ assign wvalid = axi_req.wvalid;
 
 assign bready = axi_req.bready;
 
-// Unused AXI wires
-assign axi_req.awready = 1'b0;
-assign axi_req.wready = 1'b0;
-assign axi_req.bid = '0;
-assign axi_req.bresp = '0;
-assign axi_req.bvalid = 1'b0;
+// Unused AXI buses
+assign axi_req.awvalid = 1'b0;
+assign axi_req.wvalid = 1'b0;
+assign axi_req.bready  = 1'b0;
 
 always_comb begin
     state_d = state;
@@ -166,7 +172,7 @@ always_comb begin
 
     // AXI defaults
     axi_req.arvalid = 1'b0;
-    axi_req.arlen = LINE_WIDTH  * (DATA_WIDTH / 32) - 1;
+    axi_req.arlen = LINE_WIDTH * (DATA_WIDTH / 32) - 1;
     axi_req.arsize = 3'b011; // 4 bytes
     axi_req.araddr = '0;
     axi_req.arburst = 2'b01; // INCR
@@ -186,7 +192,7 @@ always_comb begin
             state_d = IDLE;
         end
         IDLE: begin
-            if(hit) begin
+            if(|hit) begin
                 ibus.stall = 1'b0;
             end else if(ibus.read) begin
                 state_d = FILL;
@@ -194,7 +200,7 @@ always_comb begin
         end
         FILL: begin
             axi_req.arvalid = 1'b1;
-            axi_req.araddr = ibus.address;
+            axi_req.araddr = { ibus.address[ADDR_LEN-1 : LINE_LEN], {LINE_LEN{1'b0}} };
             burst_cnt_d = '0;
 
             // Wait for slave
@@ -209,7 +215,7 @@ always_comb begin
             if(rvalid) begin
                 axi_req.rready = 1'b1;
                 data_write = 1'b1;
-                wdata[burst_cnt] = rdata;
+                content_wdata[burst_cnt] = rdata;
                 burst_cnt_d = burst_cnt + 1;
             end
 
@@ -218,16 +224,20 @@ always_comb begin
                 burst_cnt_d = 0;
             end
         end
+
+        default: begin
+            state_d = IDLE;
+        end
     endcase
 end
 
 always_ff @(posedge clk or posedge rst) begin
     if(rst) begin
         state <= FLUSH;
-        burst_cnt_d = 0;
+        burst_cnt <= 0;
     end else begin
         state <= state_d;
-        burst_cnt = burst_cnt_d;
+        burst_cnt <= burst_cnt_d;
     end
 end
 

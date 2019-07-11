@@ -14,13 +14,15 @@ module mem #(
 
 logic [WIDTH-1:0] mem [SIZE-1:0];
 
+always_comb
+begin
+    rdata = mem[addr];
+end
+
 always_ff @(posedge clk)
 begin
     if(write) begin
         mem[addr] <= wdata;
-        rdata <= wdata;
-    end else begin
-        rdata <= mem[addr];
     end
 end
 

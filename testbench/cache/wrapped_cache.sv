@@ -1,5 +1,3 @@
-`include "cache/defs.sv"
-
 module wrapped_cache (
     input  wire clk,
 	input  wire rst,
@@ -11,7 +9,7 @@ module wrapped_cache (
     cpu_dbus_if.slave  dbus
 );
 
-cache_controller (
+cache_controller ctrl (
     .clk (clk),
     .rst (rst),
     
@@ -57,7 +55,7 @@ cache_controller (
     .bready (axi_req.bready),
 
     .ibus (ibus),
-    .dbus (dbus),
+    .dbus (dbus)
 );
 
 endmodule
