@@ -1,7 +1,7 @@
 ﻿<?xml version="1.0" encoding="UTF-8" standalone="no" ?>
 <Project NoOfControllers="1">
 
-  <ModuleName>bd_soc_mig_7series_0_1</ModuleName>
+  <ModuleName>bd_soc_mig_7series_0_0</ModuleName>
 
   <dci_inouts_inputs>1</dci_inouts_inputs>
 

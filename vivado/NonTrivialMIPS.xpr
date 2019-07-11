@@ -420,10 +420,10 @@
           <Attr Name="UsedIn" Val="simulation"/>
         </FileInfo>
       </File>
-      <File Path="$PSRCDIR/sources_1/bd/bd_soc/ip/bd_soc_mig_7series_0_1/mig_a.prj">
+      <File Path="$PSRCDIR/sources_1/bd/bd_soc/ip/bd_soc_mig_7series_0_0/mig_a.prj">
         <FileInfo>
           <Attr Name="UsedIn" Val="synthesis"/>
-          <Attr Name="ScopedToCell" Val="bd_soc_mig_7series_0_1"/>
+          <Attr Name="ScopedToCell" Val="bd_soc_mig_7series_0_0"/>
         </FileInfo>
       </File>
       <Config>
