@@ -112,6 +112,9 @@ module nscscc_soc_top(
     `IOBUF_GEN_SIMPLE(PS2_clk);
     `IOBUF_GEN_SIMPLE(PS2_dat);
 
+    // Ethernet
+    `IOBUF_GEN_SIMPLE(MDIO_mdio);
+
     // LCD
     `IOBUF_GEN_VEC_SIMPLE(LCD_data);
 
@@ -130,7 +133,7 @@ module nscscc_soc_top(
     // initialize block design
     bd_soc bd_soc_inst(
         .clk,
-        .rst,
+        .rst_n,
         // UART
         .UART_txd,
         .UART_rxd,
@@ -179,7 +182,6 @@ module nscscc_soc_top(
         .led_rg1,
         .num_csn,
         .num_a_g,
-        .num_a_g_dp,
         .btn_key_col,
         .btn_key_row,
         .btn_step,
@@ -207,8 +209,11 @@ module nscscc_soc_top(
         .DDR3_ck_p,
         .DDR3_ck_n,
         // ethernet
+        // .MII_tx_er is not connected
         .MDIO_mdc,
-        .MDIO_mdio,
+        .MDIO_mdio_i,
+        .MDIO_mdio_o,
+        .MDIO_mdio_t,
         .MII_col,
         .MII_crs,
         .MII_rst_n,
@@ -218,7 +223,6 @@ module nscscc_soc_top(
         .MII_rxd,
         .MII_tx_clk,
         .MII_tx_en,
-        .MII_tx_er,
         .MII_txd,
         // LCD
         .LCD_data,
