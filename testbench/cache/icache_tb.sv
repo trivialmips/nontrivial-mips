@@ -26,6 +26,37 @@ wrapped_cache cache (
     .dbus (dbus)
 );
 
+logic [4:0] pc;
+logic [15:0][31:0] address;
+assign address[0] = 'h000000D0;
+assign address[1] = 'h000000E0;
+assign address[2] = 'h000000E8;
+assign address[3] = 'h000000F0;
+assign address[4] = 'h000000F8;
+assign address[5] = 'h000000D8;
+assign address[6] = 'h000000D8;
+assign address[7] = 'h000000D8;
+assign address[8] = 'h000000D8;
+assign address[9] = 'h000000D8;
+assign address[10] = 'h000000D8;
+assign address[11] = 'h000000D8;
+assign address[12] = 'h000000D8;
+assign address[13] = 'h000000D8;
+assign address[14] = 'h000000D8;
+assign address[15] = 'h000000D8;
+
+assign ibus.read = 1'b1;
+assign ibus.address = address[pc];
+
+always_ff @(posedge clk or posedge rst) begin
+	if(rst) begin
+		pc <= '0;
+	end else if(~ibus.stall) begin
+		pc <= pc + 1;
+	end
+end
+
+
 initial
 begin
     clk = 1'b1;
@@ -35,19 +66,13 @@ begin
     dbus.uncached_read = 1'b0;
     dbus.uncached_write = 1'b0;
 
-    ibus.read = 1'b0;
+	ibus.flush_1 = 1'b0;
+	ibus.flush_2 = 1'b0;
 
     #51 rst = 1'b0;
 
-    #10 ibus.address = 'h13579BD0;
-    ibus.read = 1'b1;
-
-    #400 ibus.address = 'h13579BE0;
-    #400 ibus.address = 'h13579BE8;
-    #10 ibus.address = 'h13579BF0;
-    #10 ibus.address = 'h13579BF8;
-
-    #10 ibus.address = 'h13579BD8;
+	wait(pc == 15);
+	$stop;
 end
 
 endmodule
