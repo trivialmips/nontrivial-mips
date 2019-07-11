@@ -3,7 +3,6 @@ set_property -dict {PACKAGE_PIN AC19 IOSTANDARD LVCMOS33} [get_ports clk]
 set_property -dict {PACKAGE_PIN Y3 IOSTANDARD LVCMOS33} [get_ports rst_n]
 
 set_property CLOCK_DEDICATED_ROUTE BACKBONE [get_nets clk]
-create_clock -period 10.000 -name clk_in_100M -waveform {0.000 5.000} [get_ports clk]
 
 
 # UART interface
@@ -213,6 +212,8 @@ set_property PACKAGE_PIN J15 [get_ports LCD_lighton]
 
 
 # EJTAG
+set_property IOSTANDARD LVCMOS33 [get_ports EJTAG_*]
+
 set_property PACKAGE_PIN J18 [get_ports EJTAG_trst]
 set_property PACKAGE_PIN K18 [get_ports EJTAG_tck]
 set_property PACKAGE_PIN K20 [get_ports EJTAG_tdi]
