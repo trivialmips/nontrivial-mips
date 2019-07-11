@@ -1,3 +1,6 @@
+`ifndef CACHE_DEFS_SVH
+`define CACHE_DEFS_SVH
+
 typedef struct packed {
     logic [3 :0] arid;
     logic [31:0] araddr;
@@ -47,3 +50,5 @@ typedef struct packed {
      logic [1 :0] bresp;
      logic        bvalid;
 } axi_resp_t;
+
+`endif
