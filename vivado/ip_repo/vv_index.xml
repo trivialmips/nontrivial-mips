@@ -51,7 +51,7 @@
 		</DisplayName>
 		<Description value="IP package of Loongson GS232, an open source CPU">
 		</Description>
-		<CoreRevision value="3">
+		<CoreRevision value="4">
 		</CoreRevision>
 		<ComponentPath value="loongson_cpu_gs232/component.xml">
 		</ComponentPath>
