@@ -9,7 +9,6 @@
     },
     "design_tree": {
       "loongson_gs232": "",
-      "loongson_confrreg": "",
       "ddr_controller": "",
       "main_mmcm": "",
       "sys_reset_controller": "",
@@ -72,7 +71,8 @@
       "jtag_sys": "",
       "bootrom_impl": "",
       "bootrom_controller": "",
-      "reset_negate": ""
+      "reset_negate": "",
+      "loongson_confrreg": ""
     },
     "interface_ports": {
       "UART": {
@@ -207,10 +207,6 @@
       "loongson_gs232": {
         "vlnv": "loongson.cn:user:loongson_cpu_gs232:1.0",
         "xci_name": "bd_soc_loongson_cpu_gs232_0_0"
-      },
-      "loongson_confrreg": {
-        "vlnv": "loongson.cn:user:confreg:1.0",
-        "xci_name": "bd_soc_confreg_0_0"
       },
       "ddr_controller": {
         "vlnv": "xilinx.com:ip:mig_7series:4.2",
@@ -620,16 +616,16 @@
                   "s00_data_fifo/M_AXI"
                 ]
               },
-              "auto_cc_to_auto_pc": {
-                "interface_ports": [
-                  "auto_cc/M_AXI",
-                  "auto_pc/S_AXI"
-                ]
-              },
               "auto_pc_to_s00_data_fifo": {
                 "interface_ports": [
                   "s00_data_fifo/S_AXI",
                   "auto_pc/M_AXI"
+                ]
+              },
+              "auto_cc_to_auto_pc": {
+                "interface_ports": [
+                  "auto_cc/M_AXI",
+                  "auto_pc/S_AXI"
                 ]
               }
             },
@@ -1050,54 +1046,6 @@
           }
         },
         "interface_nets": {
-          "processor_bus_to_s01_couplers": {
-            "interface_ports": [
-              "S01_AXI",
-              "s01_couplers/S_AXI"
-            ]
-          },
-          "s01_couplers_to_xbar": {
-            "interface_ports": [
-              "s01_couplers/M_AXI",
-              "xbar/S01_AXI"
-            ]
-          },
-          "s00_couplers_to_xbar": {
-            "interface_ports": [
-              "s00_couplers/M_AXI",
-              "xbar/S00_AXI"
-            ]
-          },
-          "m00_couplers_to_processor_bus": {
-            "interface_ports": [
-              "M00_AXI",
-              "m00_couplers/M_AXI"
-            ]
-          },
-          "s02_couplers_to_xbar": {
-            "interface_ports": [
-              "s02_couplers/M_AXI",
-              "xbar/S02_AXI"
-            ]
-          },
-          "xbar_to_m00_couplers": {
-            "interface_ports": [
-              "xbar/M00_AXI",
-              "m00_couplers/S_AXI"
-            ]
-          },
-          "m01_couplers_to_processor_bus": {
-            "interface_ports": [
-              "M01_AXI",
-              "m01_couplers/M_AXI"
-            ]
-          },
-          "xbar_to_m01_couplers": {
-            "interface_ports": [
-              "xbar/M01_AXI",
-              "m01_couplers/S_AXI"
-            ]
-          },
           "m02_couplers_to_processor_bus": {
             "interface_ports": [
               "M02_AXI",
@@ -1116,6 +1064,54 @@
               "m02_couplers/S_AXI"
             ]
           },
+          "processor_bus_to_s01_couplers": {
+            "interface_ports": [
+              "S01_AXI",
+              "s01_couplers/S_AXI"
+            ]
+          },
+          "s00_couplers_to_xbar": {
+            "interface_ports": [
+              "s00_couplers/M_AXI",
+              "xbar/S00_AXI"
+            ]
+          },
+          "m00_couplers_to_processor_bus": {
+            "interface_ports": [
+              "M00_AXI",
+              "m00_couplers/M_AXI"
+            ]
+          },
+          "xbar_to_m00_couplers": {
+            "interface_ports": [
+              "xbar/M00_AXI",
+              "m00_couplers/S_AXI"
+            ]
+          },
+          "s02_couplers_to_xbar": {
+            "interface_ports": [
+              "s02_couplers/M_AXI",
+              "xbar/S02_AXI"
+            ]
+          },
+          "s01_couplers_to_xbar": {
+            "interface_ports": [
+              "s01_couplers/M_AXI",
+              "xbar/S01_AXI"
+            ]
+          },
+          "m01_couplers_to_processor_bus": {
+            "interface_ports": [
+              "M01_AXI",
+              "m01_couplers/M_AXI"
+            ]
+          },
+          "xbar_to_m01_couplers": {
+            "interface_ports": [
+              "xbar/M01_AXI",
+              "m01_couplers/S_AXI"
+            ]
+          },
           "xbar_to_m03_couplers": {
             "interface_ports": [
               "xbar/M03_AXI",
@@ -1128,12 +1124,6 @@
               "s00_mmu/S_AXI"
             ]
           },
-          "s00_mmu_M_AXI": {
-            "interface_ports": [
-              "s00_mmu/M_AXI",
-              "s00_couplers/S_AXI"
-            ]
-          },
           "s02_mmu_M_AXI": {
             "interface_ports": [
               "s02_mmu/M_AXI",
@@ -1144,6 +1134,12 @@
             "interface_ports": [
               "S02_AXI",
               "s02_mmu/S_AXI"
+            ]
+          },
+          "s00_mmu_M_AXI": {
+            "interface_ports": [
+              "s00_mmu/M_AXI",
+              "s00_couplers/S_AXI"
             ]
           }
         },
@@ -2369,72 +2365,6 @@
           }
         },
         "interface_nets": {
-          "m07_couplers_to_peripheral_bus": {
-            "interface_ports": [
-              "M07_AXI",
-              "m07_couplers/M_AXI"
-            ]
-          },
-          "xbar_to_m06_couplers": {
-            "interface_ports": [
-              "xbar/M06_AXI",
-              "m06_couplers/S_AXI"
-            ]
-          },
-          "xbar_to_m07_couplers": {
-            "interface_ports": [
-              "xbar/M07_AXI",
-              "m07_couplers/S_AXI"
-            ]
-          },
-          "m08_couplers_to_peripheral_bus": {
-            "interface_ports": [
-              "M08_AXI",
-              "m08_couplers/M_AXI"
-            ]
-          },
-          "m09_couplers_to_peripheral_bus": {
-            "interface_ports": [
-              "M09_AXI",
-              "m09_couplers/M_AXI"
-            ]
-          },
-          "xbar_to_m08_couplers": {
-            "interface_ports": [
-              "xbar/M08_AXI",
-              "m08_couplers/S_AXI"
-            ]
-          },
-          "xbar_to_m09_couplers": {
-            "interface_ports": [
-              "xbar/M09_AXI",
-              "m09_couplers/S_AXI"
-            ]
-          },
-          "xbar_to_m05_couplers": {
-            "interface_ports": [
-              "xbar/M05_AXI",
-              "m05_couplers/S_AXI"
-            ]
-          },
-          "m06_couplers_to_peripheral_bus": {
-            "interface_ports": [
-              "M06_AXI",
-              "m06_couplers/M_AXI"
-            ]
-          },
-          "peripheral_bus_to_s00_couplers": {
-            "interface_ports": [
-              "S00_AXI",
-              "s00_couplers/S_AXI"
-            ]
-          },
-          "m00_couplers_to_peripheral_bus": {
-            "interface_ports": [
-              "M00_AXI",
-              "m00_couplers/M_AXI"
-            ]
-          },
           "s00_couplers_to_xbar": {
             "interface_ports": [
               "s00_couplers/M_AXI",
@@ -2499,6 +2429,72 @@
             "interface_ports": [
               "M05_AXI",
               "m05_couplers/M_AXI"
+            ]
+          },
+          "xbar_to_m06_couplers": {
+            "interface_ports": [
+              "xbar/M06_AXI",
+              "m06_couplers/S_AXI"
+            ]
+          },
+          "m07_couplers_to_peripheral_bus": {
+            "interface_ports": [
+              "M07_AXI",
+              "m07_couplers/M_AXI"
+            ]
+          },
+          "xbar_to_m07_couplers": {
+            "interface_ports": [
+              "xbar/M07_AXI",
+              "m07_couplers/S_AXI"
+            ]
+          },
+          "xbar_to_m08_couplers": {
+            "interface_ports": [
+              "xbar/M08_AXI",
+              "m08_couplers/S_AXI"
+            ]
+          },
+          "m09_couplers_to_peripheral_bus": {
+            "interface_ports": [
+              "M09_AXI",
+              "m09_couplers/M_AXI"
+            ]
+          },
+          "m08_couplers_to_peripheral_bus": {
+            "interface_ports": [
+              "M08_AXI",
+              "m08_couplers/M_AXI"
+            ]
+          },
+          "xbar_to_m09_couplers": {
+            "interface_ports": [
+              "xbar/M09_AXI",
+              "m09_couplers/S_AXI"
+            ]
+          },
+          "xbar_to_m05_couplers": {
+            "interface_ports": [
+              "xbar/M05_AXI",
+              "m05_couplers/S_AXI"
+            ]
+          },
+          "m06_couplers_to_peripheral_bus": {
+            "interface_ports": [
+              "M06_AXI",
+              "m06_couplers/M_AXI"
+            ]
+          },
+          "peripheral_bus_to_s00_couplers": {
+            "interface_ports": [
+              "S00_AXI",
+              "s00_couplers/S_AXI"
+            ]
+          },
+          "m00_couplers_to_peripheral_bus": {
+            "interface_ports": [
+              "M00_AXI",
+              "m00_couplers/M_AXI"
             ]
           }
         },
@@ -2843,55 +2839,17 @@
             "value": "1"
           }
         }
+      },
+      "loongson_confrreg": {
+        "vlnv": "harrychen.xyz:user:confreg:1.1",
+        "xci_name": "bd_soc_confreg_0_0"
       }
     },
     "interface_nets": {
-      "loongson_gs232_interface_aximm": {
-        "interface_ports": [
-          "loongson_gs232/interface_aximm",
-          "processor_bus/S00_AXI"
-        ]
-      },
-      "memory_bus_M00_AXI": {
-        "interface_ports": [
-          "memory_bus/M00_AXI",
-          "ddr_controller/S_AXI"
-        ]
-      },
-      "peripheral_bus_M04_AXI": {
-        "interface_ports": [
-          "peripheral_bus/M04_AXI",
-          "spi_flash_controller/AXI_LITE"
-        ]
-      },
-      "vga_controller_M_AXI_MM": {
-        "interface_ports": [
-          "vga_controller/M_AXI_MM",
-          "memory_bus/S01_AXI"
-        ]
-      },
-      "uart_controller_UART": {
-        "interface_ports": [
-          "UART",
-          "uart_controller/UART"
-        ]
-      },
-      "peripheral_bus_M02_AXI": {
-        "interface_ports": [
-          "peripheral_bus/M02_AXI",
-          "vga_controller/S_AXI_MM"
-        ]
-      },
       "peripheral_bus_M05_AXI": {
         "interface_ports": [
           "peripheral_bus/M05_AXI",
           "cfg_flash_controller/AXI_FULL"
-        ]
-      },
-      "vga_controller_VGA_INTF": {
-        "interface_ports": [
-          "VGA",
-          "vga_controller/VGA_INTF"
         ]
       },
       "peripheral_bus_M03_AXI": {
@@ -2906,16 +2864,46 @@
           "cfg_flash_controller/SPI_0"
         ]
       },
-      "processor_bus_M01_AXI": {
+      "loongson_gs232_interface_aximm": {
         "interface_ports": [
-          "processor_bus/M01_AXI",
-          "peripheral_bus/S00_AXI"
+          "loongson_gs232/interface_aximm",
+          "processor_bus/S00_AXI"
         ]
       },
-      "peripheral_bus_M00_AXI": {
+      "uart_controller_UART": {
         "interface_ports": [
-          "peripheral_bus/M00_AXI",
-          "uart_controller/S_AXI"
+          "UART",
+          "uart_controller/UART"
+        ]
+      },
+      "peripheral_bus_M02_AXI": {
+        "interface_ports": [
+          "peripheral_bus/M02_AXI",
+          "vga_controller/S_AXI_MM"
+        ]
+      },
+      "memory_bus_M00_AXI": {
+        "interface_ports": [
+          "memory_bus/M00_AXI",
+          "ddr_controller/S_AXI"
+        ]
+      },
+      "vga_controller_M_AXI_MM": {
+        "interface_ports": [
+          "vga_controller/M_AXI_MM",
+          "memory_bus/S01_AXI"
+        ]
+      },
+      "vga_controller_VGA_INTF": {
+        "interface_ports": [
+          "VGA",
+          "vga_controller/VGA_INTF"
+        ]
+      },
+      "peripheral_bus_M04_AXI": {
+        "interface_ports": [
+          "peripheral_bus/M04_AXI",
+          "spi_flash_controller/AXI_LITE"
         ]
       },
       "peripheral_bus_M01_AXI": {
@@ -2924,10 +2912,22 @@
           "ethernet_controller/S_AXI"
         ]
       },
-      "ethernet_controller_MII": {
+      "spi_flash_controller_SPI_0": {
         "interface_ports": [
-          "MII",
-          "ethernet_controller/MII"
+          "SPI_FLASH",
+          "spi_flash_controller/SPI_0"
+        ]
+      },
+      "peripheral_bus_M00_AXI": {
+        "interface_ports": [
+          "peripheral_bus/M00_AXI",
+          "uart_controller/S_AXI"
+        ]
+      },
+      "processor_bus_M01_AXI": {
+        "interface_ports": [
+          "processor_bus/M01_AXI",
+          "peripheral_bus/S00_AXI"
         ]
       },
       "ethernet_controller_MDIO": {
@@ -2936,16 +2936,16 @@
           "ethernet_controller/MDIO"
         ]
       },
-      "spi_flash_controller_SPI_0": {
+      "ethernet_controller_MII": {
         "interface_ports": [
-          "SPI_FLASH",
-          "spi_flash_controller/SPI_0"
+          "MII",
+          "ethernet_controller/MII"
         ]
       },
-      "peripheral_bus_M06_AXI": {
+      "jtag_sys_M_AXI": {
         "interface_ports": [
-          "peripheral_bus/M06_AXI",
-          "external_interrupt_controller/s_axi"
+          "jtag_sys/M_AXI",
+          "processor_bus/S02_AXI"
         ]
       },
       "axi_bram_ctrl_0_BRAM_PORTA": {
@@ -2954,10 +2954,10 @@
           "bootrom_impl/BRAM_PORTA"
         ]
       },
-      "jtag_sys_M_AXI": {
+      "mig_7series_0_DDR3": {
         "interface_ports": [
-          "jtag_sys/M_AXI",
-          "processor_bus/S02_AXI"
+          "DDR3",
+          "ddr_controller/DDR3"
         ]
       },
       "EJTAG_1": {
@@ -2972,10 +2972,10 @@
           "memory_bus/S00_AXI"
         ]
       },
-      "mig_7series_0_DDR3": {
+      "peripheral_bus_M06_AXI": {
         "interface_ports": [
-          "DDR3",
-          "ddr_controller/DDR3"
+          "peripheral_bus/M06_AXI",
+          "external_interrupt_controller/s_axi"
         ]
       },
       "processor_bus_M02_AXI": {
@@ -3043,9 +3043,9 @@
       "clk_1": {
         "ports": [
           "clk",
-          "loongson_confrreg/timer_clk",
           "ddr_controller/sys_clk_i",
-          "main_mmcm/clk_in1"
+          "main_mmcm/clk_in1",
+          "loongson_confrreg/timer_clk"
         ]
       },
       "EJTAG_trst_1": {
@@ -3110,7 +3110,6 @@
           "peripheral_bus/M01_ACLK",
           "vga_controller/s_axi_aclk",
           "vga_controller/m_axi_aclk",
-          "loongson_confrreg/aclk",
           "peripheral_bus/M03_ACLK",
           "peripheral_bus/M02_ACLK",
           "spi_flash_controller/s_axi_aclk",
@@ -3131,7 +3130,8 @@
           "peripheral_bus/M09_ACLK",
           "processor_bus/S01_ACLK",
           "processor_bus/M03_ACLK",
-          "sys_reset_controller/slowest_sync_clk"
+          "sys_reset_controller/slowest_sync_clk",
+          "loongson_confrreg/aclk"
         ]
       },
       "proc_sys_reset_0_interconnect_aresetn": {
@@ -3152,7 +3152,6 @@
           "peripheral_bus/M01_ARESETN",
           "vga_controller/s_axi_aresetn",
           "vga_controller/m_axi_aresetn",
-          "loongson_confrreg/aresetn",
           "peripheral_bus/M03_ARESETN",
           "peripheral_bus/M02_ARESETN",
           "spi_flash_controller/s_axi_aresetn",
@@ -3166,7 +3165,8 @@
           "peripheral_bus/M04_ARESETN",
           "peripheral_bus/M05_ARESETN",
           "peripheral_bus/M06_ARESETN",
-          "processor_bus/M02_ARESETN"
+          "processor_bus/M02_ARESETN",
+          "loongson_confrreg/aresetn"
         ]
       },
       "xlconstant_0_dout": {
