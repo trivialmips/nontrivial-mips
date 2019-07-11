@@ -3,11 +3,11 @@
 	<Repository value="c:/Workspace/nontrivial-mips/vivado/ip_repo">
 	</Repository>
 	<IP>
-		<VLNV value="loongson.cn:user:confreg:1.0">
+		<VLNV value="harrychen.xyz:user:confreg:1.1">
 		</VLNV>
-		<DisplayName value="Loongson Configuration Register">
+		<DisplayName value="Loongson Configuration Register (Modified)">
 		</DisplayName>
-		<Description value="Control module of GPIO, timer and many so on">
+		<Description value="Control module of GPIO, timer and so on">
 		</Description>
 		<CoreRevision value="1">
 		</CoreRevision>
@@ -33,6 +33,8 @@
 		</Taxonomies>
 		<UpgradesFrom>
 			<Upgrade value="xilinx.com:user:confreg:1.0">
+			</Upgrade>
+			<Upgrade value="loongson.cn:user:confreg:1.0">
 			</Upgrade>
 		</UpgradesFrom>
 		<LockPrevVersions value="false">

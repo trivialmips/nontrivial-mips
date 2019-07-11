@@ -43,6 +43,8 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 //
 //   > Author      : LOONGSON
 //   > Date        : 2017-08-04
+//   > Author      : Harry Chen
+//   > Date        : 2019-07
 //*************************************************************************
 `define RANDOM_SEED {7'b1010101,16'h00FF}
 
@@ -70,15 +72,17 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 `define SIMU_FLAG_ADDR    16'hfff4  //32'hbfaf_fff4 
 `define OPEN_TRACE_ADDR   16'hfff8  //32'hbfaf_fff8
 `define NUM_MONITOR_ADDR  16'hfffc  //32'hbfaf_fffc
-module confreg
-#(parameter SIMULATION=1'b0)
+module confreg #(
+    parameter SIMULATION=1'b0,
+    parameter BUS_WIDTH=6
+)
 (                     
     input             aclk,          
     input             timer_clk,
     input             aresetn,     
     // read and write from cpu
     //ar
-    input  [3 :0] arid   ,
+    input  [BUS_WIDTH - 1 :0] arid   ,
     input  [31:0] araddr ,
     input  [7 :0] arlen  ,
     input  [2 :0] arsize ,
@@ -89,14 +93,14 @@ module confreg
     input         arvalid,
     output        arready,
     //r
-    output [3 :0] rid    ,
+    output [BUS_WIDTH - 1 :0] rid    ,
     output [31:0] rdata  ,
     output [1 :0] rresp  ,
     output        rlast  ,
     output        rvalid ,
     input         rready ,
     //aw
-    input  [3 :0] awid   ,
+    input  [BUS_WIDTH - 1  :0] awid   ,
     input  [31:0] awaddr ,
     input  [7 :0] awlen  ,
     input  [2 :0] awsize ,
@@ -107,14 +111,14 @@ module confreg
     input         awvalid,
     output        awready,
     //w
-    input  [3 :0] wid    ,
+    input  [BUS_WIDTH - 1  :0] wid    ,
     input  [31:0] wdata  ,
     input  [3 :0] wstrb  ,
     input         wlast  ,
     input         wvalid ,
     output        wready ,
     //b
-    output [3 :0] bid    ,
+    output [BUS_WIDTH - 1  :0] bid    ,
     output [1 :0] bresp  ,
     output        bvalid ,
     input         bready ,
@@ -170,7 +174,7 @@ module confreg
     assign arready = ~busy & (!R_or_W| !awvalid);
     assign awready = ~busy & ( R_or_W| !arvalid);
 
-    reg [3 :0] buf_id;
+    reg [BUS_WIDTH - 1  :0] buf_id;
     reg [31:0] buf_addr;
     reg [7 :0] buf_len;
     reg [2 :0] buf_size;
