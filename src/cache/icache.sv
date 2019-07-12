@@ -163,23 +163,17 @@ always_comb begin
 			if(cache_miss & ~ibus.flush_2)
 				state_d = WAIT_AXI_READY;
 			else state_d = IDLE;
-		WAIT_AXI_READY:
+		WAIT_AXI_READY, FLUSH_WAIT_AXI_READY:
 			if(axi_resp.arready) 
 				state_d = ibus.flush_2 ? FLUSH_RECEIVING : RECEIVING;
 			else if(ibus.flush_2)
 				state_d = FLUSH_WAIT_AXI_READY;
-		RECEIVING:
+		RECEIVING, FLUSH_RECEIVING:
 			if(axi_resp.rvalid & axi_resp.rlast) begin
 				state_d = FINISH;
 			end else if(ibus.flush_2) begin
 				state_d = FLUSH_RECEIVING;
 			end
-		FLUSH_WAIT_AXI_READY:
-			if(axi_resp.arready) 
-				state_d = FLUSH_RECEIVING;
-		FLUSH_RECEIVING:
-			if(axi_resp.rvalid & axi_resp.rlast)
-				state_d = FINISH;
 	endcase
 end
 
