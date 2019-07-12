@@ -24,12 +24,12 @@ module dcache #(
 localparam int LINE_BYTE_OFFSET = $clog2(LINE_WIDTH / 8);
 
 typedef enum logic [2:0] {
-    IDLE,
-    FINISHED,
-    SINGLE_READ_WAIT_AXI,
-    SINGLE_WRITE_WAIT_AXI,
-    SINGLE_READ,
-    SINGLE_WRITE
+	IDLE,
+	FINISHED,
+	SINGLE_READ_WAIT_AXI,
+	SINGLE_WRITE_WAIT_AXI,
+	SINGLE_READ,
+	SINGLE_WRITE
 } uncached_state_t;
 
 uncached_state_t state, state_d;
@@ -61,67 +61,67 @@ assign dbus.stall = (state_d != IDLE) ? 1'b1 : 1'b0;
 assign dbus.rddata = pipe_skip_cache ? line_recv[0] : '0;
 
 always_comb begin
-    state_d = state;
-    direct_rdata_d = direct_rdata;
+	state_d = state;
+	direct_rdata_d = direct_rdata;
 
-    axi_req.arvalid = 1'b0;
-    axi_req.awvalid = 1'b0;
-    axi_req.wvalid = 1'b0;
+	axi_req.arvalid = 1'b0;
+	axi_req.awvalid = 1'b0;
+	axi_req.wvalid = 1'b0;
 
-    case(state)
-        IDLE: begin
-            if(pipe_skip_cache) begin
-                if(pipe_read) begin
-                    state_d = SINGLE_READ_WAIT_AXI;
-                end else begin
-                    state_d = SINGLE_WRITE_WAIT_AXI;
-                end
-            end
-        end
-        SINGLE_READ_WAIT_AXI: begin
-            axi_req.arvalid = 1'b1;
+	case(state)
+		IDLE: begin
+			if(pipe_skip_cache) begin
+				if(pipe_read) begin
+					state_d = SINGLE_READ_WAIT_AXI;
+				end else begin
+					state_d = SINGLE_WRITE_WAIT_AXI;
+				end
+			end
+		end
+		SINGLE_READ_WAIT_AXI: begin
+			axi_req.arvalid = 1'b1;
 			axi_req.araddr  = pipe_addr;
 
-            if(axi_resp.arready) state_d = SINGLE_READ;
-        end
-        SINGLE_WRITE_WAIT_AXI: begin
+			if(axi_resp.arready) state_d = SINGLE_READ;
+		end
+		SINGLE_WRITE_WAIT_AXI: begin
 			axi_req.awvalid = 1'b1;
 			axi_req.awaddr  = pipe_addr;
 
 			if(axi_resp.awready) state_d = SINGLE_WRITE;
-        end
-        SINGLE_READ: begin
-            if(axi_resp.rvalid) begin
-                axi_req.rready = 1'b1;
-                state_d = FINISHED;
-            end
-        end
-        SINGLE_WRITE: begin
-            // Write a single transfer
-            axi_req.wdata = pipe_wdata;
-            axi_req.wvalid = 1'b1;
+		end
+		SINGLE_READ: begin
+			if(axi_resp.rvalid) begin
+				axi_req.rready = 1'b1;
+				state_d = FINISHED;
+			end
+		end
+		SINGLE_WRITE: begin
+			// Write a single transfer
+			axi_req.wdata = pipe_wdata;
+			axi_req.wvalid = 1'b1;
 
-            // The burst length is 1
-            axi_req.wlast = 1'b1;
+			// The burst length is 1
+			axi_req.wlast = 1'b1;
 
-            if(axi_resp.wready) begin
-                state_d = FINISHED;
-            end
-        end
-        // Wait for line_recv
-        FINISHED: begin
-            state_d = IDLE;
-        end
-    endcase
+			if(axi_resp.wready) begin
+				state_d = FINISHED;
+			end
+		end
+		// Wait for line_recv
+		FINISHED: begin
+			state_d = IDLE;
+		end
+	endcase
 end
 
 always_ff @(posedge clk or posedge rst) begin
 	if(rst) begin
-        state <= IDLE;
-        direct_rdata = '0;
+		state <= IDLE;
+		direct_rdata = '0;
 	end else begin
-        state <= state_d;
-        direct_rdata = direct_rdata_d;
+		state <= state_d;
+		direct_rdata = direct_rdata_d;
 	end
 end
 
@@ -135,7 +135,7 @@ always_ff @(posedge clk or posedge rst) begin
 		pipe_read <= dbus.uncached_read | dbus.read;
 		pipe_write <= dbus.uncached_write | dbus.write;
 		pipe_addr <= dbus.address;
-        pipe_wdata <= dbus.wrdata;
+		pipe_wdata <= dbus.wrdata;
 	end
 end
 
@@ -144,9 +144,9 @@ always_ff @(posedge clk or posedge rst) begin
 		line_recv <= '0;
 	end else if(state == SINGLE_READ && axi_resp.rvalid) begin
 		line_recv[0] <= axi_resp.rdata;
-    end else if(state == SINGLE_WRITE && axi_resp.wready) begin
-        line_recv[0] <= axi_req.wdata;
-    end
+	end else if(state == SINGLE_WRITE && axi_resp.wready) begin
+		line_recv[0] <= axi_req.wdata;
+	end
 end
 
 endmodule

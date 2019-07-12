@@ -33,7 +33,7 @@ logic [$clog2(REQ_COUNT+2):0] req;
 logic [$clog2(REQ_COUNT+2):0][31:0] address;
 logic [$clog2(REQ_COUNT+2):0][31:0] wdata;
 typedef enum logic [1:0] {
-    READ, WRITE, UNCACHED_READ, UNCACHED_WRITE
+	READ, WRITE, UNCACHED_READ, UNCACHED_WRITE
 } req_type_t;
 req_type_t req_type [$clog2(REQ_COUNT+2):0];
 req_type_t current_type;
@@ -63,7 +63,7 @@ assign dbus.uncached_write = current_type == UNCACHED_WRITE;
 
 always_ff @(posedge clk or posedge rst) begin
 	if(rst) begin
-        req <= 0;
+		req <= 0;
 	end else if(~dbus.stall) begin
 		req <= req + 1;
 	end
@@ -72,14 +72,14 @@ end
 integer cycle;
 always_ff @(negedge clk) begin
 	cycle <= rst ? '0 : cycle + 1;
-    if(~rst && req > 0 && ~dbus.stall) begin
+	if(~rst && req > 0 && ~dbus.stall) begin
 		$display("[%0d] req = %0d, data = %08x", cycle, req - 1, dbus.rddata);
-        if(req_type[req-1] == UNCACHED_WRITE) begin
-            if(dbus.rddata != wdata[req-1]) begin
-                $display("[Error] expected = %08x", wdata[req-1]);
-                $stop;
-            end
-        end else if(dbus.rddata != address[req-1]) begin
+		if(req_type[req-1] == UNCACHED_WRITE) begin
+			if(dbus.rddata != wdata[req-1]) begin
+				$display("[Error] expected = %08x", wdata[req-1]);
+				$stop;
+			end
+		end else if(dbus.rddata != address[req-1]) begin
 			$display("[Error] expected = %08x", address[req-1]);
 			$stop;
 		end
@@ -87,13 +87,13 @@ always_ff @(negedge clk) begin
 end
 
 initial begin
-    rst = 1'b1;
+	rst = 1'b1;
 	clk = 1'b1;
-    ibus.read = 1'b0;
+	ibus.read = 1'b0;
 
-    #51 rst = 1'b0;
-    wait(req == REQ_COUNT + 1);
-    $display("[pass]");
+	#51 rst = 1'b0;
+	wait(req == REQ_COUNT + 1);
+	$display("[pass]");
 	$finish;
 end
 
