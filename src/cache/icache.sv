@@ -2,10 +2,11 @@
 `include "cache_defs.sv"
 
 module icache #(
-	parameter DATA_WIDTH = 64,  // 2 * 32-bit instruction
-	parameter LINE_WIDTH = 256, // max burst size is 16, so LINE_WIDTH should <= 8*32 = 256
+	parameter BUS_WIDTH = 4,
+	parameter DATA_WIDTH = 64, 
+	parameter LINE_WIDTH = 256, 
 	parameter SET_ASSOC  = 4,
-	parameter CACHE_SIZE = 16 * 1024 * 8  // in bit
+	parameter CACHE_SIZE = 16 * 1024 * 8
 ) (
 	// external logics
 	input  logic        clk,
@@ -13,9 +14,14 @@ module icache #(
 	// CPU signals
 	cpu_ibus_if.slave   ibus,
 	// AXI request
-	output axi_req_t    axi_req,
+    output axi_req_t                axi_req,
+    output logic [BUS_WIDTH - 1 :0] axi_req_arid,
+    output logic [BUS_WIDTH - 1 :0] axi_req_awid,
+    output logic [BUS_WIDTH - 1 :0] axi_req_wid,
 	// AXI response
-	input  axi_resp_t   axi_resp
+    input  axi_resp_t               axi_resp,
+    input  logic [BUS_WIDTH - 1 :0] axi_resp_rid,
+    input  logic [BUS_WIDTH - 1 :0] axi_resp_bid,
 );
 
 localparam int LINE_NUM    = CACHE_SIZE / LINE_WIDTH;

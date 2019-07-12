@@ -79,4 +79,51 @@ interface cpu_dbus_if();
 
 endinterface
 
+typedef struct packed {
+	// ar
+    logic [31:0] araddr;
+    logic [3 :0] arlen;
+    logic [2 :0] arsize;
+    logic [1 :0] arburst;
+    logic [1 :0] arlock;
+    logic [3 :0] arcache;
+    logic [2 :0] arprot;
+    logic        arvalid;
+	// r
+    logic        rready;
+	// aw
+    logic [31:0] awaddr;
+    logic [3 :0] awlen;
+    logic [2 :0] awsize;
+    logic [1 :0] awburst;
+    logic [1 :0] awlock;
+    logic [3 :0] awcache;
+    logic [2 :0] awprot;
+    logic        awvalid;
+	// w
+    logic [31:0] wdata;
+    logic [3 :0] wstrb;
+    logic        wlast;
+    logic        wvalid;
+	// b
+    logic        bready;
+} axi_req_t;
+
+typedef struct packed {
+	// ar
+	logic        arready;
+	// r
+	logic [31:0] rdata;
+	logic [1 :0] rresp;
+	logic        rlast;
+	logic        rvalid;
+	// aw
+	logic        awready;
+	// w
+	logic        wready;
+	// b
+	logic [1 :0] bresp;
+	logic        bvalid;
+} axi_resp_t;
+
 `endif
