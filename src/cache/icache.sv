@@ -27,11 +27,13 @@ localparam int LINE_BYTE_OFFSET = $clog2(LINE_WIDTH / 8);
 localparam int INDEX_WIDTH = $clog2(GROUP_NUM);
 localparam int TAG_WIDTH   = 32 - INDEX_WIDTH - LINE_BYTE_OFFSET;
 
-typedef enum logic [1:0] {
+typedef enum logic [2:0] {
 	IDLE,
 	WAIT_AXI_READY,
 	RECEIVING,
-	FINISH_RECV
+	FINISH,
+	FLUSH_WAIT_AXI_READY,
+	FLUSH_RECEIVING
 } state_t;
 
 typedef struct packed {
@@ -73,7 +75,7 @@ logic [31:0] lfsr_val;
 
 // stage 2 status
 logic pipe_read;
-logic [31:0] pipe_addr;
+logic [31:0] pipe_addr, axi_raddr;
 logic cache_miss;
 logic [SET_ASSOC-1:0] hit;
 logic [LINE_WIDTH/32-1:0][31:0] line_recv;
@@ -98,6 +100,7 @@ assign cache_miss = ~(|hit) & pipe_read;
 
 // setup IBus
 assign ibus.stall = (state_d != IDLE) & pipe_read & ~ibus.flush_2;
+assign ibus.valid = pipe_read & ~ibus.stall & ~ibus.flush_2;
 always_comb begin
 	ibus.rddata = '0;
 	// at most one `hit` will be 1.
@@ -107,36 +110,32 @@ always_comb begin
 end
 
 always_comb begin
-	state_d     = state;
-	burst_cnt_d = burst_cnt;
-
 	// RAM requests
 	tag_we      = '0;
 	data_we     = '0;
-	tag_addr    = get_index(ibus.address);
-	data_addr   = get_index(ibus.address);
+	if(state_d == FINISH) begin
+		tag_addr    = get_index(pipe_addr);
+		data_addr   = get_index(pipe_addr);
+	end else begin
+		tag_addr    = get_index(ibus.address);
+		data_addr   = get_index(ibus.address);
+	end
 
 	lfsr_update = 1'b0;
+	burst_cnt_d = burst_cnt;
 
 	// AXI defaults
 	axi_req = '0;
 	axi_req.arlen   = LINE_WIDTH / 32 - 1;
 	axi_req.arsize  = 3'b011; // 4 bytes
 	axi_req.arburst = 2'b01;  // INCR
+	axi_raddr  = { pipe_addr[31 : LINE_BYTE_OFFSET], {LINE_BYTE_OFFSET{1'b0}} };
 
-	unique case(state)
-		IDLE: begin
-			if(cache_miss) begin
-				state_d     = WAIT_AXI_READY;
-				lfsr_update = 1'b1;
-			end
-		end
-		WAIT_AXI_READY: begin
+	case(state)
+		WAIT_AXI_READY, FLUSH_WAIT_AXI_READY: begin
 			burst_cnt_d     = '0;
 			axi_req.arvalid = 1'b1;
-			axi_req.araddr  = { pipe_addr[31 : LINE_BYTE_OFFSET], {LINE_BYTE_OFFSET{1'b0}} };
-
-			if(axi_resp.arready) state_d = RECEIVING;
+			axi_req.araddr  = axi_raddr;
 		end
 		RECEIVING: begin
 			if(axi_resp.rvalid) begin
@@ -145,16 +144,42 @@ always_comb begin
 			end
 
 			if(axi_resp.rvalid & axi_resp.rlast) begin
-				state_d = FINISH_RECV;
-				tag_we[assoc_waddr]  = 1'b1;
-				data_we[assoc_waddr] = 1'b1;
-				tag_addr  = get_index(pipe_addr);
-				data_addr = get_index(pipe_addr);
+				tag_we[assoc_waddr]  = ~ibus.flush_2;
+				data_we[assoc_waddr] = ~ibus.flush_2;
+				lfsr_update = 1'b1;
 			end
 		end
-		FINISH_RECV: begin
-			state_d = IDLE;
+		FLUSH_RECEIVING: begin
+			axi_req.rready = 1'b1;
 		end
+	endcase
+end
+
+// update state
+always_comb begin
+	state_d = state;
+	unique case(state)
+		IDLE, FINISH:
+			if(cache_miss & ~ibus.flush_2)
+				state_d = WAIT_AXI_READY;
+			else state_d = IDLE;
+		WAIT_AXI_READY:
+			if(axi_resp.arready) 
+				state_d = ibus.flush_2 ? FLUSH_RECEIVING : RECEIVING;
+			else if(ibus.flush_2)
+				state_d = FLUSH_WAIT_AXI_READY;
+		RECEIVING:
+			if(axi_resp.rvalid & axi_resp.rlast) begin
+				state_d = FINISH;
+			end else if(ibus.flush_2) begin
+				state_d = FLUSH_RECEIVING;
+			end
+		FLUSH_WAIT_AXI_READY:
+			if(axi_resp.arready) 
+				state_d = FLUSH_RECEIVING;
+		FLUSH_RECEIVING:
+			if(axi_resp.rvalid & axi_resp.rlast)
+				state_d = FINISH;
 	endcase
 end
 
