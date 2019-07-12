@@ -127,7 +127,7 @@ always_comb begin
 	// AXI defaults
 	axi_req = '0;
 	axi_req.arlen   = LINE_WIDTH / 32 - 1;
-	axi_req.arsize  = 3'b011; // 4 bytes
+	axi_req.arsize  = 3'b010; // 4 bytes
 	axi_req.arburst = 2'b01;  // INCR
 	axi_raddr  = { pipe_addr[31 : LINE_BYTE_OFFSET], {LINE_BYTE_OFFSET{1'b0}} };
 

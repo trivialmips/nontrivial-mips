@@ -7,23 +7,23 @@ axi_resp_t axi_resp;
 always #5 clk = ~clk;
 
 identity_device id (
-    .clk (clk),
-    .rst (rst),
-    .axi_req (axi_req),
-    .axi_resp (axi_resp)
+	.clk (clk),
+	.rst (rst),
+	.axi_req (axi_req),
+	.axi_resp (axi_resp)
 );
 
 cpu_dbus_if dbus();
 cpu_ibus_if ibus();
 
 wrapped_cache cache (
-    .clk (clk),
-    .rst (rst),
-    .axi_req (axi_req),
-    .axi_resp (axi_resp),
+	.clk (clk),
+	.rst (rst),
+	.axi_req (axi_req),
+	.axi_resp (axi_resp),
 
-    .ibus (ibus),
-    .dbus (dbus)
+	.ibus (ibus),
+	.dbus (dbus)
 );
 
 logic [4:0] pc;
@@ -73,17 +73,17 @@ end
 
 initial
 begin
-    clk = 1'b1;
-    rst = 1'b1;
-    dbus.read = 1'b0;
-    dbus.write = 1'b0;
-    dbus.uncached_read = 1'b0;
-    dbus.uncached_write = 1'b0;
+	clk = 1'b1;
+	rst = 1'b1;
+	dbus.read = 1'b0;
+	dbus.write = 1'b0;
+	dbus.uncached_read = 1'b0;
+	dbus.uncached_write = 1'b0;
 
 	ibus.flush_1 = 1'b0;
 	ibus.flush_2 = 1'b0;
 
-    #51 rst = 1'b0;
+	#51 rst = 1'b0;
 	wait(pc == 5);
 	#15
 	ibus.flush_1 = 1'b1;
