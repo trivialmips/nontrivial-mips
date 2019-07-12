@@ -1,5 +1,4 @@
 `include "common_defs.svh"
-`include "cache_defs.sv"
 
 module dcache #(
     parameter BUS_WIDTH = 4,
@@ -19,7 +18,7 @@ module dcache #(
 	// AXI response
     input  axi_resp_t               axi_resp,
     input  logic [BUS_WIDTH - 1 :0] axi_resp_rid,
-    input  logic [BUS_WIDTH - 1 :0] axi_resp_bid,
+    input  logic [BUS_WIDTH - 1 :0] axi_resp_bid
 );
 
 localparam int LINE_BYTE_OFFSET = $clog2(LINE_WIDTH / 8);

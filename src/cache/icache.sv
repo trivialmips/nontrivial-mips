@@ -1,5 +1,4 @@
 `include "common_defs.svh"
-`include "cache_defs.sv"
 
 module icache #(
 	parameter BUS_WIDTH = 4,
@@ -21,7 +20,7 @@ module icache #(
 	// AXI response
     input  axi_resp_t               axi_resp,
     input  logic [BUS_WIDTH - 1 :0] axi_resp_rid,
-    input  logic [BUS_WIDTH - 1 :0] axi_resp_bid,
+    input  logic [BUS_WIDTH - 1 :0] axi_resp_bid
 );
 
 localparam int LINE_NUM    = CACHE_SIZE / LINE_WIDTH;
