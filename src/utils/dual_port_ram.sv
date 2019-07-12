@@ -97,7 +97,7 @@ module dual_port_byte_ram #(
 
 logic [BYTES_WIDTH-1:0][7:0] bytes_ia, bytes_oa, bytes_ib, bytes_ob;
 
-for(genvar i = 0; i < BYTES_WIDTH; ++i) begin : gen_spram
+for(genvar i = 0; i < BYTES_WIDTH; ++i) begin : gen_tdpram
 	assign bytes_ia[i] = dina[i * 8 + 7 : i * 8];
 	assign douta[i * 8 + 7 : i * 8] = bytes_oa[i];
 	assign bytes_ib[i] = dinb[i * 8 + 7 : i * 8];
@@ -120,8 +120,8 @@ for(genvar i = 0; i < BYTES_WIDTH; ++i) begin : gen_spram
 		.WRITE_MODE_A("write_first"),
 
 		// Port B module parameters
-		.WRITE_DATA_WIDTH_B($bits(dtype)),
-		.READ_DATA_WIDTH_B($bits(dtype)),
+		.WRITE_DATA_WIDTH_B(8),
+		.READ_DATA_WIDTH_B(8),
 		.READ_RESET_VALUE_B("0"),
 		.READ_LATENCY_B(1),
 		.WRITE_MODE_B("write_first")
@@ -134,7 +134,7 @@ for(genvar i = 0; i < BYTES_WIDTH; ++i) begin : gen_spram
 		.rsta           ( rst                  ),
 		.ena            ( 1'b1                 ),
 		.regcea         ( 1'b0                 ),
-		.wea            ( web & byteenableb[i] ),
+		.wea            ( wea & byteenablea[i] ),
 		.addra          ( addra                ),
 		.dina           ( bytes_ia[i]          ),
 		.injectsbiterra ( 1'b0                 ), // do not change
