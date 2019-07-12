@@ -55,7 +55,7 @@ module cache_controller #(
 	input  wire        bvalid ,
 	output wire        bready ,
 
-    // dcache
+	// dcache
 	// AXI AR signals
 	output wire [3 :0] arid_dcache    ,
 	output wire [31:0] araddr_dcache  ,
