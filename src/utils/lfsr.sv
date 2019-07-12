@@ -21,3 +21,30 @@ begin
 end
 
 endmodule 
+
+module lfsr_8bits(
+	input  logic clk,
+	input  logic rst,
+	input  logic update,
+	output reg [7:0] val
+);
+
+logic feedback;
+assign feedback = val[7];
+
+always @(posedge clk or posedge rst) begin
+	if(rst) begin
+		val <= 8'd255;
+	end else if(update) begin
+		val[0] <= feedback;
+		val[1] <= val[0];
+		val[2] <= val[1] ^ feedback;
+		val[3] <= val[2] ^ feedback;
+		val[4] <= val[3] ^ feedback;
+		val[5] <= val[4];
+		val[6] <= val[5];
+		val[7] <= val[6];
+	end
+end
+
+endmodule

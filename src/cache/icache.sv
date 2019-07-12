@@ -71,7 +71,7 @@ index_t data_addr;
 
 // random number
 logic lfsr_update;
-logic [31:0] lfsr_val;
+logic [7:0] lfsr_val;
 
 // stage 2 status
 logic pipe_read;
@@ -233,7 +233,7 @@ for(genvar i = 0; i < SET_ASSOC; ++i) begin : gen_icache_mem
 end
 
 // generate random number
-lfsr_32bits lfsr_inst(
+lfsr_8bits lfsr_inst(
 	.clk,
 	.rst,
 	.update ( lfsr_update ),
