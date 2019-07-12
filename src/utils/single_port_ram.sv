@@ -19,7 +19,6 @@ xpm_memory_spram #(
 	// Common module parameters
 	.MEMORY_SIZE($bits(dtype) * SIZE),
 	.MEMORY_PRIMITIVE("auto"),
-	.CLOCKING_MODE("common_clock"),
 	.USE_MEM_INIT(0),
 	.WAKEUP_TIME("disable_sleep"),
 	.MESSAGE_CONTROL(0),
@@ -75,7 +74,6 @@ for(genvar i = 0; i < BYTES_WIDTH; ++i) begin : gen_spram
 		// Common module parameters
 		.MEMORY_SIZE(8 * SIZE),
 		.MEMORY_PRIMITIVE("auto"),
-		.CLOCKING_MODE("common_clock"),
 		.USE_MEM_INIT(0),
 		.WAKEUP_TIME("disable_sleep"),
 		.MESSAGE_CONTROL(0),
