@@ -186,7 +186,7 @@ end
 
 // generate block RAMs
 for(genvar i = 0; i < SET_ASSOC; ++i) begin : gen_icache_mem
-	icache_ram #(
+	single_port_ram #(
 		.SIZE  ( GROUP_NUM ),
 		.dtype ( tag_t     )
 	) mem_tag (
@@ -199,7 +199,7 @@ for(genvar i = 0; i < SET_ASSOC; ++i) begin : gen_icache_mem
 		.dout ( tag_rdata[i] )
 	);
 
-	icache_ram #(
+	single_port_ram #(
 		.SIZE  ( GROUP_NUM ),
 		.dtype ( line_t    )
 	) mem_data (
