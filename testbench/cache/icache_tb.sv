@@ -13,17 +13,15 @@ identity_device id (
 	.axi_resp (axi_resp)
 );
 
-cpu_dbus_if dbus();
 cpu_ibus_if ibus();
 
-wrapped_cache cache (
+icache cache (
 	.clk (clk),
 	.rst (rst),
 	.axi_req (axi_req),
 	.axi_resp (axi_resp),
 
-	.ibus (ibus),
-	.dbus (dbus)
+	.ibus (ibus)
 );
 
 logic [4:0] pc;
@@ -86,10 +84,6 @@ initial
 begin
 	clk = 1'b1;
 	rst = 1'b1;
-	dbus.read = 1'b0;
-	dbus.write = 1'b0;
-	dbus.uncached_read = 1'b0;
-	dbus.uncached_write = 1'b0;
 
 	ibus.flush_1 = 1'b0;
 	ibus.flush_2 = 1'b0;

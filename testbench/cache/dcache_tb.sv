@@ -1,4 +1,4 @@
-`include "cache_defs.sv"
+`include "common_defs.svh"
 
 module dcache_tb();
 
@@ -16,15 +16,13 @@ identity_device id (
 );
 
 cpu_dbus_if dbus();
-cpu_ibus_if ibus();
 
-wrapped_cache cache (
+dcache cache (
 	.clk (clk),
 	.rst (rst),
-	.axi_dcache_req (axi_req),
-	.axi_dcache_resp (axi_resp),
+	.axi_req (axi_req),
+	.axi_resp (axi_resp),
 
-	.ibus (ibus),
 	.dbus (dbus)
 );
 
@@ -89,7 +87,6 @@ end
 initial begin
 	rst = 1'b1;
 	clk = 1'b1;
-	ibus.read = 1'b0;
 
 	#51 rst = 1'b0;
 	wait(req == REQ_COUNT + 1);

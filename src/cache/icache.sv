@@ -114,6 +114,11 @@ always_comb begin
 	end
 end
 
+// AXI Plumbing
+assign axi_req_arid = '0;
+assign axi_req_awid = '0;
+assign axi_req_wid = '0;
+
 always_comb begin
 	// RAM requests
 	tag_we      = '0;
