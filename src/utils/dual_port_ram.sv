@@ -155,7 +155,7 @@ for(genvar i = 0; i < BYTES_WIDTH; ++i) begin : gen_spram
 		.injectdbiterrb ( 1'b0                 ), // do not change
 		.doutb          ( bytes_ob[i]          ),
 		.sbiterrb       (                      ), // do not change
-		.dbiterrb       (                      ), // do not change
+		.dbiterrb       (                      )  // do not change
 	);
 end
 

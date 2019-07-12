@@ -12,6 +12,7 @@ module cache_controller #(
 	// external logics
 	input  wire        clk    ,
 	input  wire        rst    ,
+
 	// AXI AR signals
 	output wire [3 :0] arid   ,
 	output wire [31:0] araddr ,
@@ -53,6 +54,50 @@ module cache_controller #(
 	input  wire [1 :0] bresp  ,
 	input  wire        bvalid ,
 	output wire        bready ,
+
+    // dcache
+	// AXI AR signals
+	output wire [3 :0] arid_dcache    ,
+	output wire [31:0] araddr_dcache  ,
+	output wire [3 :0] arlen_dcache   ,
+	output wire [2 :0] arsize_dcache  ,
+	output wire [1 :0] arburst_dcache ,
+	output wire [1 :0] arlock_dcache  ,
+	output wire [3 :0] arcache_dcache ,
+	output wire [2 :0] arprot_dcache  ,
+	output wire        arvalid_dcache ,
+	input  wire        arready_dcache ,
+	// AXI R signals
+	input  wire [3 :0] rid_dcache     ,
+	input  wire [31:0] rdata_dcache   ,
+	input  wire [1 :0] rresp_dcache   ,
+	input  wire        rlast_dcache   ,
+	input  wire        rvalid_dcache  ,
+	output wire        rready_dcache  ,
+	// AXI AW signals
+	output wire [3 :0] awid_dcache    ,
+	output wire [31:0] awaddr_dcache  ,
+	output wire [3 :0] awlen_dcache   ,
+	output wire [2 :0] awsize_dcache  ,
+	output wire [1 :0] awburst_dcache ,
+	output wire [1 :0] awlock_dcache  ,
+	output wire [3 :0] awcache_dcache ,
+	output wire [2 :0] awprot_dcache  ,
+	output wire        awvalid_dcache ,
+	input  wire        awready_dcache ,
+	// AXI W signals
+	output wire [3 :0] wid_dcache     ,
+	output wire [31:0] wdata_dcache   ,
+	output wire [3 :0] wstrb_dcache   ,
+	output wire        wlast_dcache   ,
+	output wire        wvalid_dcache  ,
+	input  wire        wready_dcache  ,
+	// AXI B signals
+	input  wire [3 :0] bid_dcache     ,
+	input  wire [1 :0] bresp_dcache   ,
+	input  wire        bvalid_dcache  ,
+	output wire        bready_dcache  ,
+
 	// CPU signals
 	cpu_ibus_if.slave  ibus   ,
 	cpu_dbus_if.slave  dbus
@@ -97,12 +142,59 @@ assign axi_resp.bid     = bid;
 assign axi_resp.bresp   = bresp;
 assign axi_resp.bvalid  = bvalid;
 
+axi_req_t axi_dcache_req;
+axi_resp_t axi_dcache_resp;
+assign arid_dcache    = axi_dcache_req.arid;
+assign araddr_dcache  = axi_dcache_req.araddr;
+assign arlen_dcache   = axi_dcache_req.arlen;
+assign arsize_dcache  = axi_dcache_req.arsize;
+assign arburst_dcache = axi_dcache_req.arburst;
+assign arlock_dcache  = axi_dcache_req.arlock;
+assign arcache_dcache = axi_dcache_req.arcache;
+assign arprot_dcache  = axi_dcache_req.arprot;
+assign arvalid_dcache = axi_dcache_req.arvalid;
+assign rready_dcache  = axi_dcache_req.rready;
+assign awid_dcache    = axi_dcache_req.awid;
+assign awaddr_dcache  = axi_dcache_req.awaddr;
+assign awlen_dcache   = axi_dcache_req.awlen;
+assign awsize_dcache  = axi_dcache_req.awsize;
+assign awburst_dcache = axi_dcache_req.awburst;
+assign awlock_dcache  = axi_dcache_req.awlock;
+assign awcache_dcache = axi_dcache_req.awcache;
+assign awprot_dcache  = axi_dcache_req.awprot;
+assign awvalid_dcache = axi_dcache_req.awvalid;
+assign wid_dcache     = axi_dcache_req.wid;
+assign wdata_dcache   = axi_dcache_req.wdata;
+assign wstrb_dcache   = axi_dcache_req.wstrb;
+assign wlast_dcache   = axi_dcache_req.wlast;
+assign wvalid_dcache  = axi_dcache_req.wvalid;
+assign bready_dcache  = axi_dcache_req.bready;
+assign axi_dcache_resp.arready = arready_dcache;
+assign axi_dcache_resp.rid     = rid_dcache;
+assign axi_dcache_resp.rdata   = rdata_dcache;
+assign axi_dcache_resp.rresp   = rresp_dcache;
+assign axi_dcache_resp.rlast   = rlast_dcache;
+assign axi_dcache_resp.rvalid  = rvalid_dcache;
+assign axi_dcache_resp.awready = awready_dcache;
+assign axi_dcache_resp.wready  = wready_dcache;
+assign axi_dcache_resp.bid     = bid_dcache;
+assign axi_dcache_resp.bresp   = bresp_dcache;
+assign axi_dcache_resp.bvalid  = bvalid_dcache;
+
 icache icache_inst(
 	.clk,
 	.rst,
 	.ibus,
 	.axi_req,
 	.axi_resp
+);
+
+dcache dcache_inst(
+	.clk,
+	.rst,
+	.dbus,
+	.axi_req (axi_dcache_req),
+	.axi_resp (axi_dcache_resp)
 );
 
 endmodule
