@@ -22,11 +22,11 @@ always_comb begin
 	base_addr_d = base_addr;
 	state_d = state;
 
-	axi_resp.arready = 1'b0;
-	axi_resp.awready = 1'b0;
-	axi_resp.rvalid = 1'b0;
-	axi_resp.rlast = 1'b0;
-	axi_resp.wready = 1'b0;
+	axi_resp.arready = state == IDLE && axi_req.arvalid;
+	axi_resp.awready = state == IDLE && axi_req.awvalid;
+	axi_resp.rvalid = state == READING;
+	axi_resp.rlast = state == READING && burst_counter == burst_target;
+	axi_resp.wready = state == WRITING && axi_req.wvalid;
 
 	case(state)
 		IDLE: begin
@@ -35,8 +35,6 @@ always_comb begin
 
 				burst_target_d = axi_req.arlen;
 				burst_counter_d = 0;
-
-				axi_resp.arready = 1'b1;
 
 				state_d = READING;
 			end
@@ -47,15 +45,11 @@ always_comb begin
 				$display("Slave: Writing length: %0d", burst_target_d + 1);
 				burst_counter_d = 0;
 
-				axi_resp.awready = 1'b1;
-
 				state_d = WRITING;
 			end
 		end
 		READING: begin
 			axi_resp.rdata = burst_counter * 4 + base_addr;
-			axi_resp.rvalid = 1'b1;
-			axi_resp.rlast = burst_counter == burst_target;
 
 			if(axi_req.rready) begin
 				burst_counter_d = burst_counter + 1;
@@ -69,7 +63,6 @@ always_comb begin
 			if(axi_req.wvalid) begin
 				burst_counter_d = burst_counter + 1;
 				$display("Slave: Writing transfer %0d / %0d: %08x", burst_counter_d, burst_target + 1, axi_req.wdata);
-				axi_resp.wready = 0'b1;
 			end
 
 			if(axi_req.wlast) begin
