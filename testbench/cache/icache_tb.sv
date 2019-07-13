@@ -21,7 +21,12 @@ icache cache (
 	.axi_req (axi_req),
 	.axi_resp (axi_resp),
 
-	.ibus (ibus)
+	.ibus (ibus),
+	.axi_req_awid ( /* open */ ),
+	.axi_req_arid ( /* open */ ),
+	.axi_req_wid ( /* open */ ),
+	.axi_resp_rid (4'b0000),
+	.axi_resp_bid (4'b0000)
 );
 
 logic [4:0] pc;

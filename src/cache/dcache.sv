@@ -1,9 +1,9 @@
 `include "common_defs.svh"
 
 module dcache #(
-    parameter BUS_WIDTH = 4,
+	parameter BUS_WIDTH = 4,
 	parameter DATA_WIDTH = 64,
-    parameter LINE_WIDTH = 256
+	parameter LINE_WIDTH = 256
 ) (
 	// external logics
 	input  logic            clk,
@@ -11,14 +11,14 @@ module dcache #(
 	// CPU signals
 	cpu_dbus_if.slave       dbus,
 	// AXI request
-    output axi_req_t                axi_req,
-    output logic [BUS_WIDTH - 1 :0] axi_req_arid,
-    output logic [BUS_WIDTH - 1 :0] axi_req_awid,
-    output logic [BUS_WIDTH - 1 :0] axi_req_wid,
+	output axi_req_t                axi_req,
+	output logic [BUS_WIDTH - 1 :0] axi_req_arid,
+	output logic [BUS_WIDTH - 1 :0] axi_req_awid,
+	output logic [BUS_WIDTH - 1 :0] axi_req_wid,
 	// AXI response
-    input  axi_resp_t               axi_resp,
-    input  logic [BUS_WIDTH - 1 :0] axi_resp_rid,
-    input  logic [BUS_WIDTH - 1 :0] axi_resp_bid
+	input  axi_resp_t               axi_resp,
+	input  logic [BUS_WIDTH - 1 :0] axi_resp_rid,
+	input  logic [BUS_WIDTH - 1 :0] axi_resp_bid
 );
 
 localparam int LINE_BYTE_OFFSET = $clog2(LINE_WIDTH / 8);
