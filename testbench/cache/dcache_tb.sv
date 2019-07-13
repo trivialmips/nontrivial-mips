@@ -23,7 +23,12 @@ dcache cache (
 	.axi_req (axi_req),
 	.axi_resp (axi_resp),
 
-	.dbus (dbus)
+	.dbus (dbus),
+	.axi_req_awid ( /* open */ ),
+	.axi_req_arid ( /* open */ ),
+	.axi_req_wid ( /* open */ ),
+	.axi_resp_rid (4'b0000),
+	.axi_resp_bid (4'b0000)
 );
 
 localparam int unsigned REQ_COUNT = 4;
