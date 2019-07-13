@@ -8,7 +8,7 @@ axi_resp_t axi_resp;
 
 always #5 clk = ~clk;
 
-identity_device id (
+mem_device id (
 	.clk (clk),
 	.rst (rst),
 	.axi_req (axi_req),
@@ -31,30 +31,36 @@ dcache cache (
 	.axi_resp_bid (4'b0000)
 );
 
-localparam int unsigned REQ_COUNT = 4;
+localparam int unsigned REQ_COUNT = 5;
 logic [$clog2(REQ_COUNT+2):0] req;
-logic [$clog2(REQ_COUNT+2):0][31:0] address;
-logic [$clog2(REQ_COUNT+2):0][31:0] wdata;
-typedef enum logic [1:0] {
+logic [REQ_COUNT+2:0][31:0] address;
+logic [REQ_COUNT+2:0][31:0] wdata;
+logic [REQ_COUNT+2:0][31:0] rdata;
+typedef enum logic [2:0] {
 	READ, WRITE, UNCACHED_READ, UNCACHED_WRITE
 } req_type_t;
-req_type_t req_type [$clog2(REQ_COUNT+2):0];
+req_type_t req_type [REQ_COUNT+2:0];
 req_type_t current_type;
 
-assign address[0] = 'h80000000;
+assign address[0] = 'h00008000;
 assign req_type[0] = UNCACHED_READ;
+assign rdata[0] = 'h00000000;
 
-assign address[1] = 'h80000004;
+assign address[1] = 'h00008004;
 assign req_type[1] = UNCACHED_WRITE;
-assign wdata[1] = 'h13579BDF;
+assign wdata[1] = 'h00000001;
 
-assign address[2] = 'h80000040;
+assign address[2] = 'h00008040;
 assign req_type[2] = UNCACHED_WRITE;
-assign wdata[2] = 'h13579BDF;
+assign wdata[2] = 'h00000002;
 
-assign address[3] = 'h80000080;
+assign address[3] = 'h00008080;
 assign req_type[3] = UNCACHED_WRITE;
-assign wdata[3] = 'h13579BDF;
+assign wdata[3] = 'h00000003;
+
+assign address[4] = 'h00008004;
+assign req_type[4] = READ;
+assign rdata[4] = 'h00000001;
 
 assign dbus.address = address[req];
 assign dbus.wrdata = wdata[req];
@@ -82,8 +88,8 @@ always_ff @(negedge clk) begin
 				$display("[Error] expected = %08x", wdata[req-1]);
 				$stop;
 			end
-		end else if(dbus.rddata != address[req-1]) begin
-			$display("[Error] expected = %08x", address[req-1]);
+		end else if(dbus.rddata != rdata[req-1]) begin
+			$display("[Error] expected = %08x", rdata[req-1]);
 			$stop;
 		end
 	end

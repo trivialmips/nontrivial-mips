@@ -54,6 +54,12 @@ assign axi_req.awlen   = 3'b0000;
 assign axi_req.arsize  = 2'b010; // 4 bytes
 assign axi_req.awsize  = 2'b010;
 
+// All four bytes are valid
+assign axi_req.wstrb = 4'b1111;
+
+// Silently ignores write response (for now)
+assign axi_req.bready = 1'b1;
+
 assign dbus.uncached_stall = dbus.stall;
 assign dbus.uncached_rddata = dbus.rddata;
 
@@ -136,7 +142,8 @@ always_ff @(posedge clk or posedge rst) begin
 		pipe_read <= 1'b0;
 		pipe_write <= 1'b0;
 	end else if(~dbus.stall) begin
-		pipe_skip_cache <= dbus.uncached_read | dbus.uncached_write;
+		// pipe_skip_cache <= dbus.uncached_read | dbus.uncached_write;
+        pipe_skip_cache <= 1'b1; // Pass through all requests
 		pipe_read <= dbus.uncached_read | dbus.read;
 		pipe_write <= dbus.uncached_write | dbus.write;
 		pipe_addr <= dbus.address;
