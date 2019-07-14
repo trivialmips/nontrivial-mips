@@ -2,10 +2,10 @@
 <Root MajorVersion="0" MinorVersion="36">
   <CompositeFile CompositeFileTopName="bd_soc" CanBeSetAsTop="false" CanDisplayChildGraph="true">
     <Description>Composite Fileset</Description>
-    <Generation Name="SYNTHESIS" State="STALE" Timestamp="1563079745"/>
-    <Generation Name="IMPLEMENTATION" State="STALE" Timestamp="1563079745"/>
-    <Generation Name="SIMULATION" State="STALE" Timestamp="1563079745"/>
-    <Generation Name="HW_HANDOFF" State="STALE" Timestamp="1563079745"/>
+    <Generation Name="SYNTHESIS" State="GENERATED" Timestamp="1563088245"/>
+    <Generation Name="IMPLEMENTATION" State="GENERATED" Timestamp="1563088245"/>
+    <Generation Name="SIMULATION" State="GENERATED" Timestamp="1563088245"/>
+    <Generation Name="HW_HANDOFF" State="GENERATED" Timestamp="1563088245"/>
     <FileCollection Name="SOURCES" Type="SOURCES">
       <File Name="ip\bd_soc_loongson_cpu_gs232_0_0\bd_soc_loongson_cpu_gs232_0_0.xci" Type="IP">
         <Instance HierarchyPath="loongson_gs232"/>
@@ -202,35 +202,40 @@
         <Library Name="xil_defaultlib"/>
         <UsedIn Val="SIMULATION"/>
       </File>
-      <File Name="bd_soc_ooc.xdc" Type="XDC">
-        <Properties IsEditable="false" IsVisible="true" Timestamp="0" IsTrackable="false" IsStatusTracked="false"/>
+      <File Name="ip\bd_soc_xlconcat_0_1\bd_soc_xlconcat_0_1.xci" Type="IP">
+        <Instance HierarchyPath="interrupt_concat"/>
+        <Properties IsEditable="false" IsVisible="true" Timestamp="0" IsTrackable="true" IsStatusTracked="true"/>
         <Library Name="xil_defaultlib"/>
         <UsedIn Val="SYNTHESIS"/>
         <UsedIn Val="IMPLEMENTATION"/>
-        <UsedIn Val="OUT_OF_CONTEXT"/>
-      </File>
-      <File Name="hw_handoff\bd_soc.hwh" Type="HwHandoff">
-        <Properties IsEditable="false" IsVisible="true" Timestamp="0" IsTrackable="false" IsStatusTracked="false"/>
-        <Library Name="xil_defaultlib"/>
-        <UsedIn Val="HW_HANDOFF"/>
-      </File>
-      <File Name="hw_handoff\bd_soc_bd.tcl">
-        <Properties IsEditable="false" IsVisible="true" Timestamp="0" IsTrackable="false" IsStatusTracked="false"/>
-        <Library Name="xil_defaultlib"/>
-        <UsedIn Val="HW_HANDOFF"/>
-      </File>
-      <File Name="synth\bd_soc.hwdef">
-        <Properties IsEditable="false" IsVisible="true" Timestamp="0" IsTrackable="false" IsStatusTracked="false"/>
-        <Library Name="xil_defaultlib"/>
-        <UsedIn Val="HW_HANDOFF"/>
-      </File>
-      <File Name="sim\bd_soc.protoinst">
-        <Properties IsEditable="false" IsVisible="true" Timestamp="0" IsTrackable="false" IsStatusTracked="false"/>
-        <Library Name="xil_defaultlib"/>
         <UsedIn Val="SIMULATION"/>
       </File>
-      <File Name="ip\bd_soc_xlconcat_0_1\bd_soc_xlconcat_0_1.xci" Type="IP">
-        <Instance HierarchyPath="interrupt_concat"/>
+      <File Name="ip\bd_soc_nt35510_controller_0_0\bd_soc_nt35510_controller_0_0.xci" Type="IP">
+        <Instance HierarchyPath="lcd_controller"/>
+        <Properties IsEditable="false" IsVisible="true" Timestamp="0" IsTrackable="true" IsStatusTracked="true"/>
+        <Library Name="xil_defaultlib"/>
+        <UsedIn Val="SYNTHESIS"/>
+        <UsedIn Val="IMPLEMENTATION"/>
+        <UsedIn Val="SIMULATION"/>
+      </File>
+      <File Name="ip\bd_soc_altera_ps2_0_0\bd_soc_altera_ps2_0_0.xci" Type="IP">
+        <Instance HierarchyPath="ps2_contoller"/>
+        <Properties IsEditable="false" IsVisible="true" Timestamp="0" IsTrackable="true" IsStatusTracked="true"/>
+        <Library Name="xil_defaultlib"/>
+        <UsedIn Val="SYNTHESIS"/>
+        <UsedIn Val="IMPLEMENTATION"/>
+        <UsedIn Val="SIMULATION"/>
+      </File>
+      <File Name="ip\bd_soc_axi_apb_bridge_0_0\bd_soc_axi_apb_bridge_0_0.xci" Type="IP">
+        <Instance HierarchyPath="apb_peripheral_bridge"/>
+        <Properties IsEditable="false" IsVisible="true" Timestamp="0" IsTrackable="true" IsStatusTracked="true"/>
+        <Library Name="xil_defaultlib"/>
+        <UsedIn Val="SYNTHESIS"/>
+        <UsedIn Val="IMPLEMENTATION"/>
+        <UsedIn Val="SIMULATION"/>
+      </File>
+      <File Name="ip\bd_soc_xlconstant_0_1\bd_soc_xlconstant_0_1.xci" Type="IP">
+        <Instance HierarchyPath="constant_true"/>
         <Properties IsEditable="false" IsVisible="true" Timestamp="0" IsTrackable="true" IsStatusTracked="true"/>
         <Library Name="xil_defaultlib"/>
         <UsedIn Val="SYNTHESIS"/>
@@ -325,36 +330,39 @@
         <UsedIn Val="IMPLEMENTATION"/>
         <UsedIn Val="SIMULATION"/>
       </File>
-      <File Name="ip\bd_soc_nt35510_controller_0_0\bd_soc_nt35510_controller_0_0.xci" Type="IP">
-        <Instance HierarchyPath="lcd_controller"/>
+      <File Name="ip\bd_soc_auto_pc_6\bd_soc_auto_pc_6.xci" Type="IP">
+        <Instance HierarchyPath="peripheral_bus/m07_couplers/auto_pc"/>
         <Properties IsEditable="false" IsVisible="true" Timestamp="0" IsTrackable="true" IsStatusTracked="true"/>
         <Library Name="xil_defaultlib"/>
         <UsedIn Val="SYNTHESIS"/>
         <UsedIn Val="IMPLEMENTATION"/>
         <UsedIn Val="SIMULATION"/>
       </File>
-      <File Name="ip\bd_soc_altera_ps2_0_0\bd_soc_altera_ps2_0_0.xci" Type="IP">
-        <Instance HierarchyPath="ps2_contoller"/>
-        <Properties IsEditable="false" IsVisible="true" Timestamp="0" IsTrackable="true" IsStatusTracked="true"/>
+      <File Name="bd_soc_ooc.xdc" Type="XDC">
+        <Properties IsEditable="false" IsVisible="true" Timestamp="0" IsTrackable="false" IsStatusTracked="false"/>
         <Library Name="xil_defaultlib"/>
         <UsedIn Val="SYNTHESIS"/>
         <UsedIn Val="IMPLEMENTATION"/>
-        <UsedIn Val="SIMULATION"/>
+        <UsedIn Val="OUT_OF_CONTEXT"/>
       </File>
-      <File Name="ip\bd_soc_axi_apb_bridge_0_0\bd_soc_axi_apb_bridge_0_0.xci" Type="IP">
-        <Instance HierarchyPath="apb_peripheral_bridge"/>
-        <Properties IsEditable="false" IsVisible="true" Timestamp="0" IsTrackable="true" IsStatusTracked="true"/>
+      <File Name="hw_handoff\bd_soc.hwh" Type="HwHandoff">
+        <Properties IsEditable="false" IsVisible="true" Timestamp="0" IsTrackable="false" IsStatusTracked="false"/>
         <Library Name="xil_defaultlib"/>
-        <UsedIn Val="SYNTHESIS"/>
-        <UsedIn Val="IMPLEMENTATION"/>
-        <UsedIn Val="SIMULATION"/>
+        <UsedIn Val="HW_HANDOFF"/>
       </File>
-      <File Name="ip\bd_soc_xlconstant_0_1\bd_soc_xlconstant_0_1.xci" Type="IP">
-        <Instance HierarchyPath="constant_true"/>
-        <Properties IsEditable="false" IsVisible="true" Timestamp="0" IsTrackable="true" IsStatusTracked="true"/>
+      <File Name="hw_handoff\bd_soc_bd.tcl">
+        <Properties IsEditable="false" IsVisible="true" Timestamp="0" IsTrackable="false" IsStatusTracked="false"/>
         <Library Name="xil_defaultlib"/>
-        <UsedIn Val="SYNTHESIS"/>
-        <UsedIn Val="IMPLEMENTATION"/>
+        <UsedIn Val="HW_HANDOFF"/>
+      </File>
+      <File Name="synth\bd_soc.hwdef">
+        <Properties IsEditable="false" IsVisible="true" Timestamp="0" IsTrackable="false" IsStatusTracked="false"/>
+        <Library Name="xil_defaultlib"/>
+        <UsedIn Val="HW_HANDOFF"/>
+      </File>
+      <File Name="sim\bd_soc.protoinst">
+        <Properties IsEditable="false" IsVisible="true" Timestamp="0" IsTrackable="false" IsStatusTracked="false"/>
+        <Library Name="xil_defaultlib"/>
         <UsedIn Val="SIMULATION"/>
       </File>
     </FileCollection>
