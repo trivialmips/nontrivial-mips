@@ -5,8 +5,7 @@
       "device": "xc7a200tfbg676-2",
       "name": "bd_soc",
       "synth_flow_mode": "Hierarchical",
-      "tool_version": "2018.3_AR71898",
-      "validated": "true"
+      "tool_version": "2018.3_AR71898"
     },
     "design_tree": {
       "main_mmcm": "",
@@ -72,7 +71,11 @@
       "loongson_confrreg": "",
       "ddr_controller": "",
       "loongson_gs232": "",
-      "interrupt_concat": ""
+      "interrupt_concat": "",
+      "lcd_controller": "",
+      "ps2_contoller": "",
+      "apb_peripheral_bridge": "",
+      "constant_true": ""
     },
     "interface_ports": {
       "UART": {
@@ -89,13 +92,7 @@
       },
       "MDIO": {
         "mode": "Master",
-        "vlnv": "xilinx.com:interface:mdio_rtl:1.0",
-        "parameters": {
-          "CAN_DEBUG": {
-            "value": "false",
-            "value_src": "default"
-          }
-        }
+        "vlnv": "xilinx.com:interface:mdio_rtl:1.0"
       },
       "SPI_FLASH": {
         "mode": "Master",
@@ -107,61 +104,23 @@
       },
       "DDR3": {
         "mode": "Master",
-        "vlnv": "xilinx.com:interface:ddrx_rtl:1.0",
-        "parameters": {
-          "AXI_ARBITRATION_SCHEME": {
-            "value": "TDM",
-            "value_src": "default"
-          },
-          "BURST_LENGTH": {
-            "value": "8",
-            "value_src": "default"
-          },
-          "CAN_DEBUG": {
-            "value": "false",
-            "value_src": "default"
-          },
-          "CAS_LATENCY": {
-            "value": "11",
-            "value_src": "default"
-          },
-          "CAS_WRITE_LATENCY": {
-            "value": "11",
-            "value_src": "default"
-          },
-          "CS_ENABLED": {
-            "value": "true",
-            "value_src": "default"
-          },
-          "DATA_MASK_ENABLED": {
-            "value": "true",
-            "value_src": "default"
-          },
-          "DATA_WIDTH": {
-            "value": "8",
-            "value_src": "default"
-          },
-          "MEMORY_TYPE": {
-            "value": "COMPONENTS",
-            "value_src": "default"
-          },
-          "MEM_ADDR_MAP": {
-            "value": "ROW_COLUMN_BANK",
-            "value_src": "default"
-          },
-          "SLOT": {
-            "value": "Single",
-            "value_src": "default"
-          },
-          "TIMEPERIOD_PS": {
-            "value": "1250",
-            "value_src": "default"
-          }
-        }
+        "vlnv": "xilinx.com:interface:ddrx_rtl:1.0"
       },
       "EJTAG": {
         "mode": "Slave",
         "vlnv": "xilinx.com:interface:jtag_rtl:2.0"
+      },
+      "LCD_data": {
+        "mode": "Master",
+        "vlnv": "xilinx.com:interface:gpio_rtl:1.0"
+      },
+      "PS2_clk": {
+        "mode": "Master",
+        "vlnv": "xilinx.com:interface:gpio_rtl:1.0"
+      },
+      "PS2_dat": {
+        "mode": "Master",
+        "vlnv": "xilinx.com:interface:gpio_rtl:1.0"
       }
     },
     "ports": {
@@ -172,36 +131,14 @@
           "ASSOCIATED_RESET": {
             "value": "rst_n"
           },
-          "CLK_DOMAIN": {
-            "value": "bd_soc_clk",
-            "value_src": "default"
-          },
           "FREQ_HZ": {
             "value": "100000000"
-          },
-          "INSERT_VIP": {
-            "value": "0",
-            "value_src": "default"
-          },
-          "PHASE": {
-            "value": "0.000",
-            "value_src": "default"
           }
         }
       },
       "rst_n": {
         "type": "rst",
-        "direction": "I",
-        "parameters": {
-          "INSERT_VIP": {
-            "value": "0",
-            "value_src": "default"
-          },
-          "POLARITY": {
-            "value": "ACTIVE_LOW",
-            "value_src": "default"
-          }
-        }
+        "direction": "I"
       },
       "led": {
         "direction": "O",
@@ -248,11 +185,6 @@
         "left": "7",
         "right": "0"
       },
-      "LCD_data": {
-        "direction": "IO",
-        "left": "15",
-        "right": "0"
-      },
       "LCD_nrst": {
         "direction": "O"
       },
@@ -273,24 +205,6 @@
       },
       "EJTAG_trst": {
         "direction": "I"
-      },
-      "PS2_clk_i": {
-        "direction": "I"
-      },
-      "PS2_clk_o": {
-        "direction": "O"
-      },
-      "PS2_clk_t": {
-        "direction": "O"
-      },
-      "PS2_dat_i": {
-        "direction": "I"
-      },
-      "PS2_dat_o": {
-        "direction": "O"
-      },
-      "PS2_dat_t": {
-        "direction": "O"
       }
     },
     "components": {
@@ -2717,7 +2631,12 @@
       },
       "constant_false": {
         "vlnv": "xilinx.com:ip:xlconstant:1.1",
-        "xci_name": "bd_soc_xlconstant_0_0"
+        "xci_name": "bd_soc_xlconstant_0_0",
+        "parameters": {
+          "CONST_VAL": {
+            "value": "0"
+          }
+        }
       },
       "ethernet_controller": {
         "vlnv": "xilinx.com:ip:axi_ethernetlite:3.0",
@@ -2918,6 +2837,30 @@
             "value": "3"
           }
         }
+      },
+      "lcd_controller": {
+        "vlnv": "harrychen.xyz:user:nt35510_controller:1.0",
+        "xci_name": "bd_soc_nt35510_controller_0_0"
+      },
+      "ps2_contoller": {
+        "vlnv": "harrychen.xyz:user:altera_ps2:1.0",
+        "xci_name": "bd_soc_altera_ps2_0_0"
+      },
+      "apb_peripheral_bridge": {
+        "vlnv": "xilinx.com:ip:axi_apb_bridge:3.0",
+        "xci_name": "bd_soc_axi_apb_bridge_0_0",
+        "parameters": {
+          "C_APB_NUM_SLAVES": {
+            "value": "2"
+          },
+          "C_M_APB_PROTOCOL": {
+            "value": "apb4"
+          }
+        }
+      },
+      "constant_true": {
+        "vlnv": "xilinx.com:ip:xlconstant:1.1",
+        "xci_name": "bd_soc_xlconstant_0_1"
       }
     },
     "interface_nets": {
@@ -3058,6 +3001,42 @@
           "EJTAG",
           "loongson_gs232/EJTAG"
         ]
+      },
+      "apb_peripheral_bridge_APB_M2": {
+        "interface_ports": [
+          "apb_peripheral_bridge/APB_M2",
+          "lcd_controller/APB"
+        ]
+      },
+      "apb_peripheral_bridge_APB_M": {
+        "interface_ports": [
+          "apb_peripheral_bridge/APB_M",
+          "ps2_contoller/APB"
+        ]
+      },
+      "altera_ps2_0_PS2_clk": {
+        "interface_ports": [
+          "PS2_clk",
+          "ps2_contoller/PS2_clk"
+        ]
+      },
+      "altera_ps2_0_PS2_dat": {
+        "interface_ports": [
+          "PS2_dat",
+          "ps2_contoller/PS2_dat"
+        ]
+      },
+      "peripheral_bus_M07_AXI": {
+        "interface_ports": [
+          "peripheral_bus/M07_AXI",
+          "apb_peripheral_bridge/AXI4_LITE"
+        ]
+      },
+      "nt35510_controller_0_LCD_data": {
+        "interface_ports": [
+          "LCD_data",
+          "lcd_controller/LCD_data"
+        ]
       }
     },
     "nets": {
@@ -3182,7 +3161,10 @@
           "processor_bus/S01_ACLK",
           "processor_bus/M03_ACLK",
           "sys_reset_controller/slowest_sync_clk",
-          "loongson_confrreg/aclk"
+          "loongson_confrreg/aclk",
+          "apb_peripheral_bridge/s_axi_aclk",
+          "ps2_contoller/clk",
+          "lcd_controller/clk"
         ]
       },
       "proc_sys_reset_0_interconnect_aresetn": {
@@ -3190,7 +3172,8 @@
           "sys_reset_controller/interconnect_aresetn",
           "processor_bus/ARESETN",
           "memory_bus/aresetn",
-          "peripheral_bus/ARESETN"
+          "peripheral_bus/ARESETN",
+          "apb_peripheral_bridge/s_axi_aresetn"
         ]
       },
       "proc_sys_reset_0_peripheral_aresetn": {
@@ -3218,19 +3201,20 @@
           "peripheral_bus/M06_ARESETN",
           "processor_bus/M02_ARESETN",
           "loongson_confrreg/aresetn",
-          "peripheral_bus/M07_ARESETN",
           "peripheral_bus/M08_ARESETN",
           "peripheral_bus/M09_ARESETN",
           "processor_bus/M03_ARESETN",
           "processor_bus/S01_ARESETN",
-          "ddr_controller/aresetn"
+          "ddr_controller/aresetn",
+          "peripheral_bus/M07_ARESETN",
+          "ps2_contoller/reset_n",
+          "lcd_controller/nrst"
         ]
       },
       "xlconstant_0_dout": {
         "ports": [
           "constant_false/dout",
           "uart_controller/freeze",
-          "interrupt_signals/In1",
           "interrupt_signals/In2",
           "interrupt_signals/In3",
           "loongson_gs232/nmi",
@@ -3334,6 +3318,48 @@
         "ports": [
           "interrupt_concat/dout",
           "external_interrupt_controller/intr"
+        ]
+      },
+      "nt35510_controller_0_LCD_nrst": {
+        "ports": [
+          "lcd_controller/LCD_nrst",
+          "LCD_nrst"
+        ]
+      },
+      "nt35510_controller_0_LCD_csel": {
+        "ports": [
+          "lcd_controller/LCD_csel",
+          "LCD_csel"
+        ]
+      },
+      "nt35510_controller_0_LCD_rs": {
+        "ports": [
+          "lcd_controller/LCD_rs",
+          "LCD_rs"
+        ]
+      },
+      "nt35510_controller_0_LCD_wr": {
+        "ports": [
+          "lcd_controller/LCD_wr",
+          "LCD_wr"
+        ]
+      },
+      "nt35510_controller_0_LCD_rd": {
+        "ports": [
+          "lcd_controller/LCD_rd",
+          "LCD_rd"
+        ]
+      },
+      "ps2_contoller_irq": {
+        "ports": [
+          "ps2_contoller/irq",
+          "interrupt_signals/In1"
+        ]
+      },
+      "constant_true_dout": {
+        "ports": [
+          "constant_true/dout",
+          "LCD_lighton"
         ]
       }
     },
