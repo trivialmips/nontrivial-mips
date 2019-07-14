@@ -3,6 +3,34 @@
 	<Repository value="c:/Workspace/nontrivial-mips/vivado/ip_repo">
 	</Repository>
 	<IP>
+		<VLNV value="harrychen.xyz:user:altera_ps2:1.0">
+		</VLNV>
+		<DisplayName value="Altera PS/2 Controller">
+		</DisplayName>
+		<Description value="Controller of PS/2 keyboard from Altera">
+		</Description>
+		<CoreRevision value="2">
+		</CoreRevision>
+		<ComponentPath value="altera_ps2/component.xml">
+		</ComponentPath>
+		<Families>
+			<Family name="artix7">
+				<Part status="Production" name="ALL">
+				</Part>
+			</Family>
+		</Families>
+		<Taxonomies>
+			<Taxonomy value="/UserIP">
+			</Taxonomy>
+		</Taxonomies>
+		<UpgradesFrom>
+			<Upgrade value="xilinx.com:user:testPS2qsys_ps2_0:1.0">
+			</Upgrade>
+		</UpgradesFrom>
+		<LockPrevVersions value="false">
+		</LockPrevVersions>
+	</IP>
+	<IP>
 		<VLNV value="harrychen.xyz:user:confreg:1.1">
 		</VLNV>
 		<DisplayName value="Loongson Configuration Register (Modified)">
@@ -85,6 +113,42 @@
 			<Interface value="AXI4">
 			</Interface>
 		</Interfaces>
+	</IP>
+	<IP>
+		<VLNV value="harrychen.xyz:user:nt35510_controller:1.0">
+		</VLNV>
+		<DisplayName value="NT35510 LCD Controller">
+		</DisplayName>
+		<Description value="APB adapter of NT35510 LCD">
+		</Description>
+		<CoreRevision value="1">
+		</CoreRevision>
+		<ComponentPath value="nt35510_controller/component.xml">
+		</ComponentPath>
+		<Families>
+			<Family name="aartix7">
+				<Part status="Production" name="ALL">
+				</Part>
+			</Family>
+			<Family name="artix7">
+				<Part status="Production" name="ALL">
+				</Part>
+			</Family>
+			<Family name="artix7l">
+				<Part status="Production" name="ALL">
+				</Part>
+			</Family>
+		</Families>
+		<Taxonomies>
+			<Taxonomy value="/UserIP">
+			</Taxonomy>
+		</Taxonomies>
+		<UpgradesFrom>
+			<Upgrade value="xilinx.com:user:nt35510_apb_adapter_v1_0:1.0">
+			</Upgrade>
+		</UpgradesFrom>
+		<LockPrevVersions value="false">
+		</LockPrevVersions>
 	</IP>
 </Index>
 

@@ -1,0 +1,99 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<wave_config>
+   <wave_state>
+   </wave_state>
+   <db_ref_list>
+      <db_ref path="ps2_tb_behav.wdb" id="1">
+         <top_modules>
+            <top_module name="glbl" />
+            <top_module name="ps2_tb" />
+         </top_modules>
+      </db_ref>
+   </db_ref_list>
+   <zoom_setting>
+      <ZoomStartTime time="0fs"></ZoomStartTime>
+      <ZoomEndTime time="3501000000000fs"></ZoomEndTime>
+      <Cursor1Time time="1119175000000fs"></Cursor1Time>
+   </zoom_setting>
+   <column_width_setting>
+      <NameColumnWidth column_width="160"></NameColumnWidth>
+      <ValueColumnWidth column_width="76"></ValueColumnWidth>
+   </column_width_setting>
+   <WVObjectSize size="19" />
+   <wvobject type="array" fp_name="/ps2_tb/paddr">
+      <obj_property name="ElementShortName">paddr[31:0]</obj_property>
+      <obj_property name="ObjectShortName">paddr[31:0]</obj_property>
+   </wvobject>
+   <wvobject type="logic" fp_name="/ps2_tb/chipselect">
+      <obj_property name="ElementShortName">chipselect</obj_property>
+      <obj_property name="ObjectShortName">chipselect</obj_property>
+   </wvobject>
+   <wvobject type="logic" fp_name="/ps2_tb/psel">
+      <obj_property name="ElementShortName">psel</obj_property>
+      <obj_property name="ObjectShortName">psel</obj_property>
+   </wvobject>
+   <wvobject type="array" fp_name="/ps2_tb/dut/readdata">
+      <obj_property name="ElementShortName">readdata[31:0]</obj_property>
+      <obj_property name="ObjectShortName">readdata[31:0]</obj_property>
+   </wvobject>
+   <wvobject type="logic" fp_name="/ps2_tb/write">
+      <obj_property name="ElementShortName">write</obj_property>
+      <obj_property name="ObjectShortName">write</obj_property>
+   </wvobject>
+   <wvobject type="logic" fp_name="/ps2_tb/waitrequest_n">
+      <obj_property name="ElementShortName">waitrequest_n</obj_property>
+      <obj_property name="ObjectShortName">waitrequest_n</obj_property>
+   </wvobject>
+   <wvobject type="array" fp_name="/ps2_tb/writedata">
+      <obj_property name="ElementShortName">writedata[31:0]</obj_property>
+      <obj_property name="ObjectShortName">writedata[31:0]</obj_property>
+   </wvobject>
+   <wvobject type="logic" fp_name="/ps2_tb/dut/Incoming_Data_FIFO/wr_en">
+      <obj_property name="ElementShortName">wr_en</obj_property>
+      <obj_property name="ObjectShortName">wr_en</obj_property>
+   </wvobject>
+   <wvobject type="logic" fp_name="/ps2_tb/dut/Incoming_Data_FIFO/rd_en">
+      <obj_property name="ElementShortName">rd_en</obj_property>
+      <obj_property name="ObjectShortName">rd_en</obj_property>
+   </wvobject>
+   <wvobject type="array" fp_name="/ps2_tb/dut/Incoming_Data_FIFO/data_count">
+      <obj_property name="ElementShortName">data_count[8:0]</obj_property>
+      <obj_property name="ObjectShortName">data_count[8:0]</obj_property>
+   </wvobject>
+   <wvobject type="logic" fp_name="/ps2_tb/PS2_CLK_DEV">
+      <obj_property name="ElementShortName">PS2_CLK_DEV</obj_property>
+      <obj_property name="ObjectShortName">PS2_CLK_DEV</obj_property>
+   </wvobject>
+   <wvobject type="logic" fp_name="/ps2_tb/PS2_CLK_t">
+      <obj_property name="ElementShortName">PS2_CLK_t</obj_property>
+      <obj_property name="ObjectShortName">PS2_CLK_t</obj_property>
+   </wvobject>
+   <wvobject type="logic" fp_name="/ps2_tb/PS2_CLK_i">
+      <obj_property name="ElementShortName">PS2_CLK_i</obj_property>
+      <obj_property name="ObjectShortName">PS2_CLK_i</obj_property>
+   </wvobject>
+   <wvobject type="logic" fp_name="/ps2_tb/PS2_DAT_t">
+      <obj_property name="ElementShortName">PS2_DAT_t</obj_property>
+      <obj_property name="ObjectShortName">PS2_DAT_t</obj_property>
+   </wvobject>
+   <wvobject type="logic" fp_name="/ps2_tb/PS2_DAT_i">
+      <obj_property name="ElementShortName">PS2_DAT_i</obj_property>
+      <obj_property name="ObjectShortName">PS2_DAT_i</obj_property>
+   </wvobject>
+   <wvobject type="logic" fp_name="/ps2_tb/dut/PS2_Serial_Port/PS2_Command_Out/send_command">
+      <obj_property name="ElementShortName">send_command</obj_property>
+      <obj_property name="ObjectShortName">send_command</obj_property>
+   </wvobject>
+   <wvobject type="logic" fp_name="/ps2_tb/dut/PS2_Serial_Port/command_was_sent">
+      <obj_property name="ElementShortName">command_was_sent</obj_property>
+      <obj_property name="ObjectShortName">command_was_sent</obj_property>
+   </wvobject>
+   <wvobject type="logic" fp_name="/ps2_tb/dut/PS2_Serial_Port/error_communication_timed_out">
+      <obj_property name="ElementShortName">error_communication_timed_out</obj_property>
+      <obj_property name="ObjectShortName">error_communication_timed_out</obj_property>
+   </wvobject>
+   <wvobject type="array" fp_name="/ps2_tb/dut/PS2_Serial_Port/PS2_Command_Out/s_ps2_transmitter">
+      <obj_property name="ElementShortName">s_ps2_transmitter[2:0]</obj_property>
+      <obj_property name="ObjectShortName">s_ps2_transmitter[2:0]</obj_property>
+   </wvobject>
+</wave_config>
