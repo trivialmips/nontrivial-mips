@@ -109,14 +109,18 @@ module nscscc_soc_top(
     `IOBUF_GEN_VEC_SIMPLE(NAND_data);
 
     // PS/2
-    `IOBUF_GEN_SIMPLE(PS2_clk);
-    `IOBUF_GEN_SIMPLE(PS2_dat);
+    `IOBUF_GEN(PS2_clk, PS2_clk_tri);
+    `IOBUF_GEN(PS2_dat, PS2_dat_tri);
 
     // Ethernet
     `IOBUF_GEN_SIMPLE(MDIO_mdio);
+    assign MII_tx_er = 1'b0; // not provided in Ethernet Lite
+
+    // GPIO
+    assign num_a_g_dp = 1'b0; // not provided in confreg IP
 
     // LCD
-    `IOBUF_GEN_VEC_SIMPLE(LCD_data);
+    `IOBUF_GEN_VEC(LCD_data, LCD_data_tri);
 
     // VGA
     wire [5:0] VGA_red, VGA_green, VGA_blue;
@@ -170,9 +174,12 @@ module nscscc_soc_top(
         .CFG_FLASH_ss_i,
         .CFG_FLASH_ss_o,
         .CFG_FLASH_ss_t,
-        // VGA (non-pixel)
+        // VGA
         .VGA_hsync,
         .VGA_vsync,
+        .VGA_red,
+        .VGA_green,
+        .VGA_blue,
         .VGA_clk(),
         .VGA_de (),
         .VGA_dps(),
@@ -187,12 +194,12 @@ module nscscc_soc_top(
         .btn_step,
         .switch,
         // PS/2
-        .PS2_clk_i,
-        .PS2_clk_o,
-        .PS2_clk_t,
-        .PS2_dat_i,
-        .PS2_dat_o,
-        .PS2_dat_t,
+        .PS2_clk_tri_i,
+        .PS2_clk_tri_o,
+        .PS2_clk_tri_t,
+        .PS2_dat_tri_i,
+        .PS2_dat_tri_o,
+        .PS2_dat_tri_t,
         // DDR3,
         .DDR3_dq,
         .DDR3_addr,
@@ -225,7 +232,9 @@ module nscscc_soc_top(
         .MII_tx_en,
         .MII_txd,
         // LCD
-        .LCD_data,
+        .LCD_data_tri_i,
+        .LCD_data_tri_o,
+        .LCD_data_tri_t,
         .LCD_nrst,
         .LCD_csel,
         .LCD_rd,
