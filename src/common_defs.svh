@@ -47,34 +47,26 @@ endinterface
 
 // interface of D$ and CPU
 interface cpu_dbus_if();
-	// invalidate I$ and D$ respectively
-	logic icache_inv, dcache_inv;
 	// signals for D$
 	logic read, write, stall;
-	// signals for uncached memory access 
-	logic uncached_read, uncached_write, uncached_stall;
 	// only used for write
 	// byteenable[i] corresponds to wrdata[(i + 1) * 8 - 1 : i * 8]
 	logic [3:0] byteenable;
 	phys_t address;      // aligned in 4-bytes
-	uint32_t rddata, wrdata, uncached_rddata;
+	uint32_t rddata, wrdata;
 
     modport master (
 		output read, write,
-		output uncached_read, uncached_write,
 		output wrdata, address, byteenable,
-		output icache_inv, dcache_inv,
-		input  stall, uncached_stall,
-		input  rddata, uncached_rddata
+		input  stall,
+		input  rddata
     );
 
     modport slave (
 		input  read, write,
-		input  uncached_read, uncached_write,
 		input  wrdata, address, byteenable,
-		input  icache_inv, dcache_inv,
-		output stall, uncached_stall,
-		output rddata, uncached_rddata
+		output stall,
+		output rddata
     );
 
 endinterface

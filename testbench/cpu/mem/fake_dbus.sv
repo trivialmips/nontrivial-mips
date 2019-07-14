@@ -8,7 +8,8 @@ module fake_dbus #(
 	input logic clk,
 	input logic rst,
 	input logic fake_stall_en,
-	cpu_dbus_if.slave dbus
+	cpu_dbus_if.slave dbus,
+	cpu_dbus_if.slave dbus_uncached
 );
 
 localparam int ADDR_WIDTH = $clog2(SIZE) + 2;
@@ -33,8 +34,8 @@ generate if(`DCACHE_PIPE_DEPTH == 1) begin : dcache_pipe1
 	assign pipe_write  = dbus.write;
 	assign pipe_addr   = dbus.address;
 	assign pipe_sel    = dbus.byteenable;
-	assign pipe_uncached_read  = dbus.uncached_read;
-	assign pipe_uncached_write = dbus.uncached_write;
+	assign pipe_uncached_read  = dbus_uncached.read;
+	assign pipe_uncached_write = dbus_uncached.write;
 end else begin : dcache_pipe2
 	always_ff @(posedge clk or posedge rst) begin
 		if(rst) begin
@@ -51,8 +52,8 @@ end else begin : dcache_pipe2
 			pipe_write  <= dbus.write;
 			pipe_addr   <= dbus.address;
 			pipe_sel    <= dbus.byteenable;
-			pipe_uncached_read  <= dbus.uncached_read;
-			pipe_uncached_write <= dbus.uncached_write;
+			pipe_uncached_read  <= dbus_uncached.read;
+			pipe_uncached_write <= dbus_uncached.write;
 		end
 	end
 end
@@ -94,13 +95,13 @@ begin
 	begin
 		dbus.stall  = 1'b0;
 		dbus.rddata = 'x;
-		dbus.uncached_stall  = 1'b0;
-		dbus.uncached_rddata = 'x;
+		dbus_uncached.stall  = 1'b0;
+		dbus_uncached.rddata = 'x;
 	end else begin
 		dbus.stall  = (cache_miss | (|stall)) & fake_stall_en;
 		dbus.rddata = pipe_read ? rddata : 'x;
-		dbus.uncached_stall  = (cache_miss | (|stall)) & fake_stall_en;
-		dbus.uncached_rddata = pipe_uncached_read ? rddata : 'x;
+		dbus_uncached.stall  = (cache_miss | (|stall)) & fake_stall_en;
+		dbus_uncached.rddata = pipe_uncached_read ? rddata : 'x;
 	end
 end
 

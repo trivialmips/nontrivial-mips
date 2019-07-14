@@ -5,7 +5,8 @@ module cpu_core(
 	input  logic           rst,
 	input  cpu_interrupt_t intr,
 	cpu_ibus_if.master     ibus,
-	cpu_dbus_if.master     dbus
+	cpu_dbus_if.master     dbus,
+	cpu_dbus_if.master     dbus_uncached
 );
 
 // flush and stall signals
@@ -276,7 +277,8 @@ except except_inst(
 dbus_mux dbus_mux_inst(
 	.except_req,
 	.data ( pipeline_exec_d ),
-	.dbus
+	.dbus,
+	.dbus_uncached
 );
 
 // pipeline between D$ and MEM
@@ -305,11 +307,11 @@ for(genvar i = 1; i < `DCACHE_PIPE_DEPTH; ++i) begin : gen_pipe_dcache
 	end
 end
 
-assign stall_from_mm = dbus.stall | dbus.uncached_stall;
+assign stall_from_mm = dbus.stall | dbus_uncached.stall;
 for(genvar i = 0; i < `ISSUE_NUM; ++i) begin : gen_mem
 	instr_mem mem_inst(
 		.cached_rddata   ( dbus.rddata             ),
-		.uncached_rddata ( dbus.uncached_rddata    ),
+		.uncached_rddata ( dbus_uncached.rddata    ),
 		.data            ( pipeline_dcache_last[i] ),
 		.result          ( pipeline_mem[i]         )
 	);

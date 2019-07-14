@@ -3,7 +3,8 @@
 module dbus_mux(
 	input  except_req_t    except_req,
 	input  pipeline_exec_t [`ISSUE_NUM-1:0] data,
-	cpu_dbus_if.master     dbus
+	cpu_dbus_if.master     dbus,
+	cpu_dbus_if.master     dbus_uncached
 );
 
 logic [`ISSUE_NUM-1:0] re, we, ce;
@@ -15,22 +16,26 @@ for(genvar i = 0; i < `ISSUE_NUM; ++i) begin : gen_flat_memreq
 	assign ce[i] = we[i] | re[i];
 end
 
-assign dbus.icache_inv = 1'b0;
-assign dbus.dcache_inv = 1'b0;
+//assign dbus.icache_inv = 1'b0;
+//assign dbus.dcache_inv = 1'b0;
+
+assign dbus_uncached.wrdata     = dbus.wrdata;
+assign dbus_uncached.address    = dbus.address;
+assign dbus_uncached.byteenable = dbus.byteenable;
 
 always_comb begin
-	dbus.read           = 1'b0;
-	dbus.write          = 1'b0;
-	dbus.uncached_read  = 1'b0;
-	dbus.uncached_write = 1'b0;
-	dbus.wrdata         = '0;
-	dbus.address        = '0;
-	dbus.byteenable     = '0;
+	dbus.read       = 1'b0;
+	dbus.write      = 1'b0;
+	dbus.wrdata     = '0;
+	dbus.address    = '0;
+	dbus.byteenable = '0;
+	dbus_uncached.read       = 1'b0;
+	dbus_uncached.write      = 1'b0;
 	for(int i = 0; i < `ISSUE_NUM; ++i) begin
 		dbus.read  |= re[i] & ~memreq[i].uncached & ~except_req.valid;
 		dbus.write |= we[i] & ~memreq[i].uncached & ~except_req.valid;
-		dbus.uncached_read  |= re[i] & memreq[i].uncached & ~except_req.valid;
-		dbus.uncached_write |= we[i] & memreq[i].uncached & ~except_req.valid;
+		dbus_uncached.read  |= re[i] & memreq[i].uncached & ~except_req.valid;
+		dbus_uncached.write |= we[i] & memreq[i].uncached & ~except_req.valid;
 		dbus.wrdata     |= {32{we[i]}} & memreq[i].wrdata;
 		dbus.address    |= {32{ce[i]}} & memreq[i].paddr;
 		dbus.byteenable |= {4{ce[i]}}  & memreq[i].byteenable;

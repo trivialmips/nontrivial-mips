@@ -15,6 +15,7 @@ cpu_ibus_if ibus();
 fake_ibus ibus_inst(.*);
 
 cpu_dbus_if dbus();
+cpu_dbus_if dbus_uncached();
 fake_dbus dbus_inst(.*);
 
 cpu_core core_inst(.*);
