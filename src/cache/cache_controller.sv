@@ -65,7 +65,7 @@ module cache_controller #(
 
     dcache_pass #(
         .BUS_WIDTH (BUS_WIDTH),
-        .DATA_WIDTH(64),  // 2 * 32-bit instruction
+        .DATA_WIDTH(64),
         .LINE_WIDTH(256)
     ) dcache_inst(
         .clk,
@@ -82,9 +82,9 @@ module cache_controller #(
 
     dcache_pass #(
         .BUS_WIDTH (BUS_WIDTH),
-        .DATA_WIDTH(64),  // 2 * 32-bit instruction
+        .DATA_WIDTH(64),
         .LINE_WIDTH(256)
-    ) dcache_inst(
+    ) uncached_inst(
         .clk,
         .rst,
         .dbus(dbus_uncached),
