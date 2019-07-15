@@ -113,7 +113,7 @@ always_comb begin
 	endcase
 end
 
-always_ff @(posedge clk or posedge rst) begin
+always_ff @(posedge clk) begin
 	if(rst) begin
 		state <= IDLE;
 		direct_rdata = '0;
@@ -123,7 +123,7 @@ always_ff @(posedge clk or posedge rst) begin
 	end
 end
 
-always_ff @(posedge clk or posedge rst) begin
+always_ff @(posedge clk) begin
 	if(rst) begin
 		pipe_addr <= '0;
 		pipe_read <= 1'b0;
@@ -136,7 +136,7 @@ always_ff @(posedge clk or posedge rst) begin
 	end
 end
 
-always_ff @(posedge clk or posedge rst) begin
+always_ff @(posedge clk) begin
 	if(rst) begin
 		line_recv <= '0;
 	end else if(state == SINGLE_READ && axi_resp.rvalid) begin

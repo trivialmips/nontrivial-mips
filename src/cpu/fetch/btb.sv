@@ -44,7 +44,7 @@ always_comb begin
 end
 
 // update prediction
-always_ff @(posedge clk or posedge rst) begin
+always_ff @(posedge clk) begin
 	if(rst) begin
 		for(int i = 0; i < ROW_NUM; ++i) begin
 			btb_now[i] <= '{default: 0};

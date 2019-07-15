@@ -19,7 +19,7 @@ parameter DIV_CYC = 36;
 logic [5:0] cyc_number;
 logic [DIV_CYC:0] cyc_stage;
 assign is_busy = (cyc_number != 1 && ~cyc_stage[0]);
-always @(posedge clk or posedge rst) begin
+always @(posedge clk) begin
 	if(rst || flush) begin
 		cyc_stage <= 0;
 	end else if(cyc_stage != 0) begin

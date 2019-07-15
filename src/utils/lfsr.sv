@@ -10,7 +10,7 @@ logic [31:0] mov_val;
 // x^32 + x^30 + x^11 + x^5 + 1
 assign mov_val = (val >> 0) ^ (val >> 2) ^ (val >> 21) ^ (val >> 27);
 
-always @(posedge clk or posedge rst)
+always @(posedge clk)
 begin
 	if(rst) begin
 		val <= 32'hdeadface;
@@ -32,7 +32,7 @@ module lfsr_8bits(
 logic feedback;
 assign feedback = val[7];
 
-always @(posedge clk or posedge rst) begin
+always @(posedge clk) begin
 	if(rst) begin
 		val <= 8'd255;
 	end else if(update) begin

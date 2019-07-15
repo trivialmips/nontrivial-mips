@@ -28,7 +28,7 @@ always_comb begin
 		wait_delayslot_nxt |= is_controlflow[i] & ~data[i + 1].valid;
 end
 
-always_ff @(posedge clk or posedge rst) begin
+always_ff @(posedge clk) begin
 	if(rst || flush)
 		wait_delayslot <= 1'b0;
 	else if(~stall)

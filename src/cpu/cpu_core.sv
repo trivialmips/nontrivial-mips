@@ -172,7 +172,7 @@ decode_and_issue decode_issue_inst(
 );
 
 // pipeline between ID and EX
-always_ff @(posedge clk or posedge rst) begin
+always_ff @(posedge clk) begin
 	if(rst || flush_id || (stall_id && ~stall_ex)) begin
 		pipeline_decode_d <= '0;
 	end else if(~stall_id) begin
@@ -235,7 +235,7 @@ for(genvar i = 0; i < `ISSUE_NUM; ++i) begin : gen_exec
 end
 
 // pipeline between EX and D$
-always_ff @(posedge clk or posedge rst) begin
+always_ff @(posedge clk) begin
 	if(rst || flush_ex || (stall_ex && ~stall_mm)) begin
 		pipeline_dcache[0] <= '0;
 	end else if(~stall_ex) begin
@@ -251,7 +251,7 @@ assign interrupt_flag = cp0_regs.status.im & {
 	cp0_regs.cause.ip[1:0]
 };
 
-always_ff @(posedge clk or posedge rst) begin
+always_ff @(posedge clk) begin
 	if(rst || except_req.valid)
 		pipe_interrupt <= '0;
 	else if(pipe_interrupt == '0)
@@ -284,7 +284,7 @@ dbus_mux dbus_mux_inst(
 // pipeline between D$ and MEM
 for(genvar i = 1; i < `DCACHE_PIPE_DEPTH; ++i) begin : gen_pipe_dcache
 	if(i == 1) begin : gen_first_pipe_dcache
-		always_ff @(posedge clk or posedge rst) begin
+		always_ff @(posedge clk) begin
 			if(rst || flush_mm) begin
 				pipeline_dcache[1] <= '0;
 			end else if(~stall_mm) begin
@@ -297,7 +297,7 @@ for(genvar i = 1; i < `DCACHE_PIPE_DEPTH; ++i) begin : gen_pipe_dcache
 			end
 		end
 	end else begin : generate_other_pipe_dcache
-		always_ff @(posedge clk or posedge rst) begin
+		always_ff @(posedge clk) begin
 			if(rst) begin
 				pipeline_dcache[i] <= '0;
 			end else if(~stall_mm) begin
@@ -319,7 +319,7 @@ end
 
 // pipeline between MEM and WB
 generate if(`DCACHE_PIPE_DEPTH == 1) begin : dcache_no_pipe
-	always_ff @(posedge clk or posedge rst) begin
+	always_ff @(posedge clk) begin
 		if(rst || flush_mm || stall_mm) begin
 			pipeline_mem_d <= '0;
 		end else begin
@@ -332,7 +332,7 @@ generate if(`DCACHE_PIPE_DEPTH == 1) begin : dcache_no_pipe
 		end
 	end
 end else begin : dcache_pipe
-	always_ff @(posedge clk or posedge rst) begin
+	always_ff @(posedge clk) begin
 		if(rst || stall_mm) begin
 			pipeline_mem_d <= '0;
 		end else if(~stall_mm) begin

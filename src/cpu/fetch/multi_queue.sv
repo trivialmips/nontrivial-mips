@@ -59,7 +59,7 @@ for(genvar i = 0; i < CHANNEL; ++i) begin : gen_rw_req
 end
 
 // update index
-always_ff @(posedge clk or posedge rst) begin
+always_ff @(posedge clk) begin
 	if(rst || flush) begin
 		read_ptr_now  <= '0;
 		write_ptr_now <= '0;

@@ -37,7 +37,7 @@ begin
 	end
 end
 
-always @(posedge clk or posedge rst)
+always @(posedge clk)
 begin
 	if(rst)
 	begin
@@ -62,7 +62,7 @@ begin
 	end
 end
 
-always @(posedge clk or posedge rst)
+always @(posedge clk)
 begin
 	if(rst)
 		timer_int <= 1'b0;

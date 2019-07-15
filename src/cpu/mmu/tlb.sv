@@ -27,7 +27,7 @@ genvar i;
 generate
 	for(i = 0; i < `TLB_ENTRIES_NUM; ++i)
 	begin: gen_for_tlb
-		always_ff @(posedge clk or posedge rst) begin
+		always_ff @(posedge clk) begin
 			if(rst) begin
 				entries[i] <= '0;
 			end else begin

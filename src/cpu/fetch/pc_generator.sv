@@ -54,7 +54,7 @@ always_comb begin
 	end
 end
 
-always_ff @(posedge clk or posedge rst) begin
+always_ff @(posedge clk) begin
 	if(rst) begin
 		pc_now <= RESET_BASE;
 	end else begin

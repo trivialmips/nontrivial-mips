@@ -24,7 +24,7 @@ always_comb begin
 	else data_nxt = data_now;
 end
 
-always_ff @(posedge clk or posedge rst) begin
+always_ff @(posedge clk) begin
 	if(rst) data_now <= 1'b0;
 	else data_now <= data_nxt;
 end

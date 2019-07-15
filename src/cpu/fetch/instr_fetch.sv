@@ -114,7 +114,7 @@ pc_generator #(
 );
 
 /* ==== pipline stage 1 and 2 ==== */
-always_ff @(posedge clk or posedge rst) begin
+always_ff @(posedge clk) begin
 	if(rst || flush_pc) begin
 		fetch_vaddr_d   <= '0;
 		predict_valid_d <= '0;
@@ -126,7 +126,7 @@ always_ff @(posedge clk or posedge rst) begin
 	end
 end
 
-always_ff @(posedge clk or posedge rst) begin
+always_ff @(posedge clk) begin
 	if (rst) begin
 		invalid_push <= 1'b1;
 	end else begin
