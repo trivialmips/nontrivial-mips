@@ -64,6 +64,11 @@ always_comb begin
 	state_d = state;
 	direct_rdata_d = direct_rdata;
 
+	axi_req.araddr  = '0;
+	axi_req.awaddr  = '0;
+	axi_req.rready  = 1'b0;
+	axi_req.wdata   = '0;
+	axi_req.wlast   = 1'b0;
 	axi_req.arvalid = 1'b0;
 	axi_req.awvalid = 1'b0;
 	axi_req.wvalid = 1'b0;
