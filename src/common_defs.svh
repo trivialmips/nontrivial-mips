@@ -74,7 +74,7 @@ endinterface
 typedef struct packed {
 	// ar
     logic [31:0] araddr;
-    logic [7 :0] arlen;
+    logic [3 :0] arlen;
     logic [2 :0] arsize;
     logic [1 :0] arburst;
     logic        arlock;
@@ -85,7 +85,7 @@ typedef struct packed {
     logic        rready;
 	// aw
     logic [31:0] awaddr;
-    logic [7 :0] awlen;
+    logic [3 :0] awlen;
     logic [2 :0] awsize;
     logic [1 :0] awburst;
     logic        awlock;
