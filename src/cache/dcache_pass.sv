@@ -1,9 +1,7 @@
 `include "common_defs.svh"
 
 module dcache_pass #(
-	parameter BUS_WIDTH = 4,
-	parameter DATA_WIDTH = 64,
-	parameter LINE_WIDTH = 256
+	parameter BUS_WIDTH = 4
 ) (
 	// external logics
 	input  logic            clk,
@@ -21,8 +19,6 @@ module dcache_pass #(
 	input  logic [BUS_WIDTH - 1 :0] axi_resp_bid
 );
 
-localparam int LINE_BYTE_OFFSET = $clog2(LINE_WIDTH / 8);
-
 typedef enum logic [2:0] {
 	IDLE,
 	FINISHED,
@@ -34,16 +30,13 @@ typedef enum logic [2:0] {
 
 state_t state, state_d;
 
-logic [LINE_BYTE_OFFSET-1:0] burst_cnt, burst_cnt_d;
-
 logic pipe_read;
 logic pipe_write;
 logic pipe_cache_miss;
 logic [31:0] pipe_addr;
 uint32_t pipe_wdata;
-
 uint32_t direct_rdata, direct_rdata_d;
-logic [LINE_WIDTH/32-1:0][31:0] line_recv;
+logic [31:0] line_recv;
 
 // INCR, but we are only doing one transfer in a burst
 assign axi_req.arburst = 2'b01;
@@ -60,7 +53,7 @@ assign axi_req.wstrb = 4'b1111;
 assign axi_req.bready = 1'b1;
 
 assign dbus.stall = (state_d != IDLE) ? 1'b1 : 1'b0;
-assign dbus.rddata = line_recv[0];
+assign dbus.rddata = line_recv;
 
 // AXI Plumbing
 assign axi_req_arid = '0;
@@ -147,9 +140,9 @@ always_ff @(posedge clk or posedge rst) begin
 	if(rst) begin
 		line_recv <= '0;
 	end else if(state == SINGLE_READ && axi_resp.rvalid) begin
-		line_recv[0] <= axi_resp.rdata;
+		line_recv <= axi_resp.rdata;
 	end else if(state == SINGLE_WRITE && axi_resp.wready) begin
-		line_recv[0] <= axi_req.wdata;
+		line_recv <= axi_req.wdata;
 	end
 end
 
