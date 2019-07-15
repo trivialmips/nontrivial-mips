@@ -317,7 +317,7 @@ wire [4 :0] ram_random_mask;
 //cpu axi
 //debug_*
 mycpu_top u_cpu(
-    .int       (6'd0          ),   //high active
+    .intr      (6'd0          ),   //high active
 
     .aclk      (cpu_clk       ),
     .aresetn   (cpu_resetn    ),   //low active
