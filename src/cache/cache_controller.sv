@@ -63,14 +63,14 @@ module cache_controller #(
         .axi_resp_bid(icache_bid)
     );
 
-    dcache #(
+    dcache_pass #(
         .BUS_WIDTH (BUS_WIDTH),
         .DATA_WIDTH(64),  // 2 * 32-bit instruction
         .LINE_WIDTH(256)
     ) dcache_inst(
         .clk,
         .rst,
-        .dbus(dbus),
+        .dbus,
         .axi_req(dcache_axi_req),
         .axi_req_arid(dcache_arid),
         .axi_req_awid(dcache_awid),
@@ -78,6 +78,23 @@ module cache_controller #(
         .axi_resp(dcache_axi_resp),
         .axi_resp_rid(dcache_rid),
         .axi_resp_bid(dcache_bid)
+    );
+
+    dcache_pass #(
+        .BUS_WIDTH (BUS_WIDTH),
+        .DATA_WIDTH(64),  // 2 * 32-bit instruction
+        .LINE_WIDTH(256)
+    ) dcache_inst(
+        .clk,
+        .rst,
+        .dbus(dbus_uncached),
+        .axi_req(uncached_axi_req),
+        .axi_req_arid(uncached_arid),
+        .axi_req_awid(uncached_awid),
+        .axi_req_wid(uncached_wid),
+        .axi_resp(uncached_axi_resp),
+        .axi_resp_rid(uncached_rid),
+        .axi_resp_bid(uncached_bid)
     );
 
 endmodule

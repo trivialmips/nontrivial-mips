@@ -30,9 +30,9 @@ typedef enum logic [2:0] {
 	SINGLE_WRITE_WAIT_AXI,
 	SINGLE_READ,
 	SINGLE_WRITE
-} uncached_state_t;
+} state_t;
 
-uncached_state_t state, state_d;
+state_t state, state_d;
 
 logic [LINE_BYTE_OFFSET-1:0] burst_cnt, burst_cnt_d;
 
@@ -58,9 +58,6 @@ assign axi_req.wstrb = 4'b1111;
 
 // Silently ignores write response (for now)
 assign axi_req.bready = 1'b1;
-
-assign dbus.uncached_stall = dbus.stall;
-assign dbus.uncached_rddata = dbus.rddata;
 
 assign dbus.stall = (state_d != IDLE) ? 1'b1 : 1'b0;
 assign dbus.rddata = line_recv[0];
@@ -139,8 +136,8 @@ always_ff @(posedge clk or posedge rst) begin
 		pipe_read <= 1'b0;
 		pipe_write <= 1'b0;
 	end else if(~dbus.stall) begin
-		pipe_read <= dbus.uncached_read | dbus.read;
-		pipe_write <= dbus.uncached_write | dbus.write;
+		pipe_read <= dbus.read;
+		pipe_write <= dbus.write;
 		pipe_addr <= dbus.address;
 		pipe_wdata <= dbus.wrdata;
 	end
