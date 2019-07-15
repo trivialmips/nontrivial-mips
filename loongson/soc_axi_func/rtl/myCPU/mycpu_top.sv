@@ -289,7 +289,7 @@ module mycpu_top #(
     );
 
 
-    // crossbar: 3 AXI Master -> 1 AXI Master
+    // AXI3 crossbar: 3 AXI Master -> 1 AXI Master
     cpu_internal_crossbar crossbar_inst (
         .aclk(aclk),
         .aresetn(reset_n),
@@ -304,6 +304,7 @@ module mycpu_top #(
         .s_axi_awqos  (12'b0),
         .s_axi_awvalid({icache_awvalid, dcache_awvalid, uncached_awvalid}),
         .s_axi_awready({icache_awready, dcache_awready, uncached_awready}),
+        .s_axi_rid    ({icache_wid    , dcache_wid    , uncached_wid    }),
         .s_axi_wdata  ({icache_wdata  , dcache_wdata  , uncached_wdata  }),
         .s_axi_wstrb  ({icache_wstrb  , dcache_wstrb  , uncached_wstrb  }),
         .s_axi_wlast  ({icache_wlast  , dcache_wlast  , uncached_wlast  }),
@@ -341,6 +342,7 @@ module mycpu_top #(
         .m_axi_awqos  (),
         .m_axi_awvalid(awvalid),
         .m_axi_awready(awready),
+        .m_axi_wid    (wid),
         .m_axi_wdata  (wdata  ),
         .m_axi_wstrb  (wstrb  ),
         .m_axi_wlast  (wlast  ),
@@ -368,10 +370,6 @@ module mycpu_top #(
         .m_axi_rvalid (rvalid ),
         .m_axi_rready (rready )
     );
-    
-
-    // wid is not provided by AXI4 crossbar
-    assign wid = '0;
 
 
 endmodule
