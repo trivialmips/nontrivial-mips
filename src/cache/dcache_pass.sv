@@ -72,7 +72,7 @@ always_comb begin
 		IDLE: begin
 			if(pipe_read) begin
 				state_d = SINGLE_READ_WAIT_AXI;
-			end else begin
+			end else if(pipe_write) begin
 				state_d = SINGLE_WRITE_WAIT_AXI;
 			end
 		end
