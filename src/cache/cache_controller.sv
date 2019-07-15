@@ -80,7 +80,7 @@ module cache_controller #(
 
     dcache_pass #(
         .BUS_WIDTH (BUS_WIDTH)
-    ) dcache_inst(
+    ) uncached_inst(
         .clk,
         .rst,
         .dbus(dbus_uncached),
