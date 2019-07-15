@@ -251,7 +251,7 @@ module nontrivial_mips_impl #(
 
 	// initialization of caches
 	cache_controller #(
-		.BUS_WIDTH(BUS_WIDTH),
+		.BUS_WIDTH(BUS_WIDTH)
 	) cache_controller_inst (
 		.*, // all axi signals
 		.clk,
@@ -259,7 +259,7 @@ module nontrivial_mips_impl #(
 		.ibus(ibus_if.slave),
 		.dbus(dbus_if.slave),
 		.dbus_uncached(dbus_uncached_if.slave)
-	)
+	);
 
 
     // initialization of CPU

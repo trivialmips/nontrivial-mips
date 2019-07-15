@@ -1,5 +1,5 @@
-// this file is only a Verilog wrapper of NonTrivialMIPS CPU
-// for SystemVerilog file cannot be used as modules in block design
+// this file is only a Verilog wrapper of NonTrivialMIPS CPU in SoC block design
+// for SystemVerilog file cannot be used as modules in BDs
 
 module nontrivial_mips #(
 	parameter BUS_WIDTH = 4
