@@ -4,7 +4,7 @@ module mycpu_top #(
 ) (
     // external signals
     input  wire        aclk   ,
-    input  wire        reset_n,
+    input  wire        aresetn,
     input  wire [6 :0] intr   ,
 
 	// AXI AR signals
@@ -176,7 +176,7 @@ module mycpu_top #(
         .BUS_WIDTH(BUS_WIDTH)
     ) nontrivial_mips_inst (
         .aclk            (aclk            ),
-        .reset_n         (reset_n         ),
+        .reset_n         (aresetn         ),
         .intr            (intr[0 +: 4]    ),
         .icache_arid     (icache_arid     ),
         .icache_araddr   (icache_araddr   ),
@@ -291,8 +291,8 @@ module mycpu_top #(
 
     // AXI3 crossbar: 3 AXI Master -> 1 AXI Master
     cpu_internal_crossbar crossbar_inst (
-        .aclk(aclk),
-        .aresetn(reset_n),
+        .aclk         (aclk),
+        .aresetn      (aresetn),
         .s_axi_awid   ({icache_awid   , dcache_awid   , uncached_awid   }),
         .s_axi_awaddr ({icache_awaddr , dcache_awaddr , uncached_awaddr }),
         .s_axi_awlen  ({icache_awlen  , dcache_awlen  , uncached_awlen  }),
@@ -304,7 +304,7 @@ module mycpu_top #(
         .s_axi_awqos  (12'b0),
         .s_axi_awvalid({icache_awvalid, dcache_awvalid, uncached_awvalid}),
         .s_axi_awready({icache_awready, dcache_awready, uncached_awready}),
-        .s_axi_rid    ({icache_wid    , dcache_wid    , uncached_wid    }),
+        .s_axi_wid    ({icache_wid    , dcache_wid    , uncached_wid    }),
         .s_axi_wdata  ({icache_wdata  , dcache_wdata  , uncached_wdata  }),
         .s_axi_wstrb  ({icache_wstrb  , dcache_wstrb  , uncached_wstrb  }),
         .s_axi_wlast  ({icache_wlast  , dcache_wlast  , uncached_wlast  }),

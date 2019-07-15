@@ -127,7 +127,11 @@ always_ff @(posedge clk or posedge rst) begin
 end
 
 always_ff @(posedge clk or posedge rst) begin
-	invalid_push <= rst | flush_que;
+	if (rst) begin
+		invalid_push <= 1'b1;
+	end else begin
+		invalid_push <= flush_que;
+	end
 end
 
 /* ==== stage 2 ====
