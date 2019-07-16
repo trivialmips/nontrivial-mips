@@ -1,6 +1,8 @@
 // this file is only a Verilog wrapper of NonTrivialMIPS CPU in SoC block design
 // for SystemVerilog file cannot be used as modules in BDs
 
+`default_nettype none
+
 module nontrivial_mips #(
 	parameter BUS_WIDTH = 4
 ) (
@@ -130,7 +132,7 @@ module nontrivial_mips #(
 	output wire [31:0]             uncached_wdata  ,
 	output wire [3 :0]             uncached_wstrb  ,
 	output wire                    uncached_wlast  ,
-	output wire                    uncahced_wvalid ,
+	output wire                    uncached_wvalid ,
 	input  wire                    uncached_wready ,
 	// AXI B signals
 	input  wire [BUS_WIDTH - 1 :0] uncached_bid    ,
@@ -246,7 +248,7 @@ module nontrivial_mips #(
         .uncached_wdata  (uncached_wdata  ),
         .uncached_wstrb  (uncached_wstrb  ),
         .uncached_wlast  (uncached_wlast  ),
-        .uncahced_wvalid (uncahced_wvalid ),
+        .uncached_wvalid (uncached_wvalid ),
         .uncached_wready (uncached_wready ),
         .uncached_bid    (uncached_bid    ),
         .uncached_bresp  (uncached_bresp  ),
@@ -255,3 +257,5 @@ module nontrivial_mips #(
     );
 
 endmodule
+
+`default_nettype wire

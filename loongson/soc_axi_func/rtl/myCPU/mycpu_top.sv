@@ -1,3 +1,4 @@
+`default_nettype none
 
 module mycpu_top #(
 	parameter BUS_WIDTH = 4
@@ -164,7 +165,7 @@ module mycpu_top #(
     wire [31:0]             uncached_wdata  ;
     wire [3 :0]             uncached_wstrb  ;
     wire                    uncached_wlast  ;
-    wire                    uncahced_wvalid ;
+    wire                    uncached_wvalid ;
     wire                    uncached_wready ;
     wire [BUS_WIDTH - 1 :0] uncached_bid    ;
     wire [1 :0]             uncached_bresp  ;
@@ -280,7 +281,7 @@ module mycpu_top #(
         .uncached_wdata  (uncached_wdata  ),
         .uncached_wstrb  (uncached_wstrb  ),
         .uncached_wlast  (uncached_wlast  ),
-        .uncahced_wvalid (uncahced_wvalid ),
+        .uncached_wvalid (uncached_wvalid ),
         .uncached_wready (uncached_wready ),
         .uncached_bid    (uncached_bid    ),
         .uncached_bresp  (uncached_bresp  ),
@@ -373,3 +374,5 @@ module mycpu_top #(
 
 
 endmodule
+
+`default_nettype none

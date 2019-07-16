@@ -129,7 +129,7 @@ module nontrivial_mips_impl #(
 	output wire [31:0]             uncached_wdata  ,
 	output wire [3 :0]             uncached_wstrb  ,
 	output wire                    uncached_wlast  ,
-	output wire                    uncahced_wvalid ,
+	output wire                    uncached_wvalid ,
 	input  wire                    uncached_wready ,
 	// AXI B signals
 	input  wire [BUS_WIDTH - 1 :0] uncached_bid    ,
