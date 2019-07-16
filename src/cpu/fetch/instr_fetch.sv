@@ -162,7 +162,8 @@ logic delayslot_d;
 assign delayslot_d = maybe_jump_d[`FETCH_NUM - 1];
 always_comb begin
 	for(int i = 0; i < `FETCH_NUM; ++i) begin
-		instr_vaddr[i] = aligned_fetch_vaddr_d + i * 4;
+		instr_vaddr[i]      = aligned_fetch_vaddr_d + i * 4;
+		instr_vaddr[i][1:0] = fetch_vaddr_d[1:0];  // for unaligned address
 		instr_valid[i] = (i >= fetch_offset);
 	end
 

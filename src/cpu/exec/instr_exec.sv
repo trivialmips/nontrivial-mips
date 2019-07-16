@@ -325,7 +325,7 @@ assign ex_mm = {
 
 always_comb begin
 	ex = '0;
-	ex.valid = (|ex_if) | invalid_instr | (|ex_ex) | (|ex_mm);
+	ex.valid = ((|ex_if) | invalid_instr | (|ex_ex) | (|ex_mm)) & data.valid;
 	if(|ex_if) begin
 		ex.extra = data.fetch.vaddr;
 		unique casez(ex_if)

@@ -37,7 +37,9 @@ end
 logic fetch_entry_avail, wait_delayslot, flush_mispredict;
 assign delayslot_not_exec = mispredict[1] | (mispredict[0] & ~pipeline_exec[1].valid);
 assign wait_delayslot = delayslot_not_exec & ~fetch_entry_avail;
-assign flush_mispredict = (|mispredict) & ~delayslot_not_exec;
+
+// when a multi-cycle instruction does not finished, we do not resolve a branch
+assign flush_mispredict = (|mispredict) & ~delayslot_not_exec & ~stall_from_ex;
 
 always_comb begin
 	fetch_entry_avail = 1'b0;
