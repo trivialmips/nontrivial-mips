@@ -39,6 +39,11 @@ logic [31:0] pipe_addr;
 uint32_t pipe_wdata;
 logic [31:0] line_recv;
 
+// AXI Plumbing
+assign axi_req_arid = '0;
+assign axi_req_awid = '0;
+assign axi_req_wid = '0;
+
 assign dbus.stall = (state_d != IDLE) ? 1'b1 : 1'b0;
 assign dbus.rddata = line_recv;
 
