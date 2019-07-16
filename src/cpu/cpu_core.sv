@@ -233,6 +233,8 @@ always_ff @(posedge clk) begin
 	if(rst || flush_ex || (stall_ex && ~stall_mm)) begin
 		pipeline_dcache[0] <= '0;
 	end else if(except_req.valid & ~except_req.alpha_taken) begin
+		if(~stall_mm)
+			pipeline_dcache[0][0] <= '0;
 		pipeline_dcache[0][1] <= '0;
 	end else if(~stall_ex) begin
 		pipeline_dcache[0] <= pipeline_exec;
