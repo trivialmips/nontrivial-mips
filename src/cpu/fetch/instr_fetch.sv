@@ -60,6 +60,7 @@ logic    invalid_push;
 logic    [`FETCH_NUM-1:0] instr_valid;
 virt_t   [`FETCH_NUM-1:0] instr_vaddr;
 uint32_t [`FETCH_NUM-1:0] instr;
+address_exception_t iaddr_ex_d;
 
 // instruction queue (stage 2)
 logic    queue_full, queue_empty, flush_que;
@@ -119,10 +120,12 @@ always_ff @(posedge clk) begin
 		fetch_vaddr_d   <= '0;
 		predict_valid_d <= '0;
 		maybe_jump_d    <= '0;
+		iaddr_ex_d      <= '0;
 	end else if(~hold_pc) begin
 		predict_valid_d <= predict_valid;
 		fetch_vaddr_d   <= fetch_vaddr;
 		maybe_jump_d    <= maybe_jump;
+		iaddr_ex_d      <= icache_res.iaddr_ex;
 	end
 end
 
@@ -214,9 +217,9 @@ instr_queue #(
 	.instr      ( instr       ),
 	.vaddr      ( instr_vaddr ),
 	.branch_predict,
-	.valid_num  ( valid_instr_num     ),
-	.offset     ( fetch_offset        ),
-	.iaddr_ex   ( icache_res.iaddr_ex ),
+	.valid_num  ( valid_instr_num ),
+	.offset     ( fetch_offset    ),
+	.iaddr_ex   ( iaddr_ex_d      ),
 	.fetch_ack,
 	.fetch_entry
 );
