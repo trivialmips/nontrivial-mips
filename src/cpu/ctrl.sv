@@ -60,7 +60,7 @@ end
 always_comb begin
 	flush = '0;
 	if(except_req.valid) begin
-		flush = { 3'b111, except_req.alpha_taken };
+		flush = { 2'b11, {2{except_req.alpha_taken}} };
 	end else if(flush_mispredict) begin
 		flush = 4'b1100;
 	end
