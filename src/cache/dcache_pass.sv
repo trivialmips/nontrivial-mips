@@ -33,6 +33,7 @@ state_t state, state_d;
 logic pipe_read;
 logic pipe_write;
 logic pipe_cache_miss;
+logic [3:0] pipe_byteenable;
 logic [31:0] pipe_addr;
 uint32_t pipe_wdata;
 uint32_t direct_rdata, direct_rdata_d;
@@ -47,7 +48,7 @@ assign axi_req.arsize  = 2'b010; // 4 bytes
 assign axi_req.awsize  = 2'b010;
 
 // All four bytes are valid
-assign axi_req.wstrb = 4'b1111;
+assign axi_req.wstrb = pipe_byteenable;
 
 // Silently ignores write response (for now)
 assign axi_req.bready = 1'b1;
@@ -133,11 +134,13 @@ always_ff @(posedge clk) begin
 		pipe_addr <= '0;
 		pipe_read <= 1'b0;
 		pipe_write <= 1'b0;
+		pipe_byteenable <= '0;
 	end else if(~dbus.stall) begin
 		pipe_read <= dbus.read;
 		pipe_write <= dbus.write;
 		pipe_addr <= dbus.address;
 		pipe_wdata <= dbus.wrdata;
+		pipe_byteenable <= dbus.byteenable;
 	end
 end
 
