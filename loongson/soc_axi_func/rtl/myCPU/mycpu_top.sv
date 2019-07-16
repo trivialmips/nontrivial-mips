@@ -178,7 +178,7 @@ module mycpu_top #(
     ) nontrivial_mips_inst (
         .aclk            (aclk            ),
         .reset_n         (aresetn         ),
-        .intr            (intr[0 +: 4]    ),
+        .intr            (intr[0 +: 5]    ),
         .icache_arid     (icache_arid     ),
         .icache_araddr   (icache_araddr   ),
         .icache_arlen    (icache_arlen    ),
@@ -375,4 +375,5 @@ module mycpu_top #(
 
 endmodule
 
-`default_nettype none
+`default_nettype wire
+
