@@ -12,8 +12,6 @@ uint32_t data_rd;
 assign op = data.decoded.op;
 assign data_rd = data.memreq.uncached ? uncached_rddata : cached_rddata;
 assign result.hiloreq = data.hiloreq;
-assign result.tlbreq  = data.tlbreq;
-assign result.cp0_req = data.cp0_req;
 
 logic [1:0] addr_offset;
 uint32_t aligned_data_rd, unaligned_data_rd, ext_sel;

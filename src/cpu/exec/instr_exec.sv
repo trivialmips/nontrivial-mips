@@ -17,7 +17,7 @@ module instr_exec (
 	input  uint32_t     cp0_rdata_i,
 	output logic [2:0]  cp0_rsel,
 	output reg_addr_t   cp0_raddr,
-	input  cp0_req_t    [`DCACHE_PIPE_DEPTH:0] cp0_req_fwd,
+	input  cp0_req_t    cp0_req_fwd,
 
 	output virt_t       mmu_vaddr,
 	input  mmu_result_t mmu_result
@@ -129,10 +129,8 @@ always_comb begin
 		cp0_rdata = '0;
 	end else begin
 		cp0_rdata = cp0_rdata_i;
-		for(int i = `DCACHE_PIPE_DEPTH; i >= 0; --i) begin
-			if(cp0_match(cp0_req_fwd[i], cp0_raddr, cp0_rsel))
-				cp0_rdata = (cp0_wmask & cp0_req_fwd[i].wdata) | (~cp0_wmask & cp0_rdata_i);
-		end
+		if(cp0_match(cp0_req_fwd, cp0_raddr, cp0_rsel))
+			cp0_rdata = (cp0_wmask & cp0_req_fwd.wdata) | (~cp0_wmask & cp0_rdata_i);
 	end
 end
 

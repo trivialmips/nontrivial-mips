@@ -15,6 +15,8 @@ module cp0(
 	input  uint32_t      tlbp_res,
 	input  logic         tlbwr_req,
 
+	output tlb_entry_t   tlbrw_wdata,
+
 	output uint32_t      rdata,
 	output cp0_regs_t    regs,
 	output logic [7:0]   asid,
@@ -26,6 +28,18 @@ cp0_regs_t regs_now, regs_nxt;
 assign regs = regs_now;
 assign asid = regs.entry_hi[7:0];
 assign user_mode = (regs.status[4:1] == 4'b1000);
+
+assign tlbrw_wdata.vpn2 = regs.entry_hi[31:13];
+assign tlbrw_wdata.asid = regs.entry_hi[7:0];
+assign tlbrw_wdata.pfn1 = regs.entry_lo1[29:6];
+assign tlbrw_wdata.c1   = regs.entry_lo1[5:3];
+assign tlbrw_wdata.d1   = regs.entry_lo1[2];
+assign tlbrw_wdata.v1   = regs.entry_lo1[1];
+assign tlbrw_wdata.pfn0 = regs.entry_lo0[29:6];
+assign tlbrw_wdata.c0   = regs.entry_lo0[5:3];
+assign tlbrw_wdata.d0   = regs.entry_lo0[2];
+assign tlbrw_wdata.v0   = regs.entry_lo0[1];
+assign tlbrw_wdata.G    = regs.entry_lo0[0];
 
 always_comb
 begin
@@ -75,7 +89,7 @@ end
 uint32_t wmask, wdata;
 cp0_write_mask cp0_write_mask_inst(
 	.rst,
-	.sel  ( wreq.wsel   ),
+	.sel  ( wreq.wsel  ),
 	.addr ( wreq.waddr ),
 	.mask ( wmask      )
 );

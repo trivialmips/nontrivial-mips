@@ -243,8 +243,6 @@ typedef struct packed {
 	reg_addr_t     rd;
 	uint32_t       wdata;
 	hilo_req_t     hiloreq;
-	tlb_request_t  tlbreq;
-	cp0_req_t      cp0_req;
 } pipeline_memwb_t;
 
 // MMU/TLB
