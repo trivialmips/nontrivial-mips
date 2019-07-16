@@ -1,0 +1,422 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<wave_config>
+   <wave_state>
+   </wave_state>
+   <db_ref_list>
+      <db_ref path="nontrivial_mips_tb_behav.wdb" id="1">
+         <top_modules>
+            <top_module name="\$unit_bht_sv " />
+            <top_module name="glbl" />
+            <top_module name="nontrivial_mips_tb" />
+         </top_modules>
+      </db_ref>
+   </db_ref_list>
+   <zoom_setting>
+      <ZoomStartTime time="27200271500000fs"></ZoomStartTime>
+      <ZoomEndTime time="27200342300001fs"></ZoomEndTime>
+      <Cursor1Time time="27200330500000fs"></Cursor1Time>
+   </zoom_setting>
+   <column_width_setting>
+      <NameColumnWidth column_width="149"></NameColumnWidth>
+      <ValueColumnWidth column_width="91"></ValueColumnWidth>
+   </column_width_setting>
+   <WVObjectSize size="74" />
+   <wvobject type="logic" fp_name="/nontrivial_mips_tb/soc_lite/u_cpu/nontrivial_mips_inst/cpu_core_inst/clk">
+      <obj_property name="ElementShortName">clk</obj_property>
+      <obj_property name="ObjectShortName">clk</obj_property>
+   </wvobject>
+   <wvobject type="array" fp_name="/nontrivial_mips_tb/soc_lite/u_cpu/nontrivial_mips_inst/cpu_core_inst/instr_fetch_inst/pc">
+      <obj_property name="ElementShortName">pc[31:0]</obj_property>
+      <obj_property name="ObjectShortName">pc[31:0]</obj_property>
+   </wvobject>
+   <wvobject type="array" fp_name="/nontrivial_mips_tb/soc_lite/u_cpu/nontrivial_mips_inst/cache_controller_inst/icache_inst/axi_req.araddr">
+      <obj_property name="ElementShortName">.araddr[31:0]</obj_property>
+      <obj_property name="ObjectShortName">.araddr[31:0]</obj_property>
+   </wvobject>
+   <wvobject type="logic" fp_name="/nontrivial_mips_tb/soc_lite/u_cpu/nontrivial_mips_inst/cache_controller_inst/icache_inst/axi_req.arvalid">
+      <obj_property name="ElementShortName">.arvalid</obj_property>
+      <obj_property name="ObjectShortName">.arvalid</obj_property>
+   </wvobject>
+   <wvobject type="logic" fp_name="/nontrivial_mips_tb/soc_lite/u_cpu/nontrivial_mips_inst/cache_controller_inst/icache_inst/axi_resp.arready">
+      <obj_property name="ElementShortName">.arready</obj_property>
+      <obj_property name="ObjectShortName">.arready</obj_property>
+   </wvobject>
+   <wvobject type="logic" fp_name="/nontrivial_mips_tb/soc_lite/u_cpu/nontrivial_mips_inst/cache_controller_inst/icache_inst/ibus/flush_2">
+      <obj_property name="ElementShortName">flush_2</obj_property>
+      <obj_property name="ObjectShortName">flush_2</obj_property>
+   </wvobject>
+   <wvobject type="logic" fp_name="/nontrivial_mips_tb/soc_lite/u_cpu/nontrivial_mips_inst/cpu_core_inst/hold_resolved_branch">
+      <obj_property name="ElementShortName">hold_resolved_branch</obj_property>
+      <obj_property name="ObjectShortName">hold_resolved_branch</obj_property>
+   </wvobject>
+   <wvobject type="array" fp_name="/nontrivial_mips_tb/soc_lite/u_cpu/nontrivial_mips_inst/cpu_core_inst/instr_fetch_inst/pc_gen_inst/resolved_branch">
+      <obj_property name="ElementShortName">resolved_branch</obj_property>
+      <obj_property name="ObjectShortName">resolved_branch</obj_property>
+   </wvobject>
+   <wvobject type="array" fp_name="/nontrivial_mips_tb/soc_lite/u_cpu/nontrivial_mips_inst/ibus_if/address">
+      <obj_property name="ElementShortName">address[31:0]</obj_property>
+      <obj_property name="ObjectShortName">address[31:0]</obj_property>
+   </wvobject>
+   <wvobject type="array" fp_name="/nontrivial_mips_tb/soc_lite/u_cpu/nontrivial_mips_inst/ibus_if/rddata">
+      <obj_property name="ElementShortName">rddata[63:0]</obj_property>
+      <obj_property name="ObjectShortName">rddata[63:0]</obj_property>
+   </wvobject>
+   <wvobject type="array" fp_name="/nontrivial_mips_tb/soc_lite/u_cpu/nontrivial_mips_inst/cache_controller_inst/icache_inst/pipe_addr">
+      <obj_property name="ElementShortName">pipe_addr[31:0]</obj_property>
+      <obj_property name="ObjectShortName">pipe_addr[31:0]</obj_property>
+   </wvobject>
+   <wvobject type="array" fp_name="/nontrivial_mips_tb/soc_lite/u_cpu/nontrivial_mips_inst/cache_controller_inst/icache_inst/state">
+      <obj_property name="ElementShortName">state[2:0]</obj_property>
+      <obj_property name="ObjectShortName">state[2:0]</obj_property>
+   </wvobject>
+   <wvobject type="array" fp_name="/nontrivial_mips_tb/soc_lite/u_cpu/nontrivial_mips_inst/cache_controller_inst/icache_inst/state_d">
+      <obj_property name="ElementShortName">state_d[2:0]</obj_property>
+      <obj_property name="ObjectShortName">state_d[2:0]</obj_property>
+   </wvobject>
+   <wvobject type="array" fp_name="/nontrivial_mips_tb/soc_lite/u_cpu/nontrivial_mips_inst/cache_controller_inst/icache_inst/line_recv">
+      <obj_property name="ElementShortName">line_recv[7:0][31:0]</obj_property>
+      <obj_property name="ObjectShortName">line_recv[7:0][31:0]</obj_property>
+   </wvobject>
+   <wvobject type="logic" fp_name="/nontrivial_mips_tb/soc_lite/u_cpu/nontrivial_mips_inst/cpu_core_inst/ibus/stall">
+      <obj_property name="ElementShortName">stall</obj_property>
+      <obj_property name="ObjectShortName">stall</obj_property>
+   </wvobject>
+   <wvobject type="logic" fp_name="/nontrivial_mips_tb/soc_lite/u_cpu/nontrivial_mips_inst/cpu_core_inst/instr_fetch_inst/hold_pc">
+      <obj_property name="ElementShortName">hold_pc</obj_property>
+      <obj_property name="ObjectShortName">hold_pc</obj_property>
+   </wvobject>
+   <wvobject type="logic" fp_name="/nontrivial_mips_tb/soc_lite/u_cpu/nontrivial_mips_inst/cpu_core_inst/stall_from_id">
+      <obj_property name="ElementShortName">stall_from_id</obj_property>
+      <obj_property name="ObjectShortName">stall_from_id</obj_property>
+   </wvobject>
+   <wvobject type="logic" fp_name="/nontrivial_mips_tb/soc_lite/u_cpu/nontrivial_mips_inst/cpu_core_inst/stall_from_ex">
+      <obj_property name="ElementShortName">stall_from_ex</obj_property>
+      <obj_property name="ObjectShortName">stall_from_ex</obj_property>
+   </wvobject>
+   <wvobject type="logic" fp_name="/nontrivial_mips_tb/soc_lite/u_cpu/nontrivial_mips_inst/cpu_core_inst/stall_from_mm">
+      <obj_property name="ElementShortName">stall_from_mm</obj_property>
+      <obj_property name="ObjectShortName">stall_from_mm</obj_property>
+   </wvobject>
+   <wvobject type="array" fp_name="/nontrivial_mips_tb/soc_lite/u_cpu/nontrivial_mips_inst/cpu_core_inst/pipeline_decode_d[0].fetch.vaddr">
+      <obj_property name="ElementShortName">.vaddr[31:0]</obj_property>
+      <obj_property name="ObjectShortName">.vaddr[31:0]</obj_property>
+   </wvobject>
+   <wvobject type="array" fp_name="/nontrivial_mips_tb/soc_lite/u_cpu/nontrivial_mips_inst/cpu_core_inst/cp0_inst/regs_now.epc">
+      <obj_property name="ElementShortName">.epc[31:0]</obj_property>
+      <obj_property name="ObjectShortName">.epc[31:0]</obj_property>
+   </wvobject>
+   <wvobject type="array" fp_name="/nontrivial_mips_tb/soc_lite/u_cpu/nontrivial_mips_inst/cpu_core_inst/cp0_inst/regs_nxt.epc">
+      <obj_property name="ElementShortName">.epc[31:0]</obj_property>
+      <obj_property name="ObjectShortName">.epc[31:0]</obj_property>
+   </wvobject>
+   <wvobject type="logic" fp_name="/nontrivial_mips_tb/soc_lite/u_cpu/nontrivial_mips_inst/cpu_core_inst/instr_fetch_inst/resolved_branch_i.taken">
+      <obj_property name="ElementShortName">.taken</obj_property>
+      <obj_property name="ObjectShortName">.taken</obj_property>
+   </wvobject>
+   <wvobject type="logic" fp_name="/nontrivial_mips_tb/soc_lite/u_cpu/nontrivial_mips_inst/cpu_core_inst/flush_id">
+      <obj_property name="ElementShortName">flush_id</obj_property>
+      <obj_property name="ObjectShortName">flush_id</obj_property>
+   </wvobject>
+   <wvobject type="logic" fp_name="/nontrivial_mips_tb/soc_lite/u_cpu/nontrivial_mips_inst/cpu_core_inst/flush_mm">
+      <obj_property name="ElementShortName">flush_mm</obj_property>
+      <obj_property name="ObjectShortName">flush_mm</obj_property>
+   </wvobject>
+   <wvobject type="logic" fp_name="/nontrivial_mips_tb/soc_lite/u_cpu/nontrivial_mips_inst/cpu_core_inst/instr_fetch_inst/resolved_branch_i.valid">
+      <obj_property name="ElementShortName">.valid</obj_property>
+      <obj_property name="ObjectShortName">.valid</obj_property>
+   </wvobject>
+   <wvobject type="logic" fp_name="/nontrivial_mips_tb/soc_lite/u_cpu/nontrivial_mips_inst/cpu_core_inst/instr_fetch_inst/resolved_branch_i.mispredict">
+      <obj_property name="ElementShortName">.mispredict</obj_property>
+      <obj_property name="ObjectShortName">.mispredict</obj_property>
+   </wvobject>
+   <wvobject type="logic" fp_name="/nontrivial_mips_tb/soc_lite/u_cpu/nontrivial_mips_inst/cpu_core_inst/stall_if">
+      <obj_property name="ElementShortName">stall_if</obj_property>
+      <obj_property name="ObjectShortName">stall_if</obj_property>
+   </wvobject>
+   <wvobject type="logic" fp_name="/nontrivial_mips_tb/soc_lite/u_cpu/nontrivial_mips_inst/cpu_core_inst/stall_id">
+      <obj_property name="ElementShortName">stall_id</obj_property>
+      <obj_property name="ObjectShortName">stall_id</obj_property>
+   </wvobject>
+   <wvobject type="logic" fp_name="/nontrivial_mips_tb/soc_lite/u_cpu/nontrivial_mips_inst/cpu_core_inst/stall_ex">
+      <obj_property name="ElementShortName">stall_ex</obj_property>
+      <obj_property name="ObjectShortName">stall_ex</obj_property>
+   </wvobject>
+   <wvobject type="logic" fp_name="/nontrivial_mips_tb/soc_lite/u_cpu/nontrivial_mips_inst/cpu_core_inst/stall_mm">
+      <obj_property name="ElementShortName">stall_mm</obj_property>
+      <obj_property name="ObjectShortName">stall_mm</obj_property>
+   </wvobject>
+   <wvobject type="logic" fp_name="/nontrivial_mips_tb/soc_lite/u_cpu/nontrivial_mips_inst/cache_controller_inst/dcache_inst/pipe_read">
+      <obj_property name="ElementShortName">pipe_read</obj_property>
+      <obj_property name="ObjectShortName">pipe_read</obj_property>
+   </wvobject>
+   <wvobject type="logic" fp_name="/nontrivial_mips_tb/soc_lite/u_cpu/nontrivial_mips_inst/cache_controller_inst/dcache_inst/pipe_write">
+      <obj_property name="ElementShortName">pipe_write</obj_property>
+      <obj_property name="ObjectShortName">pipe_write</obj_property>
+   </wvobject>
+   <wvobject type="array" fp_name="/nontrivial_mips_tb/soc_lite/u_cpu/nontrivial_mips_inst/cache_controller_inst/dcache_inst/pipe_addr">
+      <obj_property name="ElementShortName">pipe_addr[31:0]</obj_property>
+      <obj_property name="ObjectShortName">pipe_addr[31:0]</obj_property>
+   </wvobject>
+   <wvobject type="array" fp_name="/nontrivial_mips_tb/soc_lite/u_cpu/nontrivial_mips_inst/cache_controller_inst/dcache_inst/pipe_wdata">
+      <obj_property name="ElementShortName">pipe_wdata[31:0]</obj_property>
+      <obj_property name="ObjectShortName">pipe_wdata[31:0]</obj_property>
+   </wvobject>
+   <wvobject type="array" fp_name="/nontrivial_mips_tb/soc_lite/u_cpu/nontrivial_mips_inst/cpu_core_inst/instr_fetch_inst/icache_res">
+      <obj_property name="ElementShortName">icache_res</obj_property>
+      <obj_property name="ObjectShortName">icache_res</obj_property>
+   </wvobject>
+   <wvobject type="logic" fp_name="/nontrivial_mips_tb/soc_lite/u_cpu/nontrivial_mips_inst/cache_controller_inst/dbus/stall">
+      <obj_property name="ElementShortName">stall</obj_property>
+      <obj_property name="ObjectShortName">stall</obj_property>
+   </wvobject>
+   <wvobject type="logic" fp_name="/nontrivial_mips_tb/soc_lite/u_cpu/nontrivial_mips_inst/cpu_core_inst/instr_fetch_inst/icache_res.stall">
+      <obj_property name="ElementShortName">.stall</obj_property>
+      <obj_property name="ObjectShortName">.stall</obj_property>
+   </wvobject>
+   <wvobject type="array" fp_name="/nontrivial_mips_tb/soc_lite/u_cpu/nontrivial_mips_inst/cpu_core_inst/mmu_inst_vaddr">
+      <obj_property name="ElementShortName">mmu_inst_vaddr[31:0]</obj_property>
+      <obj_property name="ObjectShortName">mmu_inst_vaddr[31:0]</obj_property>
+   </wvobject>
+   <wvobject type="array" fp_name="/nontrivial_mips_tb/soc_lite/u_cpu/nontrivial_mips_inst/cpu_core_inst/instr_fetch_inst/fetch_ack">
+      <obj_property name="ElementShortName">fetch_ack[1:0]</obj_property>
+      <obj_property name="ObjectShortName">fetch_ack[1:0]</obj_property>
+   </wvobject>
+   <wvobject type="array" fp_name="/nontrivial_mips_tb/soc_lite/u_cpu/nontrivial_mips_inst/cpu_core_inst/instr_fetch_inst/fetch_entry">
+      <obj_property name="ElementShortName">fetch_entry[1:0]</obj_property>
+      <obj_property name="ObjectShortName">fetch_entry[1:0]</obj_property>
+   </wvobject>
+   <wvobject type="array" fp_name="/nontrivial_mips_tb/soc_lite/u_cpu/nontrivial_mips_inst/cpu_core_inst/pipeline_decode_d">
+      <obj_property name="ElementShortName">pipeline_decode_d[1:0]</obj_property>
+      <obj_property name="ObjectShortName">pipeline_decode_d[1:0]</obj_property>
+   </wvobject>
+   <wvobject type="array" fp_name="/nontrivial_mips_tb/soc_lite/u_cpu/nontrivial_mips_inst/cpu_core_inst/pipeline_exec">
+      <obj_property name="ElementShortName">pipeline_exec[1:0]</obj_property>
+      <obj_property name="ObjectShortName">pipeline_exec[1:0]</obj_property>
+      <obj_property name="isExpanded"></obj_property>
+      <wvobject type="array" fp_name="/nontrivial_mips_tb/soc_lite/u_cpu/nontrivial_mips_inst/cpu_core_inst/pipeline_exec[1]">
+         <obj_property name="ElementShortName">[1]</obj_property>
+         <obj_property name="ObjectShortName">[1]</obj_property>
+         <wvobject type="logic" fp_name="/nontrivial_mips_tb/soc_lite/u_cpu/nontrivial_mips_inst/cpu_core_inst/pipeline_exec[1].valid">
+            <obj_property name="ElementShortName">.valid</obj_property>
+            <obj_property name="ObjectShortName">.valid</obj_property>
+         </wvobject>
+         <wvobject type="array" fp_name="/nontrivial_mips_tb/soc_lite/u_cpu/nontrivial_mips_inst/cpu_core_inst/pipeline_exec[1].pc">
+            <obj_property name="ElementShortName">.pc[31:0]</obj_property>
+            <obj_property name="ObjectShortName">.pc[31:0]</obj_property>
+         </wvobject>
+         <wvobject type="array" fp_name="/nontrivial_mips_tb/soc_lite/u_cpu/nontrivial_mips_inst/cpu_core_inst/pipeline_exec[1].result">
+            <obj_property name="ElementShortName">.result[31:0]</obj_property>
+            <obj_property name="ObjectShortName">.result[31:0]</obj_property>
+         </wvobject>
+         <wvobject type="logic" fp_name="/nontrivial_mips_tb/soc_lite/u_cpu/nontrivial_mips_inst/cpu_core_inst/pipeline_exec[1].delayslot">
+            <obj_property name="ElementShortName">.delayslot</obj_property>
+            <obj_property name="ObjectShortName">.delayslot</obj_property>
+         </wvobject>
+         <wvobject type="logic" fp_name="/nontrivial_mips_tb/soc_lite/u_cpu/nontrivial_mips_inst/cpu_core_inst/pipeline_exec[1].eret">
+            <obj_property name="ElementShortName">.eret</obj_property>
+            <obj_property name="ObjectShortName">.eret</obj_property>
+         </wvobject>
+         <wvobject type="array" fp_name="/nontrivial_mips_tb/soc_lite/u_cpu/nontrivial_mips_inst/cpu_core_inst/pipeline_exec[1].ex">
+            <obj_property name="ElementShortName">.ex</obj_property>
+            <obj_property name="ObjectShortName">.ex</obj_property>
+         </wvobject>
+         <wvobject type="array" fp_name="/nontrivial_mips_tb/soc_lite/u_cpu/nontrivial_mips_inst/cpu_core_inst/pipeline_exec[1].hiloreq">
+            <obj_property name="ElementShortName">.hiloreq</obj_property>
+            <obj_property name="ObjectShortName">.hiloreq</obj_property>
+         </wvobject>
+         <wvobject type="array" fp_name="/nontrivial_mips_tb/soc_lite/u_cpu/nontrivial_mips_inst/cpu_core_inst/pipeline_exec[1].memreq">
+            <obj_property name="ElementShortName">.memreq</obj_property>
+            <obj_property name="ObjectShortName">.memreq</obj_property>
+            <obj_property name="isExpanded"></obj_property>
+         </wvobject>
+         <wvobject type="array" fp_name="/nontrivial_mips_tb/soc_lite/u_cpu/nontrivial_mips_inst/cpu_core_inst/pipeline_exec[1].decoded">
+            <obj_property name="ElementShortName">.decoded</obj_property>
+            <obj_property name="ObjectShortName">.decoded</obj_property>
+         </wvobject>
+         <wvobject type="array" fp_name="/nontrivial_mips_tb/soc_lite/u_cpu/nontrivial_mips_inst/cpu_core_inst/pipeline_exec[1].tlbreq">
+            <obj_property name="ElementShortName">.tlbreq</obj_property>
+            <obj_property name="ObjectShortName">.tlbreq</obj_property>
+         </wvobject>
+         <wvobject type="array" fp_name="/nontrivial_mips_tb/soc_lite/u_cpu/nontrivial_mips_inst/cpu_core_inst/pipeline_exec[1].cp0_req">
+            <obj_property name="ElementShortName">.cp0_req</obj_property>
+            <obj_property name="ObjectShortName">.cp0_req</obj_property>
+         </wvobject>
+      </wvobject>
+      <wvobject type="array" fp_name="/nontrivial_mips_tb/soc_lite/u_cpu/nontrivial_mips_inst/cpu_core_inst/pipeline_exec[0]">
+         <obj_property name="ElementShortName">[0]</obj_property>
+         <obj_property name="ObjectShortName">[0]</obj_property>
+         <wvobject type="logic" fp_name="/nontrivial_mips_tb/soc_lite/u_cpu/nontrivial_mips_inst/cpu_core_inst/pipeline_exec[0].valid">
+            <obj_property name="ElementShortName">.valid</obj_property>
+            <obj_property name="ObjectShortName">.valid</obj_property>
+         </wvobject>
+         <wvobject type="array" fp_name="/nontrivial_mips_tb/soc_lite/u_cpu/nontrivial_mips_inst/cpu_core_inst/pipeline_exec[0].pc">
+            <obj_property name="ElementShortName">.pc[31:0]</obj_property>
+            <obj_property name="ObjectShortName">.pc[31:0]</obj_property>
+         </wvobject>
+         <wvobject type="array" fp_name="/nontrivial_mips_tb/soc_lite/u_cpu/nontrivial_mips_inst/cpu_core_inst/pipeline_exec[0].result">
+            <obj_property name="ElementShortName">.result[31:0]</obj_property>
+            <obj_property name="ObjectShortName">.result[31:0]</obj_property>
+         </wvobject>
+         <wvobject type="logic" fp_name="/nontrivial_mips_tb/soc_lite/u_cpu/nontrivial_mips_inst/cpu_core_inst/pipeline_exec[0].delayslot">
+            <obj_property name="ElementShortName">.delayslot</obj_property>
+            <obj_property name="ObjectShortName">.delayslot</obj_property>
+         </wvobject>
+         <wvobject type="logic" fp_name="/nontrivial_mips_tb/soc_lite/u_cpu/nontrivial_mips_inst/cpu_core_inst/pipeline_exec[0].eret">
+            <obj_property name="ElementShortName">.eret</obj_property>
+            <obj_property name="ObjectShortName">.eret</obj_property>
+         </wvobject>
+         <wvobject type="array" fp_name="/nontrivial_mips_tb/soc_lite/u_cpu/nontrivial_mips_inst/cpu_core_inst/pipeline_exec[0].ex">
+            <obj_property name="ElementShortName">.ex</obj_property>
+            <obj_property name="ObjectShortName">.ex</obj_property>
+         </wvobject>
+         <wvobject type="array" fp_name="/nontrivial_mips_tb/soc_lite/u_cpu/nontrivial_mips_inst/cpu_core_inst/pipeline_exec[0].hiloreq">
+            <obj_property name="ElementShortName">.hiloreq</obj_property>
+            <obj_property name="ObjectShortName">.hiloreq</obj_property>
+         </wvobject>
+         <wvobject type="array" fp_name="/nontrivial_mips_tb/soc_lite/u_cpu/nontrivial_mips_inst/cpu_core_inst/pipeline_exec[0].memreq">
+            <obj_property name="ElementShortName">.memreq</obj_property>
+            <obj_property name="ObjectShortName">.memreq</obj_property>
+            <obj_property name="isExpanded"></obj_property>
+         </wvobject>
+         <wvobject type="array" fp_name="/nontrivial_mips_tb/soc_lite/u_cpu/nontrivial_mips_inst/cpu_core_inst/pipeline_exec[0].decoded">
+            <obj_property name="ElementShortName">.decoded</obj_property>
+            <obj_property name="ObjectShortName">.decoded</obj_property>
+         </wvobject>
+         <wvobject type="array" fp_name="/nontrivial_mips_tb/soc_lite/u_cpu/nontrivial_mips_inst/cpu_core_inst/pipeline_exec[0].tlbreq">
+            <obj_property name="ElementShortName">.tlbreq</obj_property>
+            <obj_property name="ObjectShortName">.tlbreq</obj_property>
+         </wvobject>
+         <wvobject type="array" fp_name="/nontrivial_mips_tb/soc_lite/u_cpu/nontrivial_mips_inst/cpu_core_inst/pipeline_exec[0].cp0_req">
+            <obj_property name="ElementShortName">.cp0_req</obj_property>
+            <obj_property name="ObjectShortName">.cp0_req</obj_property>
+         </wvobject>
+      </wvobject>
+   </wvobject>
+   <wvobject type="array" fp_name="/nontrivial_mips_tb/soc_lite/u_cpu/nontrivial_mips_inst/cpu_core_inst/pipeline_exec_d">
+      <obj_property name="ElementShortName">pipeline_exec_d[1:0]</obj_property>
+      <obj_property name="ObjectShortName">pipeline_exec_d[1:0]</obj_property>
+      <obj_property name="isExpanded"></obj_property>
+   </wvobject>
+   <wvobject type="array" fp_name="/nontrivial_mips_tb/soc_lite/u_cpu/nontrivial_mips_inst/cpu_core_inst/\gen_exec[0].exec_inst /resolved_branch">
+      <obj_property name="ElementShortName">resolved_branch</obj_property>
+      <obj_property name="ObjectShortName">resolved_branch</obj_property>
+   </wvobject>
+   <wvobject type="array" fp_name="/nontrivial_mips_tb/soc_lite/u_cpu/nontrivial_mips_inst/cache_controller_inst/dcache_inst/axi_req.araddr">
+      <obj_property name="ElementShortName">.araddr[31:0]</obj_property>
+      <obj_property name="ObjectShortName">.araddr[31:0]</obj_property>
+   </wvobject>
+   <wvobject type="logic" fp_name="/nontrivial_mips_tb/soc_lite/u_cpu/nontrivial_mips_inst/cache_controller_inst/dcache_inst/axi_req.arvalid">
+      <obj_property name="ElementShortName">.arvalid</obj_property>
+      <obj_property name="ObjectShortName">.arvalid</obj_property>
+   </wvobject>
+   <wvobject type="logic" fp_name="/nontrivial_mips_tb/soc_lite/u_cpu/nontrivial_mips_inst/cache_controller_inst/dcache_inst/axi_resp.arready">
+      <obj_property name="ElementShortName">.arready</obj_property>
+      <obj_property name="ObjectShortName">.arready</obj_property>
+   </wvobject>
+   <wvobject type="array" fp_name="/nontrivial_mips_tb/soc_lite/u_cpu/nontrivial_mips_inst/cache_controller_inst/dcache_inst/axi_resp.rdata">
+      <obj_property name="ElementShortName">.rdata[31:0]</obj_property>
+      <obj_property name="ObjectShortName">.rdata[31:0]</obj_property>
+   </wvobject>
+   <wvobject type="logic" fp_name="/nontrivial_mips_tb/soc_lite/u_cpu/nontrivial_mips_inst/cache_controller_inst/dcache_inst/axi_resp.rlast">
+      <obj_property name="ElementShortName">.rlast</obj_property>
+      <obj_property name="ObjectShortName">.rlast</obj_property>
+   </wvobject>
+   <wvobject type="logic" fp_name="/nontrivial_mips_tb/soc_lite/u_cpu/nontrivial_mips_inst/cache_controller_inst/dcache_inst/axi_resp.rvalid">
+      <obj_property name="ElementShortName">.rvalid</obj_property>
+      <obj_property name="ObjectShortName">.rvalid</obj_property>
+   </wvobject>
+   <wvobject type="logic" fp_name="/nontrivial_mips_tb/soc_lite/u_cpu/nontrivial_mips_inst/cache_controller_inst/dcache_inst/pipe_read">
+      <obj_property name="ElementShortName">pipe_read</obj_property>
+      <obj_property name="ObjectShortName">pipe_read</obj_property>
+   </wvobject>
+   <wvobject type="logic" fp_name="/nontrivial_mips_tb/soc_lite/u_cpu/nontrivial_mips_inst/cache_controller_inst/dcache_inst/pipe_write">
+      <obj_property name="ElementShortName">pipe_write</obj_property>
+      <obj_property name="ObjectShortName">pipe_write</obj_property>
+   </wvobject>
+   <wvobject type="array" fp_name="/nontrivial_mips_tb/soc_lite/u_cpu/nontrivial_mips_inst/cache_controller_inst/dcache_inst/pipe_addr">
+      <obj_property name="ElementShortName">pipe_addr[31:0]</obj_property>
+      <obj_property name="ObjectShortName">pipe_addr[31:0]</obj_property>
+   </wvobject>
+   <wvobject type="array" fp_name="/nontrivial_mips_tb/soc_lite/u_cpu/nontrivial_mips_inst/cache_controller_inst/dcache_inst/axi_req.awaddr">
+      <obj_property name="ElementShortName">.awaddr[31:0]</obj_property>
+      <obj_property name="ObjectShortName">.awaddr[31:0]</obj_property>
+   </wvobject>
+   <wvobject type="logic" fp_name="/nontrivial_mips_tb/soc_lite/u_cpu/nontrivial_mips_inst/cache_controller_inst/dcache_inst/axi_req.awvalid">
+      <obj_property name="ElementShortName">.awvalid</obj_property>
+      <obj_property name="ObjectShortName">.awvalid</obj_property>
+   </wvobject>
+   <wvobject type="array" fp_name="/nontrivial_mips_tb/soc_lite/u_cpu/nontrivial_mips_inst/cache_controller_inst/dcache_inst/axi_req.wdata">
+      <obj_property name="ElementShortName">.wdata[31:0]</obj_property>
+      <obj_property name="ObjectShortName">.wdata[31:0]</obj_property>
+   </wvobject>
+   <wvobject type="logic" fp_name="/nontrivial_mips_tb/soc_lite/u_cpu/nontrivial_mips_inst/cache_controller_inst/dcache_inst/axi_req.wlast">
+      <obj_property name="ElementShortName">.wlast</obj_property>
+      <obj_property name="ObjectShortName">.wlast</obj_property>
+   </wvobject>
+   <wvobject type="logic" fp_name="/nontrivial_mips_tb/soc_lite/u_cpu/nontrivial_mips_inst/cache_controller_inst/dcache_inst/axi_req.wvalid">
+      <obj_property name="ElementShortName">.wvalid</obj_property>
+      <obj_property name="ObjectShortName">.wvalid</obj_property>
+   </wvobject>
+   <wvobject type="logic" fp_name="/nontrivial_mips_tb/soc_lite/u_cpu/nontrivial_mips_inst/cache_controller_inst/dcache_inst/axi_resp.awready">
+      <obj_property name="ElementShortName">.awready</obj_property>
+      <obj_property name="ObjectShortName">.awready</obj_property>
+   </wvobject>
+   <wvobject type="logic" fp_name="/nontrivial_mips_tb/soc_lite/u_cpu/nontrivial_mips_inst/cache_controller_inst/dcache_inst/axi_resp.wready">
+      <obj_property name="ElementShortName">.wready</obj_property>
+      <obj_property name="ObjectShortName">.wready</obj_property>
+   </wvobject>
+   <wvobject type="logic" fp_name="/nontrivial_mips_tb/soc_lite/u_cpu/nontrivial_mips_inst/cache_controller_inst/dcache_inst/axi_req.bready">
+      <obj_property name="ElementShortName">.bready</obj_property>
+      <obj_property name="ObjectShortName">.bready</obj_property>
+   </wvobject>
+   <wvobject type="logic" fp_name="/nontrivial_mips_tb/soc_lite/u_cpu/nontrivial_mips_inst/cache_controller_inst/dcache_inst/axi_resp.bvalid">
+      <obj_property name="ElementShortName">.bvalid</obj_property>
+      <obj_property name="ObjectShortName">.bvalid</obj_property>
+   </wvobject>
+   <wvobject type="array" fp_name="/nontrivial_mips_tb/soc_lite/u_cpu/nontrivial_mips_inst/cache_controller_inst/dcache_inst/axi_resp.bresp">
+      <obj_property name="ElementShortName">.bresp[1:0]</obj_property>
+      <obj_property name="ObjectShortName">.bresp[1:0]</obj_property>
+   </wvobject>
+   <wvobject type="logic" fp_name="/nontrivial_mips_tb/soc_lite/u_cpu/nontrivial_mips_inst/cache_controller_inst/dbus/write">
+      <obj_property name="ElementShortName">write</obj_property>
+      <obj_property name="ObjectShortName">write</obj_property>
+   </wvobject>
+   <wvobject type="logic" fp_name="/nontrivial_mips_tb/soc_lite/u_cpu/nontrivial_mips_inst/dbus_if/read">
+      <obj_property name="ElementShortName">read</obj_property>
+      <obj_property name="ObjectShortName">read</obj_property>
+   </wvobject>
+   <wvobject type="array" fp_name="/nontrivial_mips_tb/soc_lite/u_cpu/nontrivial_mips_inst/cpu_core_inst/dbus_mux_inst/kill">
+      <obj_property name="ElementShortName">kill[1:0]</obj_property>
+      <obj_property name="ObjectShortName">kill[1:0]</obj_property>
+   </wvobject>
+   <wvobject type="logic" fp_name="/nontrivial_mips_tb/soc_lite/u_cpu/nontrivial_mips_inst/cpu_core_inst/dbus_mux_inst/except_req.alpha_taken">
+      <obj_property name="ElementShortName">.alpha_taken</obj_property>
+      <obj_property name="ObjectShortName">.alpha_taken</obj_property>
+   </wvobject>
+   <wvobject type="array" fp_name="/nontrivial_mips_tb/soc_lite/u_cpu/nontrivial_mips_inst/cache_controller_inst/dbus/wrdata">
+      <obj_property name="ElementShortName">wrdata[31:0]</obj_property>
+      <obj_property name="ObjectShortName">wrdata[31:0]</obj_property>
+   </wvobject>
+   <wvobject type="array" fp_name="/nontrivial_mips_tb/soc_lite/u_cpu/nontrivial_mips_inst/cache_controller_inst/dbus/address">
+      <obj_property name="ElementShortName">address[31:0]</obj_property>
+      <obj_property name="ObjectShortName">address[31:0]</obj_property>
+   </wvobject>
+   <wvobject type="logic" fp_name="/nontrivial_mips_tb/soc_lite/u_cpu/nontrivial_mips_inst/cache_controller_inst/dbus/stall">
+      <obj_property name="ElementShortName">stall</obj_property>
+      <obj_property name="ObjectShortName">stall</obj_property>
+   </wvobject>
+   <wvobject type="array" fp_name="/nontrivial_mips_tb/soc_lite/u_cpu/nontrivial_mips_inst/cpu_core_inst/pipeline_dcache">
+      <obj_property name="ElementShortName">pipeline_dcache[1:0][1:0]</obj_property>
+      <obj_property name="ObjectShortName">pipeline_dcache[1:0][1:0]</obj_property>
+      <obj_property name="isExpanded"></obj_property>
+   </wvobject>
+   <wvobject type="array" fp_name="/nontrivial_mips_tb/soc_lite/u_cpu/nontrivial_mips_inst/cpu_core_inst/except_req">
+      <obj_property name="ElementShortName">except_req</obj_property>
+      <obj_property name="ObjectShortName">except_req</obj_property>
+   </wvobject>
+   <wvobject type="array" fp_name="/nontrivial_mips_tb/soc_lite/u_cpu/nontrivial_mips_inst/cpu_core_inst/pipeline_wb">
+      <obj_property name="ElementShortName">pipeline_wb[1:0]</obj_property>
+      <obj_property name="ObjectShortName">pipeline_wb[1:0]</obj_property>
+      <obj_property name="isExpanded"></obj_property>
+   </wvobject>
+</wave_config>

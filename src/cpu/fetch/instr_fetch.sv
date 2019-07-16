@@ -86,7 +86,12 @@ logic delayslot;
 assign delayslot = maybe_jump[`FETCH_NUM - 1];
 assign predict_delayed = predict_valid & delayslot;
 always_comb begin
-	if(hold_pc) begin
+//	if(icache_res.stall | queue_full) begin
+//		// when flushing PC, I$ ignores current fetch_vaddr
+//		// and we do not consider flush_pc
+//		fetch_vaddr = fetch_vaddr_d;
+//	end else if(predict_valid) begin
+	if(queue_full) begin
 		fetch_vaddr = fetch_vaddr_d;
 	end else if(predict_valid) begin
 		// when the last instruction is a branch
