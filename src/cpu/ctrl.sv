@@ -27,7 +27,7 @@ module ctrl(
 logic [3:0] stall, flush;
 assign { stall_if, stall_id, stall_ex, stall_mm } = stall;
 assign { flush_if, flush_id, flush_ex, flush_mm } = flush;
-assign hold_resolved_branch = stall_ex | stall_mm;
+assign hold_resolved_branch = (stall_ex | stall_mm) & ~flush_id;
 
 logic [1:0] mispredict;
 for(genvar i = 0; i < 2; ++i) begin : gen_mispredict
