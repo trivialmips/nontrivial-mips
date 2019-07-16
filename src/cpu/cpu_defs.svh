@@ -6,18 +6,6 @@
 	This header defines data structures and constants used in CPU internally
 **/
 
-`define FETCH_NUM            2
-`define ISSUE_NUM            2
-`define REG_NUM              32
-`define TLB_ENTRIES_NUM      16
-`define BOOT_VEC             32'hbfc00000
-`define ENABLE_CPU_MMU       1
-`define BTB_SIZE             8
-`define BHT_SIZE             1024
-`define RAS_SIZE             8
-`define INSTR_FIFO_DEPTH     4
-`define DCACHE_PIPE_DEPTH    2
-
 /* cause register exc_code field */
 `define EXCCODE_INT   5'h00  // interrupt
 `define EXCCODE_MOD   5'h01  // TLB modification exception

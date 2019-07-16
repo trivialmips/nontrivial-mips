@@ -22,26 +22,26 @@ module mmu(
 	output uint32_t     tlbp_index
 );
 
-generate if(`ENABLE_CPU_MMU)
+function logic is_vaddr_mapped(
+	input virt_t vaddr
+);
+	// useg (0xx), kseg2 (110), kseg3 (111)
+	return (~vaddr[31] || vaddr[31:30] == 2'b11);
+endfunction
+
+function logic is_vaddr_uncached(
+	input virt_t vaddr
+); 
+	return vaddr[31:29] == 3'b101;
+endfunction
+
+generate if(`CPU_MMU_ENABLED)
 begin: generate_mmu_enabled_code
 
 	logic inst_mapped;
 	logic [`ISSUE_NUM-1:0] data_mapped;
 	tlb_result_t inst_tlb_result;
 	tlb_result_t [`ISSUE_NUM-1:0] data_tlb_result;
-
-	function logic is_vaddr_mapped(
-		input virt_t vaddr
-	);
-		// useg (0xx), kseg2 (110), kseg3 (111)
-		return (~vaddr[31] || vaddr[31:30] == 2'b11);
-	endfunction
-
-	function logic is_vaddr_uncached(
-		input virt_t vaddr
-	); 
-		return vaddr[31:29] == 3'b101;
-	endfunction
 
 	assign inst_mapped   = is_vaddr_mapped(inst_vaddr);
 
@@ -88,11 +88,12 @@ end else begin: generate_mmu_disabled_code
 	begin
 		inst_result = '0;
 		inst_result.dirty = 1'b0;
-		inst_result.phy_addr = { 1'b0, inst_vaddr[30:0] };
+		inst_result.phy_addr = { 3'b0, inst_vaddr[28:0] };
 		for(int i = 0; i < `ISSUE_NUM; ++i) begin
 			data_result[i] = '0;
 			data_result[i].dirty = 1'b1;
-			data_result[i].phy_addr = { 1'b0, data_vaddr[i][30:0] };
+			data_result[i].uncached = is_vaddr_uncached(data_vaddr[i]);
+			data_result[i].phy_addr = { 3'b0, data_vaddr[i][28:0] };
 		end
 	end
 end

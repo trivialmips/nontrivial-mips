@@ -7,9 +7,17 @@
 
 **/
 
-`define CPU_MMU_ENABLED 1
-`define CPU_CP0_ENABLED 1
-`define CPU_CP1_ENABLED 1
-`define CPU_SUPERSCALAR_ENABLED 1
+`define CPU_MMU_ENABLED      0
+
+`define FETCH_NUM            2
+`define ISSUE_NUM            2
+`define REG_NUM              32
+`define TLB_ENTRIES_NUM      16
+`define BOOT_VEC             32'hbfc00000
+`define BTB_SIZE             8
+`define BHT_SIZE             1024
+`define RAS_SIZE             8
+`define INSTR_FIFO_DEPTH     4
+`define DCACHE_PIPE_DEPTH    2
 
 `endif
