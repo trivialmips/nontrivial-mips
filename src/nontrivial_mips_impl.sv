@@ -145,6 +145,10 @@ module nontrivial_mips_impl #(
 
     wire clk = aclk;
     wire rst = ~reset_n;
+	logic [1:0] sync_rst;
+	always_ff @(posedge clk) begin
+		sync_rst <= { sync_rst[0], rst };
+	end
 
     // pack AXI signals
     axi_req_t icache_axi_req, dcache_axi_req, uncached_axi_req;
@@ -255,7 +259,7 @@ module nontrivial_mips_impl #(
 	) cache_controller_inst (
 		.*, // all axi signals
 		.clk,
-		.rst,
+		.rst(sync_rst),
 		.ibus(ibus_if.slave),
 		.dbus(dbus_if.slave),
 		.dbus_uncached(dbus_uncached_if.slave)
@@ -265,7 +269,7 @@ module nontrivial_mips_impl #(
     // initialization of CPU
     cpu_core cpu_core_inst(
         .clk,
-        .rst,
+        .rst(sync_rst),
         .intr,
         .ibus(ibus_if.master),
 		.dbus(dbus_if.master),
