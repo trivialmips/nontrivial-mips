@@ -292,7 +292,7 @@ end
 // ( illegal | unaligned, miss | invalid )
 logic [1:0] ex_if;  // exception in IF
 assign ex_if = {
-	data.fetch.iaddr_ex.illegal,
+	data.fetch.iaddr_ex.illegal | |data.fetch.vaddr[1:0],
 	data.fetch.iaddr_ex.miss | data.fetch.iaddr_ex.invalid
 };
 
