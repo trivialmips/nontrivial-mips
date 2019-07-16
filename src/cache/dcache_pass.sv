@@ -37,7 +37,6 @@ logic pipe_cache_miss;
 logic [3:0] pipe_byteenable;
 logic [31:0] pipe_addr;
 uint32_t pipe_wdata;
-uint32_t direct_rdata, direct_rdata_d;
 logic [31:0] line_recv;
 
 assign dbus.stall = (state_d != IDLE) ? 1'b1 : 1'b0;
@@ -45,7 +44,23 @@ assign dbus.rddata = line_recv;
 
 always_comb begin
 	state_d = state;
-	direct_rdata_d = direct_rdata;
+	case(state)
+		IDLE: begin
+			if(pipe_read) begin
+				state_d = READ_WAIT_AXI;
+			end else if(pipe_write) begin
+				state_d = WRITE_WAIT_AXI;
+			end
+		end
+		READ_WAIT_AXI:  if(axi_resp.arready) state_d = READ;
+		WRITE_WAIT_AXI: if(axi_resp.awready) state_d = WRITE;
+		READ:           if(axi_resp.rvalid)  state_d = FINISHED;
+		WRITE:          if(axi_resp.wready)  state_d = WAIT_BVALID;
+		WAIT_BVALID:    if(axi_resp.bvalid)  state_d = FINISHED;
+		FINISHED:       state_d = IDLE;
+	endcase
+end
+always_comb begin
 	axi_req = '0;
 
 	// INCR, but we are only doing one transfer in a burst
@@ -55,55 +70,19 @@ always_comb begin
 	axi_req.awlen   = 3'b0000;
 	axi_req.arsize  = 2'b010; // 4 bytes
 	axi_req.awsize  = 2'b010;
-	axi_req.wstrb = pipe_byteenable;
+	axi_req.wstrb   = pipe_byteenable;
+	axi_req.araddr  = pipe_addr;
+	axi_req.awaddr  = pipe_addr;
+	axi_req.wdata   = pipe_wdata;
 
 	case(state)
-		IDLE: begin
-			if(pipe_read) begin
-				state_d = READ_WAIT_AXI;
-			end else if(pipe_write) begin
-				state_d = WRITE_WAIT_AXI;
-			end
-		end
-		READ_WAIT_AXI: begin
-			axi_req.arvalid = 1'b1;
-			axi_req.araddr  = pipe_addr;
-
-			if(axi_resp.arready) state_d = READ;
-		end
-		WRITE_WAIT_AXI: begin
-			axi_req.awvalid = 1'b1;
-			axi_req.awaddr  = pipe_addr;
-
-			if(axi_resp.awready) state_d = WRITE;
-		end
-		READ: begin
-			if(axi_resp.rvalid) begin
-				axi_req.rready = 1'b1;
-				state_d = FINISHED;
-			end
-		end
+		READ_WAIT_AXI:  axi_req.arvalid = 1'b1;
+		WRITE_WAIT_AXI: axi_req.awvalid = 1'b1;
+		READ:        if(axi_resp.rvalid) axi_req.rready = 1'b1;
+		WAIT_BVALID: if(axi_resp.bvalid) axi_req.bready = 1'b1;
 		WRITE: begin
-			// Write a single transfer
-			axi_req.wdata = pipe_wdata;
-			axi_req.wvalid = 1'b1;
-
-			// The burst length is 1
-			axi_req.wlast = 1'b1;
-
-			if(axi_resp.wready) begin
-				state_d = WAIT_BVALID;
-			end
-		end
-		WAIT_BVALID: begin
-			if(axi_resp.bvalid) begin
-				axi_req.bready = 1'b1;
-				state_d = FINISHED;
-			end
-		end
-		// Wait for line_recv
-		FINISHED: begin
-			state_d = IDLE;
+			axi_req.wvalid = 1'b1;  // Write a single transfer
+			axi_req.wlast = 1'b1;   // The burst length is 1
 		end
 	endcase
 end
@@ -111,10 +90,8 @@ end
 always_ff @(posedge clk) begin
 	if(rst) begin
 		state <= IDLE;
-		direct_rdata = '0;
 	end else begin
 		state <= state_d;
-		direct_rdata = direct_rdata_d;
 	end
 end
 
