@@ -97,7 +97,6 @@ wire [4 :0] debug_wb_rf_wnum;
 wire [31:0] debug_wb_rf_wdata;
 assign cpu_clk           = soc_lite.cpu_clk;
 assign sys_clk           = soc_lite.sys_clk;
-assign debug_wb_pc       = soc_lite.debug_wb_pc;
 assign debug_wb_rf_wen   = soc_lite.debug_wb_rf_wen;
 assign debug_wb_rf_wnum  = soc_lite.debug_wb_rf_wnum;
 assign debug_wb_rf_wdata = soc_lite.debug_wb_rf_wdata;
@@ -131,26 +130,27 @@ assign   ref_wb_rf_wdata_v[7 : 0] =   ref_wb_rf_wdata[7 : 0] & {8{debug_wb_rf_we
 
 pipeline_memwb_t [1:0] pipe_wb;
 assign pipe_wb = soc_lite.u_cpu.nontrivial_mips_inst.cpu_core_inst.pipeline_wb;
+assign debug_wb_pc = pipe_wb[0].pc;
 
 task judge(input pipeline_memwb_t pipe_wb);
-	if(pipe_wb.rd!=5'd0 && `CONFREG_OPEN_TRACE) begin
+	if(pipe_wb.rd!=5'd0) begin
 		$fscanf(trace_ref, "%h %h %h %h", trace_cmp_flag,
 				ref_wb_pc, ref_wb_rf_wnum, ref_wb_rf_wdata);
-		if ( pipe_wb.rd!=ref_wb_rf_wnum || pipe_wb.wdata != ref_wb_rf_wdata)
+		if (`CONFREG_OPEN_TRACE && (pipe_wb.rd!=ref_wb_rf_wnum || pipe_wb.wdata != ref_wb_rf_wdata || pipe_wb.pc != ref_wb_pc))
 		begin
 			$display("--------------------------------------------------------------");
 			$display("[%t] Error!!!",$time);
 			$display("    reference: PC = 0x%8h, wb_rf_wnum = 0x%2h, wb_rf_wdata = 0x%8h",
 					  ref_wb_pc, ref_wb_rf_wnum, ref_wb_rf_wdata);
 			$display("    mycpu    : PC = 0x%8h, wb_rf_wnum = 0x%2h, wb_rf_wdata = 0x%8h",
-					  '0, pipe_wb.rd, pipe_wb.wdata);
+					  pipe_wb.pc, pipe_wb.rd, pipe_wb.wdata);
 			$display("--------------------------------------------------------------");
 			debug_wb_err <= 1'b1;
 			#40;
 			$finish;
 		end else begin
-			$display("    reference: PC = 0x%8h, wb_rf_wnum = 0x%2h, wb_rf_wdata = 0x%8h",
-					  ref_wb_pc, ref_wb_rf_wnum, ref_wb_rf_wdata);
+//			$display("    reference: PC = 0x%8h, wb_rf_wnum = 0x%2h, wb_rf_wdata = 0x%8h",
+//					  ref_wb_pc, ref_wb_rf_wnum, ref_wb_rf_wdata);
 		end
 	end
 endtask

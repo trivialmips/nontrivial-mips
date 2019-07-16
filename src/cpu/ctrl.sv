@@ -35,7 +35,8 @@ for(genvar i = 0; i < 2; ++i) begin : gen_mispredict
 end
 
 logic fetch_entry_avail, wait_delayslot, flush_mispredict;
-assign delayslot_not_exec = mispredict[1] | (mispredict[0] & ~pipeline_exec[1].valid);
+assign delayslot_not_exec = resolved_branch_i[1].valid
+	| (resolved_branch_i[0].valid & ~pipeline_exec[1].valid);
 assign wait_delayslot = delayslot_not_exec & ~fetch_entry_avail;
 
 // when a multi-cycle instruction does not finished, we do not resolve a branch
