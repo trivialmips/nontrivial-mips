@@ -100,10 +100,8 @@ always_comb begin
 	regs_nxt.random = regs_now.random + tlbwr_req;
 
 	/* write register (WB stage) */
-	if(wreq.we)
-	begin
-		if(wreq.wsel == 3'b0)
-		begin
+	if(wreq.we) begin
+		if(wreq.wsel == 3'b0) begin
 			wdata = regs_nxt[wreq.waddr * 32 +: 32];
 			wdata = (wreq.wdata & wmask) | (wdata & ~wmask);
 			regs_nxt[wreq.waddr * 32 +: 32] = wdata;
@@ -114,8 +112,7 @@ always_comb begin
 	end
 
 	/* TLBR/TLBP instruction (WB stage) */
-	if(tlbr_req)
-	begin
+	if(tlbr_req) begin
 		regs_nxt.entry_hi[31:13] = tlbr_res.vpn2;
 		regs_nxt.entry_hi[7:0]   = tlbr_res.asid;
 		regs_nxt.entry_lo1 = {
@@ -148,7 +145,6 @@ always_comb begin
 			end
 
 			regs_nxt.status.exl = 1'b1;
-			regs_nxt.cause.ce   = except_req.extra[1:0];
 			regs_nxt.cause.exc_code = except_req.code;
 
 			if(except_req.code == `EXCCODE_INT)
