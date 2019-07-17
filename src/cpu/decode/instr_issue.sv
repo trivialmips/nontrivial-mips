@@ -92,6 +92,8 @@ assign instr2_not_taken =
    || (hilo_access[0] & hilo_access[1])
       // mispredict but delayslot does not executed
    || delayslot_not_exec
+      // avoid load-related in delayslot
+   || (id_decoded[0].is_load & id_decoded[1].is_controlflow)
    || (is_ssnop(fetch_entry[0]) | is_ssnop(fetch_entry[1]))
    || (id_decoded[0].op == OP_SC || id_decoded[1].op == OP_SC)
    || (id_decoded[0].is_priv | id_decoded[1].is_priv);
