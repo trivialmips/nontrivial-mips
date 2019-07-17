@@ -10,7 +10,7 @@ module ctrl(
 	output logic stall_ex,
 	output logic stall_mm,
 	output logic flush_if,
-	output logic [1:0] flush_id,
+	output logic flush_id,
 	output logic flush_ex,
 	output logic flush_mm,
 
@@ -24,9 +24,10 @@ module ctrl(
 	output logic   hold_resolved_branch
 );
 
-logic [3:0] stall;
+logic [3:0] stall, flush;
 assign { stall_if, stall_id, stall_ex, stall_mm } = stall;
-assign hold_resolved_branch = (stall_ex | stall_mm) & ~(|flush_id);
+assign { flush_if, flush_id, flush_ex, flush_mm } = flush;
+assign hold_resolved_branch = (stall_ex | stall_mm) & ~flush_id;
 
 logic [1:0] mispredict;
 for(genvar i = 0; i < 2; ++i) begin : gen_mispredict
@@ -38,8 +39,15 @@ assign delayslot_not_exec = resolved_branch_i[1].valid
 	| (resolved_branch_i[0].valid & ~pipeline_exec[1].valid);
 assign wait_delayslot = delayslot_not_exec & ~fetch_entry_avail;
 
-// when a multi-cycle instruction does not finished, we do not resolve a branch
-assign flush_mispredict = (|mispredict) & ~delayslot_not_exec & ~stall_from_ex;
+logic mispredict_with_delayslot;
+assign mispredict_with_delayslot = mispredict[0] & pipeline_exec[1].valid;
+
+assign flush_mispredict = (|mispredict)
+	& ~delayslot_not_exec
+	// when a multi-cycle instruction does not finished, we do not resolve a branch
+	& ~stall_from_ex
+	// delayslot cannot pass
+	& ~(mispredict_with_delayslot & stall_ex);
 
 always_comb begin
 	fetch_entry_avail = 1'b0;
@@ -57,22 +65,12 @@ always_comb begin
 	if(wait_delayslot) resolved_branch_o = '0;
 end
 
-logic mispredict_with_delayslot;
-assign mispredict_with_delayslot = mispredict[0] & pipeline_exec[1].valid;
-
 always_comb begin
-	{ flush_if, flush_id, flush_ex, flush_mm } = '0;
+	flush = '0;
 	if(except_req.valid) begin
-		flush_if = 1'b1;
-		flush_id = 2'b11;
-		flush_ex = except_req.alpha_taken;
-		flush_mm = except_req.alpha_taken;
+		flush = { 2'b11, {2{except_req.alpha_taken}} };
 	end else if(flush_mispredict) begin
-		flush_if = 1'b1;
-		flush_id[0] = 1'b1;
-		flush_id[1] = ~(mispredict_with_delayslot & stall_ex);
-		flush_ex = 1'b0;
-		flush_mm = 1'b0;
+		flush = 4'b1100;
 	end
 end
 
