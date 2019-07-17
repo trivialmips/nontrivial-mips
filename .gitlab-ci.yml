@@ -73,10 +73,14 @@ func_test_simulation:
   tags:
     - vivado
   stage: tests
+  # run functional test only when specified, for it is too slow
+  only:
+    variables:
+      - $CI_COMMIT_MESSAGE =~ /\[func test\]/i
   script:
     - export SIMULATION=sim_1
     - export LOG_PATH=loongson/soc_axi_func/run_vivado/mycpu_prj1/mycpu.sim/${SIMULATION}/behav/xsim/simulate.log
-    - export FLAG='----PASS!!!'
+    - export FLAG='\-\-\-\-PASS!!!'
     - ${VIVADO_PATH} -mode tcl -source scripts/run_simulation.tcl loongson/soc_axi_func/run_vivado/mycpu_prj1/mycpu.xpr
     - bash scripts/check_simulation.sh
   artifacts:
