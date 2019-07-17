@@ -136,6 +136,7 @@ task judge(input pipeline_memwb_t pipe_wb);
 	if(pipe_wb.rd!=5'd0 && !$feof(trace_ref) && !debug_end) begin
 		$fscanf(trace_ref, "%h %h %h %h", trace_cmp_flag,
 				ref_wb_pc, ref_wb_rf_wnum, ref_wb_rf_wdata);
+		if (ref_wb_pc == `END_PC) return;
 		if (`CONFREG_OPEN_TRACE && (pipe_wb.rd!=ref_wb_rf_wnum || pipe_wb.wdata != ref_wb_rf_wdata || pipe_wb.pc != ref_wb_pc))
 		begin
 			$display("--------------------------------------------------------------");
