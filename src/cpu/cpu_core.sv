@@ -11,7 +11,8 @@ module cpu_core(
 
 // flush and stall signals
 logic flush_if, stall_if;
-logic flush_id, stall_id, stall_from_id;
+logic [1:0] flush_id;
+logic stall_id, stall_from_id;
 logic flush_ex, stall_ex, stall_from_ex;
 logic flush_mm, stall_mm, stall_from_mm;
 logic delayslot_not_exec, hold_resolved_branch;
@@ -173,8 +174,12 @@ decode_and_issue decode_issue_inst(
 
 // pipeline between ID and EX
 always_ff @(posedge clk) begin
-	if(rst || flush_id || (stall_id && ~stall_ex)) begin
+	if(rst || (stall_id && ~stall_ex)) begin
 		pipeline_decode_d <= '0;
+	end else if(|flush_id) begin
+		pipeline_decode_d[0] <= '0;
+		if(flush_id[1])
+			pipeline_decode_d[1] <= '0;
 	end else if(~stall_id) begin
 		pipeline_decode_d <= pipeline_decode;
 	end

@@ -182,6 +182,7 @@ begin
 	unittest("instr/multicyc");
 	unittest("branch/1");
 	unittest("branch/2");
+	unittest("branch/3");
 	unittest("except/except");
 	unittest("except/delayslot");
 	unittest("except/interrupt");

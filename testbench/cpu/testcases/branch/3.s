@@ -18,14 +18,12 @@ j2:
 	addiu  $2, $2, 2  # ans: $2=0x00000002
 	lui    $5, 0x8000 # ans: $5=0x80000000
 	nop  # unalign branch
-	# cache miss
-	sw     $1, 0x100($5)  # ans: [0x0100]=0x00000001
-	# cache miss
-	sw     $2, 0($5)      # ans: [0x0000]=0x00000002
+	nop
+	nop
 	jr $31
 	ori   $3, $0, 0x0010  # ans: $3=0x00000010
 
-	#   jr $20    [ mispredict on memory stall ]
+	#   jr $20    [ mispredict w/o stall ]
 	#	addiu $3, $3, 1
 	# ans: $3=0x00de0000
 
