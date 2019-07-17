@@ -66,13 +66,12 @@ endfunction
 tag_t [SET_ASSOC-1:0] tag_rdata;
 tag_t tag_wdata;
 logic [SET_ASSOC-1:0] tag_we;
-index_t tag_addr;
 
 // RAM requests of line data
 line_t [SET_ASSOC-1:0] data_rdata;
 line_t data_wdata;
 logic [SET_ASSOC-1:0] data_we;
-index_t data_addr;
+index_t ram_addr;
 
 // random number
 logic lfsr_update;
@@ -123,12 +122,10 @@ always_comb begin
 	// RAM requests
 	tag_we      = '0;
 	data_we     = '0;
-	if(state_d == FINISH) begin
-		tag_addr    = get_index(pipe_addr);
-		data_addr   = get_index(pipe_addr);
+	if(state_d == FINISH && pipe_read) begin
+		ram_addr    = get_index(pipe_addr);
 	end else begin
-		tag_addr    = get_index(ibus.address);
-		data_addr   = get_index(ibus.address);
+		ram_addr    = get_index(ibus.address);
 	end
 
 	lfsr_update = 1'b0;
@@ -226,7 +223,7 @@ for(genvar i = 0; i < SET_ASSOC; ++i) begin : gen_icache_mem
 		.rst,
 
 		.we   ( tag_we[i]    ),
-		.addr ( tag_addr     ),
+		.addr ( ram_addr     ),
 		.din  ( tag_wdata    ),
 		.dout ( tag_rdata[i] )
 	);
@@ -239,7 +236,7 @@ for(genvar i = 0; i < SET_ASSOC; ++i) begin : gen_icache_mem
 		.rst,
 
 		.we   ( data_we[i]    ),
-		.addr ( data_addr     ),
+		.addr ( ram_addr      ),
 		.din  ( data_wdata    ),
 		.dout ( data_rdata[i] )
 	);
