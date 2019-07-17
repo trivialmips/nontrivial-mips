@@ -1,0 +1,113 @@
+variables:
+  GIT_SUBMODULE_STRATEGY: recursive
+  VIVADO_PATH: "/opt/Xilinx/Vivado/2018.3/bin/vivado"
+  PROJECT_DIR: "vivado"
+  PROJECT_NAME: "NonTrivialMIPS"
+  TOP_MODULE_NAME: "nscscc_soc_top"
+
+
+# all files in ip dir except *.xci are ignored, so the generated result will be cleaned every build
+# to avoid generating from scratch every time, the dir should be cached
+cache:
+  key: "$CI_COMMIT_REF_SLUG"
+  paths:
+    - ${PROJECT_DIR}/${PROJECT_NAME}.srcs/sources_1/bd/bd_soc/ip
+    - ${PROJECT_DIR}/${PROJECT_NAME}.sim
+    - ${PROJECT_DIR}/${PROJECT_NAME}.runs
+    - ${PROJECT_DIR}/${PROJECT_NAME}.cache
+    - loongson/**/rtl/xilinx_ip
+    - loongson/**/run_vivado/mycpu_prj1/mycpu.sim
+    - loongson/**/run_vivado/mycpu_prj1/mycpu.runs
+    - loongson/**/run_vivado/mycpu_prj1/mycpu.cache
+
+
+stages:
+  - init_project
+  - tests
+  - bitstreams
+
+
+before_script:
+  - git checkout ${PROJECT_DIR}/${PROJECT_NAME}.srcs/sources_1/bd/bd_soc/ip
+  - git checkout loongson/soc_axi_func/rtl/xilinx_ip
+  - git checkout loongson/soc_axi_perf/rtl/xilinx_ip
+
+
+build_ip_loongson_func:
+  image: vivado:2018.3
+  tags:
+    - vivado
+  stage: init_project
+  script:
+    - ${VIVADO_PATH} -mode tcl -source scripts/generate_all_ips.tcl loongson/soc_axi_func/run_vivado/mycpu_prj1/mycpu.xpr
+
+
+build_ip_loongson_perf:
+  image: vivado:2018.3
+  tags:
+    - vivado
+  stage: init_project
+  script:
+    - ${VIVADO_PATH} -mode tcl -source scripts/generate_all_ips.tcl loongson/soc_axi_perf/run_vivado/mycpu_prj1/mycpu.xpr
+
+
+cpu_simulation:
+  image: vivado:2018.3
+  tags:
+    - vivado
+  stage: tests
+  script:
+    - export SIMULATION=cpu_test
+    - export LOG_PATH=${PROJECT_DIR}/${PROJECT_NAME}.sim/${SIMULATION}/behav/xsim/simulate.log
+    - export FLAG='Done'
+    - ${VIVADO_PATH} -mode tcl -source scripts/run_simulation.tcl ${PROJECT_DIR}/${PROJECT_NAME}.xpr
+    - bash scripts/check_simulation.sh
+  artifacts:
+    paths:
+      - ${PROJECT_DIR}/${PROJECT_NAME}.sim/*/behav/xsim/simulate.log
+    when: always
+
+
+func_test_simulation:
+  image: vivado:2018.3
+  tags:
+    - vivado
+  stage: tests
+  script:
+    - export SIMULATION=sim_1
+    - export LOG_PATH=loongson/soc_axi_func/run_vivado/mycpu_prj1/mycpu.sim/${SIMULATION}/behav/xsim/simulate.log
+    - export FLAG='----PASS!!!'
+    - ${VIVADO_PATH} -mode tcl -source scripts/run_simulation.tcl loongson/soc_axi_func/run_vivado/mycpu_prj1/mycpu.xpr
+    - bash scripts/check_simulation.sh
+  artifacts:
+    paths:
+      - loongson/soc_axi_func/run_vivado/mycpu_prj1/mycpu.sim/*/behav/xsim/simulate.log
+    when: always
+
+
+func_test_bitstream:
+  image: vivado:2018.3
+  tags:
+    - vivado
+  stage: bitstreams
+  script:
+    - ${VIVADO_PATH} -mode tcl -source scripts/build_project.tcl loongson/soc_axi_func/run_vivado/mycpu_prj1/mycpu.xpr
+  artifacts:
+    paths:
+      - loongson/soc_axi_func/run_vivado/mycpu_prj1/mycpu.runs/impl_1/soc_axi_lite_top.bit
+      - loongson/soc_axi_func/run_vivado/mycpu_prj1/mycpu.runs/*/runme.log
+    when: always
+
+
+perf_test_bitstream:
+  image: vivado:2018.3
+  tags:
+    - vivado
+  stage: bitstreams
+  script:
+    - ${VIVADO_PATH} -mode tcl -source scripts/build_project.tcl loongson/soc_axi_perf/run_vivado/mycpu_prj1/mycpu.xpr
+  artifacts:
+    paths:
+      - loongson/soc_axi_perf/run_vivado/mycpu_prj1/mycpu.runs/impl_1/soc_axi_lite_top.bit
+      - loongson/soc_axi_perf/run_vivado/mycpu_prj1/mycpu.runs/*/runme.log
+    when: always
