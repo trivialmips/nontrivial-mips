@@ -78,12 +78,12 @@ end
 logic cache_miss;
 assign cache_miss = (pipe_read | pipe_write | pipe_uncached_read | pipe_uncached_write) & ~hit[pipe_addr[ADDR_WIDTH-1:2+$clog2(CACHE_LINE)]];
 
-logic [4:0] stall;
+logic [7:0] stall;
 always_ff @(posedge clk or posedge rst) begin
 	if(rst) begin
 		stall <= '0;
-	end else if(cache_miss & ~(|stall)) begin
-		stall <= 5'b10000;
+	end else if(fake_stall_en & cache_miss & ~(|stall)) begin
+		stall <= 8'b1000_0000;
 	end else begin
 		stall <= stall >> 1;
 	end
@@ -91,8 +91,7 @@ end
 
 always_comb
 begin
-	if(rst || ~pipe_read && ~pipe_uncached_read)
-	begin
+	if(rst) begin
 		dbus.stall  = 1'b0;
 		dbus.rddata = 'x;
 		dbus_uncached.stall  = 1'b0;

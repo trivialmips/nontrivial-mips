@@ -2,7 +2,7 @@
 
 module fake_ibus #(
 	parameter DATA_WIDTH = 32,
-	parameter CACHE_LINE = 4,
+	parameter CACHE_LINE = 8,
 	parameter SIZE       = 8192
 )(
 	input logic clk,
