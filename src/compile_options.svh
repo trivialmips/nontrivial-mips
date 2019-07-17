@@ -7,7 +7,7 @@
 
 **/
 
-`define CPU_MMU_ENABLED      0
+`define CPU_MMU_ENABLED      1
 
 `define FETCH_NUM            2
 `define ISSUE_NUM            2
