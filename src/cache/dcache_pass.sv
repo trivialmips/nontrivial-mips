@@ -26,7 +26,8 @@ typedef enum logic [2:0] {
 	WRITE_WAIT_AXI,
 	READ,
 	WRITE,
-	WAIT_BVALID
+	WAIT_BVALID,
+	WAIT_BVALID_RW
 } state_t;
 
 state_t state, state_d;
@@ -37,35 +38,44 @@ logic pipe_cache_miss;
 logic [3:0] pipe_byteenable;
 logic [31:0] pipe_addr;
 uint32_t pipe_wdata;
-logic [31:0] line_recv;
 
 // AXI Plumbing
 assign axi_req_arid = '0;
 assign axi_req_awid = '0;
 assign axi_req_wid = '0;
 
-assign dbus.stall = (state_d != IDLE) ? 1'b1 : 1'b0;
-assign dbus.rddata = line_recv;
+assign dbus.stall = (state_d != IDLE && state_d != WAIT_BVALID);
+assign dbus.rddata = axi_resp.rdata;
 
 logic uncache_access;
-assign uncache_access = (pipe_read | pipe_write) & state == IDLE;
+assign uncache_access = (pipe_read | pipe_write) & (state == IDLE | state == WAIT_BVALID);
 
 always_comb begin
 	state_d = state;
 	case(state)
 		IDLE: begin
-			if(pipe_read) begin
-				state_d = READ_WAIT_AXI;
-			end else if(pipe_write) begin
-				state_d = WRITE_WAIT_AXI;
-			end
+			if(pipe_read)  state_d = READ_WAIT_AXI;
+			if(pipe_write) state_d = WRITE_WAIT_AXI;
 		end
 		READ_WAIT_AXI:  if(axi_resp.arready) state_d = READ;
 		WRITE_WAIT_AXI: if(axi_resp.awready) state_d = WRITE;
-		READ:           if(axi_resp.rvalid)  state_d = FINISHED;
+		READ:           if(axi_resp.rvalid)  state_d = IDLE;
 		WRITE:          if(axi_resp.wready)  state_d = WAIT_BVALID;
-		WAIT_BVALID:    if(axi_resp.bvalid)  state_d = FINISHED;
-		FINISHED:       state_d = IDLE;
+		WAIT_BVALID: begin
+			if(axi_resp.bvalid) begin
+				state_d = IDLE;
+				if(pipe_read)  state_d = READ_WAIT_AXI;
+				if(pipe_write) state_d = WRITE_WAIT_AXI;
+			end else if(pipe_read | pipe_write) begin
+				state_d = WAIT_BVALID_RW;
+			end
+		end
+		WAIT_BVALID_RW: begin
+			if(axi_resp.bvalid) begin
+				if(pipe_read)  state_d = READ_WAIT_AXI;
+				if(pipe_write) state_d = WRITE_WAIT_AXI;
+			end
+		end
 	endcase
 end
 always_comb begin
@@ -82,12 +92,16 @@ always_comb begin
 	axi_req.araddr  = pipe_addr;
 	axi_req.awaddr  = pipe_addr;
 	axi_req.wdata   = pipe_wdata;
+	axi_req.bready = 1'b1;
 
 	case(state)
+		IDLE: begin
+			axi_req.arvalid = pipe_read;
+			axi_req.awvalid = pipe_write;
+		end
 		READ_WAIT_AXI:  axi_req.arvalid = 1'b1;
 		WRITE_WAIT_AXI: axi_req.awvalid = 1'b1;
-		READ:        if(axi_resp.rvalid) axi_req.rready = 1'b1;
-		WAIT_BVALID: if(axi_resp.bvalid) axi_req.bready = 1'b1;
+		READ:  if(axi_resp.rvalid) axi_req.rready = 1'b1;
 		WRITE: begin
 			axi_req.wvalid = 1'b1;  // Write a single transfer
 			axi_req.wlast = 1'b1;   // The burst length is 1
@@ -115,16 +129,6 @@ always_ff @(posedge clk) begin
 		pipe_addr <= dbus.address;
 		pipe_wdata <= dbus.wrdata;
 		pipe_byteenable <= dbus.byteenable;
-	end
-end
-
-always_ff @(posedge clk) begin
-	if(rst) begin
-		line_recv <= '0;
-	end else if(state == READ && axi_resp.rvalid) begin
-		line_recv <= axi_resp.rdata;
-	end else if(state == WRITE && axi_resp.wready) begin
-		line_recv <= axi_req.wdata;
 	end
 end
 
