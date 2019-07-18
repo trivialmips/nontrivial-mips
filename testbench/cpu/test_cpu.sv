@@ -185,6 +185,8 @@ begin
 	unittest("branch/3");
 	unittest("branch/4");
 	unittest("branch/5");
+	unittest("branch/6");
+	unittest("branch/7");
 	unittest("except/except");
 	unittest("except/delayslot");
 	unittest("except/interrupt");

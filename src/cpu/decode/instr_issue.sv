@@ -82,7 +82,17 @@ always_comb begin
 			nonrw_priv_executing |= dcache_decoded[k][i].is_nonrw_priv;
 		end
 	end
+end
 
+logic delayslot_load_related;
+always_comb begin
+	delayslot_load_related = id_decoded[0].is_load;
+	for(int i = 0; i < `ISSUE_NUM; ++i) begin
+		delayslot_load_related |= ex_decoded[i].is_load;
+		for(int k = 0; k < `DCACHE_PIPE_DEPTH - 2; ++k)
+			delayslot_load_related |= dcache_decoded[k][i].is_load;
+	end
+	delayslot_load_related &= id_decoded[1].is_controlflow;
 end
 
 assign instr2_not_taken = 
@@ -93,7 +103,7 @@ assign instr2_not_taken =
       // mispredict but delayslot does not executed
    || delayslot_not_exec
       // avoid load-related in delayslot
-   || (id_decoded[0].is_load & id_decoded[1].is_controlflow)
+   || delayslot_load_related
    || (is_ssnop(fetch_entry[0]) | is_ssnop(fetch_entry[1]))
    || (id_decoded[0].op == OP_SC || id_decoded[1].op == OP_SC)
    || (id_decoded[0].is_priv | id_decoded[1].is_priv);
