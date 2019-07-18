@@ -6,7 +6,7 @@ module mycpu_top #(
     // external signals
     input  wire        aclk   ,
     input  wire        aresetn,
-    input  wire [6 :0] intr   ,
+    input  wire [6 :0] int    ,
 
 	// AXI AR signals
 	output wire [BUS_WIDTH - 1 :0] arid   ,
@@ -58,10 +58,10 @@ module mycpu_top #(
 );
 
     // we do not provide debug signals
-    assign debug_wb_pc = '0;
-    assign debug_wb_rf_wen = '0;
-    assign debug_wb_rf_wnum = '0;
-    assign debug_wb_rf_wdata = '0;
+    assign debug_wb_pc = 32'b0;
+    assign debug_wb_rf_wen = 4'b0;
+    assign debug_wb_rf_wnum = 5'b0;
+    assign debug_wb_rf_wdata = 32'b0;
 
     wire [BUS_WIDTH - 1 :0] icache_arid     ;
     wire [31:0]             icache_araddr   ;
@@ -178,7 +178,7 @@ module mycpu_top #(
     ) nontrivial_mips_inst (
         .aclk            (aclk            ),
         .reset_n         (aresetn         ),
-        .intr            (intr[0 +: 5]    ),
+        .intr            (int[0 +: 5]     ),
         .icache_arid     (icache_arid     ),
         .icache_araddr   (icache_araddr   ),
         .icache_arlen    (icache_arlen    ),
