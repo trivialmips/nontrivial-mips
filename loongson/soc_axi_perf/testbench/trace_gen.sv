@@ -143,6 +143,12 @@ assign   ref_wb_rf_wdata_v[23:16] =   ref_wb_rf_wdata[23:16] & {8{debug_wb_rf_we
 assign   ref_wb_rf_wdata_v[15: 8] =   ref_wb_rf_wdata[15: 8] & {8{debug_wb_rf_wen[1]}};
 assign   ref_wb_rf_wdata_v[7 : 0] =   ref_wb_rf_wdata[7 : 0] & {8{debug_wb_rf_wen[0]}};
 
+logic icache_miss;
+assign icache_miss = soc_lite.u_cpu.nontrivial_mips_inst.cache_controller_inst.icache_inst.icache_miss;
+integer icache_miss_counter, instr_counter, cycle_counter, mispredict_counter, branch_counter, dcache_counter, uncache_counter;
+branch_resolved_t resolved_branch;
+assign resolved_branch = soc_lite.u_cpu.nontrivial_mips_inst.cpu_core_inst.instr_fetch_inst.resolved_branch;
+
 pipeline_memwb_t [1:0] pipe_wb;
 assign pipe_wb = soc_lite.u_cpu.nontrivial_mips_inst.cpu_core_inst.pipeline_wb;
 integer ftrace;
@@ -162,10 +168,26 @@ begin
     if(!resetn)
     begin
         debug_wb_err <= 1'b0;
+		icache_miss_counter <= '0;
+		instr_counter <= '0;
+		cycle_counter <= '0;
+		mispredict_counter <= '0;
+		branch_counter <= '0;
+		dcache_counter <= '0;
+		uncache_counter <= '0;
     end
     else begin
-		output_trace(pipe_wb[0]);
-		output_trace(pipe_wb[1]);
+		cycle_counter <= cycle_counter + 1;
+		icache_miss_counter <= icache_miss_counter + icache_miss;
+		instr_counter <= instr_counter + (pipe_wb[0].pc != '0) + (pipe_wb[1].pc != '0);
+		dcache_counter <= dcache_counter + soc_lite.u_cpu.nontrivial_mips_inst.cache_controller_inst.dcache_inst.uncache_access;
+		uncache_counter <= uncache_counter + soc_lite.u_cpu.nontrivial_mips_inst.cache_controller_inst.uncached_inst.uncache_access;
+		branch_counter <= branch_counter + resolved_branch.valid;
+		mispredict_counter <= mispredict_counter + (resolved_branch.valid & resolved_branch.mispredict);
+		if(resolved_branch.valid)
+			$display("mispredict = %d, taken = %d, pc = 0x%08x, target = 0x%08x", resolved_branch.mispredict, resolved_branch.taken, resolved_branch.pc, resolved_branch.target);
+//		output_trace(pipe_wb[0]);
+//		output_trace(pipe_wb[1]);
     end
 end
 
@@ -265,6 +287,13 @@ begin
         else
         begin
             $display("----PASS!!!");
+			$display("I$ miss: %d", icache_miss_counter);
+			$display("D$ miss: %d", dcache_counter);
+			$display("UD miss: %d", uncache_counter);
+			$display("instr: %d", instr_counter);
+			$display("cycle: %d", cycle_counter);
+			$display("branch: %d", branch_counter);
+			$display("mispredict: %d", mispredict_counter);
         end
 	    $finish;
 	end

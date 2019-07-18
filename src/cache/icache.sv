@@ -187,6 +187,9 @@ always_comb begin
 	endcase
 end
 
+logic icache_miss;
+assign icache_miss = cache_miss & ~ibus.flush_2 && (state == IDLE || state == FINISH);
+
 always_ff @(posedge clk) begin
 	if(rst) begin
 		line_recv <= '0;

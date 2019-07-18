@@ -381,14 +381,17 @@ always_comb begin
 		default: resolved_branch.taken = 1'b1;
 	endcase
 
-	resolved_branch.cf     = ControlFlow_None;
-	resolved_branch.target = '0;
+	resolved_branch.cf         = ControlFlow_None;
+	resolved_branch.update_bht = 1'b0;
+	resolved_branch.target     = '0;
 	unique case(op)
 		OP_BLTZ, OP_BLTZAL, OP_BGEZ, OP_BGEZAL,
 		OP_BEQ,  OP_BNE,    OP_BLEZ, OP_BGTZ: begin
-			if(resolved_branch.taken)
+			if(resolved_branch.taken) begin
 				resolved_branch.cf = ControlFlow_Branch;
-			resolved_branch.target = default_jump_i;
+				resolved_branch.target = default_jump_i;
+			end
+			resolved_branch.update_bht = 1'b1;
 		end
 		OP_JAL:  begin
 			resolved_branch.cf = ControlFlow_JumpImm;

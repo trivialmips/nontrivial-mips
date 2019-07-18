@@ -54,6 +54,7 @@ typedef enum logic [1:0] {
 // resolved branch information (forward)
 typedef struct packed {
 	logic valid, mispredict, taken;
+	logic update_bht;
 	virt_t pc, target;
 	controlflow_t cf;
 } branch_resolved_t;

@@ -17,7 +17,7 @@
 `define BTB_SIZE             8
 `define BHT_SIZE             1024
 `define RAS_SIZE             8
-`define INSTR_FIFO_DEPTH     4
+`define INSTR_FIFO_DEPTH     3
 `define DCACHE_PIPE_DEPTH    2
 
 `endif

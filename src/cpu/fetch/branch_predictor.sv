@@ -118,8 +118,7 @@ assign btb_update.valid  = resolved_branch.valid
 assign btb_update.pc     = resolved_branch.pc;
 assign btb_update.target = resolved_branch.target;
 
-assign bht_update.valid  = resolved_branch.valid 
-       & (resolved_branch.cf == ControlFlow_Branch);
+assign bht_update.valid  = resolved_branch.valid & resolved_branch.update_bht;
 assign bht_update.pc     = resolved_branch.pc;
 assign bht_update.taken  = resolved_branch.taken;
 

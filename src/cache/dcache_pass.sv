@@ -47,6 +47,9 @@ assign axi_req_wid = '0;
 assign dbus.stall = (state_d != IDLE) ? 1'b1 : 1'b0;
 assign dbus.rddata = line_recv;
 
+logic uncache_access;
+assign uncache_access = (pipe_read | pipe_write) & state == IDLE;
+
 always_comb begin
 	state_d = state;
 	case(state)
