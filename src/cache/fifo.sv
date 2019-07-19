@@ -33,7 +33,7 @@ module dcache_fifo #(
 
 // TODO: fall-through
 
-localparam int unsigned ADDR_WIDTH = $clog2(DEPTH);
+localparam int unsigned ADDR_WIDTH = $clog2(DEPTH) + 1; // For example, we need 4 bit to store 0~8
 typedef logic [ADDR_WIDTH-1:0] addr_t;
 
 addr_t head, head_d, tail, tail_d;
@@ -69,6 +69,7 @@ assign full = cnt == DEPTH[ADDR_WIDTH-1:0];
 assign rline = mem[head];
 
 always_comb begin
+    cnt_d = cnt;
     head_d = head;
     tail_d = tail;
     mem_d = mem;

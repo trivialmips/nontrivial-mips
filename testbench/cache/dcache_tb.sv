@@ -17,7 +17,10 @@ mem_device id (
 
 cpu_dbus_if dbus();
 
-dcache cache (
+dcache #(
+    .SET_ASSOC (1), // Testing write-back
+    .CACHE_SIZE(2048)
+) cache (
 	.clk (clk),
 	.rst (rst),
 	.axi_req (axi_req),
@@ -31,7 +34,7 @@ dcache cache (
 	.axi_resp_bid (4'b0000)
 );
 
-localparam int unsigned REQ_COUNT = 5;
+localparam int unsigned REQ_COUNT = 7;
 logic [$clog2(REQ_COUNT+2):0] req;
 logic [REQ_COUNT+2:0][31:0] address;
 logic [REQ_COUNT+2:0][31:0] wdata;
@@ -61,6 +64,16 @@ assign wdata[3] = 'h00000003;
 assign address[4] = 'h00008004;
 assign req_type[4] = READ;
 assign rdata[4] = 'h00000001;
+
+// Write-back
+
+assign address[5] = 'h00009000;
+assign req_type[5] = READ;
+assign rdata[5] = 'h00000000;
+
+assign address[6] = 'h00008004;
+assign req_type[6] = READ;
+assign rdata[6] = 'h00000001;
 
 assign dbus.address = address[req];
 assign dbus.wrdata = wdata[req];

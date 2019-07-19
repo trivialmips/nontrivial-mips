@@ -19,7 +19,7 @@ axi_ram #(
 
     .s_axi_awid (4'b0000),
     .s_axi_awaddr (axi_req.awaddr),
-    .s_axi_awlen (axi_req.awlen),
+    .s_axi_awlen ({ 4'b0000, axi_req.awlen }),
     .s_axi_awsize (axi_req.awsize),
     .s_axi_awburst (axi_req.awburst),
     .s_axi_awlock (axi_req.awlock),
@@ -38,7 +38,7 @@ axi_ram #(
     .s_axi_bready (axi_req.bready),
     .s_axi_arid (4'b0000),
     .s_axi_araddr (axi_req.araddr),
-    .s_axi_arlen (axi_req.arlen),
+    .s_axi_arlen ({ 4'b0000, axi_req.arlen }),
     .s_axi_arsize (axi_req.arsize),
     .s_axi_arburst (axi_req.arburst),
     .s_axi_arlock (axi_req.arlock),

@@ -2,7 +2,7 @@
 
 module dcache #(
 	parameter BUS_WIDTH = 4,
-	parameter DATA_WIDTH = 64, 
+	parameter DATA_WIDTH = 32, 
 	parameter LINE_WIDTH = 256, 
 	parameter SET_ASSOC  = 4,
 	parameter CACHE_SIZE = 16 * 1024 * 8
@@ -74,7 +74,7 @@ function logic [TAG_WIDTH-1:0] get_offset( input logic [31:0] addr );
 endfunction
 
 function logic [TAG_WIDTH-1:0] get_fifo_tag( input logic [31:0] addr );
-	return addr[31 : DATA_BYTE_OFFSET];
+	return addr[31 : LINE_BYTE_OFFSET];
 endfunction
 
 state_t state, state_d;
@@ -123,7 +123,7 @@ logic [BURST_LIMIT:0][31:0] line_recv;
 logic [$clog2(SET_ASSOC)-1:0] assoc_waddr;
 
 // Write requests
-assign assoc_waddr     = lfsr_val[$clog2(SET_ASSOC)-1:0];
+assign assoc_waddr     = SET_ASSOC == 1 ? 1'b0 : lfsr_val[$clog2(SET_ASSOC)-1:0];
 assign tag_wdata.valid = 1'b1;
 assign tag_wdata.tag   = get_tag(pipe_addr);
 assign tag_wdata.dirty = pipe_write;
@@ -146,7 +146,7 @@ for(genvar i = 0; i < SET_ASSOC; ++i) begin
 	assign hit[i] = tag_rdata[i].valid & (get_tag(pipe_addr) == tag_rdata[i].tag);
 end
 
-assign wb_current = wb_addr[31 -: TAG_WIDTH+INDEX_WIDTH] == get_offset(pipe_addr);
+assign wb_current = wb_state != WB_IDLE && get_offset(wb_addr) == get_offset(pipe_addr);
 
 always_comb begin
     dbus.rddata = '0;
@@ -168,10 +168,10 @@ always_comb begin
 	// RAM / FIFO requests
 	tag_we      = '0;
 	data_we     = '0;
-	if(state_d == FINISH && (pipe_read || pipe_write)) begin
-		ram_addr   = get_index(pipe_addr);
-	end else begin
+	if(state_d == IDLE) begin
 		ram_addr   = get_index(dbus.address);
+	end else begin
+		ram_addr   = get_index(pipe_addr);
 	end
 
 	lfsr_update = 1'b0;
@@ -181,7 +181,7 @@ always_comb begin
     fifo_wdata = fifo_qdata;
     fifo_wdata[get_offset(pipe_addr)] = dbus.wrdata;
 
-    fifo_ptag = get_fifo_tag(pipe_addr);
+    fifo_ptag = { tag_rdata[assoc_waddr].tag, get_index(pipe_addr) };
     fifo_pdata = data_rdata[assoc_waddr];
 
     fifo_write = state_d == MEM_WRITE && dbus.write && ~dbus.stall;
@@ -193,18 +193,18 @@ always_comb begin
     axi_req.arvalid = 1'b0;
     axi_req.rready = 1'b0;
 
-	axi_req.arlen   = LINE_WIDTH / 32 - 1;
+	axi_req.arlen   = BURST_LIMIT;
 	axi_req.arsize  = 3'b010; // 4 bytes
 	axi_req.arburst = 2'b01;  // INCR
     axi_req.araddr = { pipe_addr[31 : LINE_BYTE_OFFSET], {LINE_BYTE_OFFSET{1'b0}} };
+    axi_req.arlock = '0;
+    axi_req.arprot = '0;
+    axi_req.arcache = '0;
 
 	case(state)
 		WAIT_AXI_READY: begin
 			burst_cnt_d     = '0;
 			axi_req.arvalid = 1'b1;
-
-            if(tag_rdata[assoc_waddr].dirty) begin
-            end
 		end
         MEM_WRITE: begin
             tag_we = hit;
@@ -235,21 +235,26 @@ always_comb begin
             else if(pipe_write)
                 state_d = MEM_WRITE;
 			else state_d = IDLE;
-        MEM_WRITE, FINISH:
+        MEM_WRITE:
+            state_d = FINISH;
+        FINISH:
             state_d = IDLE;
 		WAIT_AXI_READY:
-			if(axi_resp.arready) 
-				state_d = PUSH_FIFO;
+            if(axi_resp.arready) begin
+                if(tag_rdata[assoc_waddr].valid
+                    && tag_rdata[assoc_waddr].dirty
+                ) begin
+                    state_d = PUSH_FIFO;
+                end else begin
+                    state_d = RECEIVING;
+                end
+            end
         PUSH_FIFO:
             if(~fifo_full) // TODO: optimize
                 state_d = RECEIVING;
 		RECEIVING:
 			if(axi_resp.rvalid & axi_resp.rlast) begin
-                if(pipe_read) begin
-                    state_d = FINISH;
-                end else begin
-                    state_d = IDLE;
-                end
+                state_d = FINISH;
 			end
 	endcase
 end
@@ -272,8 +277,9 @@ end
 
 always_ff @(posedge clk) begin
 	if(rst) begin
-		pipe_addr <= '0;
 		pipe_read <= 1'b0;
+		pipe_write <= 1'b0;
+		pipe_addr <= '0;
         pipe_wdata <= '0;
         pipe_fifo_found <= '0;
         pipe_fifo_written <= '0;
@@ -281,6 +287,7 @@ always_ff @(posedge clk) begin
 
 	end else if(~dbus.stall) begin
 		pipe_read <= dbus.read;
+		pipe_write <= dbus.write;
 		pipe_addr <= dbus.address;
         pipe_wdata <= dbus.wrdata;
         pipe_fifo_found <= fifo_found;
@@ -293,6 +300,7 @@ end
 assign wb_burst_lines = wb_line;
 
 always_comb begin
+    wb_state_d = wb_state;
     wb_addr_d = wb_addr;
     wb_line_d = wb_line;
     wb_burst_cnt_d = wb_burst_cnt;
@@ -309,9 +317,13 @@ always_comb begin
 	axi_req.awlen = BURST_LIMIT;
 	axi_req.awburst = 2'b01;
     axi_req.awaddr = wb_addr;
+    axi_req.awlock = '0;
+    axi_req.awprot = '0;
+    axi_req.awcache = '0;
 
     axi_req.wdata = wb_burst_lines[wb_burst_cnt];
     axi_req.wlast = wb_burst_cnt == BURST_LIMIT[LINE_BYTE_OFFSET-1:0];
+    axi_req.wstrb = 4'b1111;
 
     fifo_pop = 1'b0;
 
@@ -349,7 +361,8 @@ always_comb begin
         end
 
         WB_WAIT_BVALID: begin
-            wb_state_d = WB_IDLE;
+            if(axi_resp.bvalid)
+                wb_state_d = WB_IDLE;
         end
     endcase
 end
@@ -369,7 +382,7 @@ always_ff @(posedge clk) begin
 end
 
 // generate block RAMs
-for(genvar i = 0; i < SET_ASSOC; ++i) begin : gen_icache_mem
+for(genvar i = 0; i < SET_ASSOC; ++i) begin : gen_dcache_mem
 	single_port_ram #(
 		.SIZE  ( GROUP_NUM ),
 		.dtype ( tag_t     )
