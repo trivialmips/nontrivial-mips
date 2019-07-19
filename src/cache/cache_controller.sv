@@ -63,7 +63,7 @@ module cache_controller #(
         .axi_resp_bid(icache_bid)
     );
 
-    dcache_pass #(
+    dcache #(
         .BUS_WIDTH (BUS_WIDTH)
     ) dcache_inst(
         .clk,

@@ -77,6 +77,19 @@ function logic [TAG_WIDTH-1:0] get_fifo_tag( input logic [31:0] addr );
 	return addr[31 : LINE_BYTE_OFFSET];
 endfunction
 
+function logic [31:0] mux_byteenable(
+	input logic [31:0] rdata,
+	input logic [31:0] wdata,
+	input logic [3:0] sel 
+);
+	return { 
+		sel[3] ? wdata[31:24] : rdata[31:24],
+		sel[2] ? wdata[23:16] : rdata[23:16],
+		sel[1] ? wdata[15:8] : rdata[15:8],
+		sel[0] ? wdata[7:0] : rdata[7:0]
+	};
+endfunction
+
 state_t state, state_d;
 wb_state_t wb_state, wb_state_d;
 
@@ -87,7 +100,7 @@ logic [SET_ASSOC-1:0] tag_we;
 
 // RAM requests of line data
 line_t [SET_ASSOC-1:0] data_rdata;
-line_t data_wdata;
+line_t data_wdata, data_mux_line, pipe_mux_line;
 logic [SET_ASSOC-1:0] data_we;
 index_t ram_addr;
 
@@ -114,6 +127,7 @@ logic wb_current;
 logic [SET_ASSOC-1:0] hit;
 logic pipe_read;
 logic pipe_write;
+logic [3:0] pipe_byteenable;
 logic [31:0] pipe_addr;
 logic [DATA_WIDTH-1:0] pipe_wdata;
 logic pipe_fifo_found, pipe_fifo_written;
@@ -129,7 +143,7 @@ assign tag_wdata.tag   = get_tag(pipe_addr);
 assign tag_wdata.dirty = pipe_write;
 always_comb begin
     if(state == MEM_WRITE) begin
-        data_wdata = dbus.rddata;
+        data_wdata = pipe_mux_line;
     end else if(state == REFILL) begin
         // If we are writing during REFILL stage, we must be fetching from the line being written-back
         data_wdata = wb_line;
@@ -139,7 +153,8 @@ always_comb begin
     end
 
     if(pipe_write) begin
-        data_wdata[get_offset(pipe_addr)] = pipe_wdata;
+        data_wdata[get_offset(pipe_addr)] = mux_byteenable(
+			data_wdata[get_offset(pipe_addr)], pipe_wdata, pipe_byteenable);
     end
 end
 
@@ -149,15 +164,17 @@ for(genvar i = 0; i < SET_ASSOC; ++i) begin
 	assign hit[i] = tag_rdata[i].valid & (get_tag(pipe_addr) == tag_rdata[i].tag);
 end
 
-assign wb_current = wb_state != WB_IDLE && get_offset(wb_addr) == get_offset(pipe_addr);
+assign wb_current = wb_state != WB_IDLE && wb_addr == pipe_addr; //get_offset(wb_addr) == get_offset(pipe_addr);
 
 always_comb begin
-    dbus.rddata = '0;
-    if(|hit) begin
-        for(int i = 0; i < SET_ASSOC; ++i) begin
-            dbus.rddata |= {DATA_WIDTH{hit[i]}} & data_rdata[i][get_offset(pipe_addr)];
-        end
-    end else if(pipe_fifo_found) begin
+	data_mux_line = '0;
+	for(int i = 0; i < SET_ASSOC; ++i)
+		data_mux_line |= {LINE_WIDTH{hit[i]}} & data_rdata[i];
+end
+
+always_comb begin
+    dbus.rddata = data_mux_line[get_offset(pipe_addr)];
+    if(pipe_fifo_found) begin
         if(state == IDLE && pipe_fifo_written) begin // FIFO write merge
             dbus.rddata = pipe_wdata;
         end else begin
@@ -215,7 +232,7 @@ always_comb begin
 			axi_req.arvalid = 1'b1;
 		end
         MEM_WRITE: begin
-            tag_we = hit;
+            tag_we  = hit;
             data_we = hit;
         end
         REFILL: begin
@@ -291,9 +308,11 @@ always_ff @(posedge clk) begin
 	if(rst) begin
 		state     <= IDLE;
 		burst_cnt <= '0;
+		pipe_mux_line <= '0;
 	end else begin
 		state     <= state_d;
 		burst_cnt <= burst_cnt_d;
+		pipe_mux_line <= data_mux_line;
 	end
 end
 
@@ -306,12 +325,13 @@ always_ff @(posedge clk) begin
         pipe_fifo_found <= '0;
         pipe_fifo_written <= '0;
         pipe_fifo_qdata <= '0;
-
+		pipe_byteenable <= '0;
 	end else if(~dbus.stall) begin
 		pipe_read <= dbus.read;
 		pipe_write <= dbus.write;
 		pipe_addr <= dbus.address;
         pipe_wdata <= dbus.wrdata;
+		pipe_byteenable <= dbus.byteenable;
         pipe_fifo_found <= fifo_found;
         pipe_fifo_written <= fifo_written;
         pipe_fifo_qdata <= fifo_qdata;
@@ -351,7 +371,7 @@ always_comb begin
 
     case(wb_state)
         WB_IDLE: begin
-            fifo_pop = 1'b0;
+            fifo_pop = 1'b1;
             wb_addr_d = { fifo_rtag, {LINE_BYTE_OFFSET{1'b0}} };
             wb_line_d = fifo_rdata;
 

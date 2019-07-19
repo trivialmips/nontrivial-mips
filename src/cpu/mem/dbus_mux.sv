@@ -40,7 +40,7 @@ always_comb begin
 		dbus_uncached.read  |= re[i] & memreq[i].uncached & ~kill[i];
 		dbus_uncached.write |= we[i] & memreq[i].uncached & ~kill[i];
 		dbus.wrdata     |= {32{we[i]}} & memreq[i].wrdata;
-		dbus.address    |= {32{ce[i]}} & memreq[i].paddr;
+		dbus.address    |= {32{ce[i]}} & { memreq[i].paddr[31:2], 2'b0 };
 		dbus.byteenable |= {4{ce[i]}}  & memreq[i].byteenable;
 	end
 end
