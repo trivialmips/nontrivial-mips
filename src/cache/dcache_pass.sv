@@ -54,8 +54,8 @@ always_comb begin
 	state_d = state;
 	case(state)
 		IDLE: begin
-			if(pipe_read)  state_d = READ_WAIT_AXI;
-			if(pipe_write) state_d = WRITE_WAIT_AXI;
+			if(pipe_read)  state_d = axi_resp.arready ? READ  : READ_WAIT_AXI;
+			if(pipe_write) state_d = axi_resp.awready ? WRITE : WRITE_WAIT_AXI;
 		end
 		READ_WAIT_AXI:  if(axi_resp.arready) state_d = READ;
 		WRITE_WAIT_AXI: if(axi_resp.awready) state_d = WRITE;
