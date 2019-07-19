@@ -1,3 +1,5 @@
+`include "common_defs.svh"
+
 module identity_device #(
 	parameter ADDR_WIDTH = 32,
 	parameter DATA_WIDTH = 32

@@ -36,26 +36,26 @@ logic [$clog2(REQ_COUNT+2):0] req;
 logic [REQ_COUNT+2:0][31:0] address;
 logic [REQ_COUNT+2:0][31:0] wdata;
 logic [REQ_COUNT+2:0][31:0] rdata;
-typedef enum logic [2:0] {
-	READ, WRITE, UNCACHED_READ, UNCACHED_WRITE
+typedef enum logic [1:0] {
+	READ, WRITE
 } req_type_t;
 req_type_t req_type [REQ_COUNT+2:0];
 req_type_t current_type;
 
 assign address[0] = 'h00008000;
-assign req_type[0] = UNCACHED_READ;
+assign req_type[0] = READ;
 assign rdata[0] = 'h00000000;
 
 assign address[1] = 'h00008004;
-assign req_type[1] = UNCACHED_WRITE;
+assign req_type[1] = WRITE;
 assign wdata[1] = 'h00000001;
 
 assign address[2] = 'h00008040;
-assign req_type[2] = UNCACHED_WRITE;
+assign req_type[2] = WRITE;
 assign wdata[2] = 'h00000002;
 
 assign address[3] = 'h00008080;
-assign req_type[3] = UNCACHED_WRITE;
+assign req_type[3] = WRITE;
 assign wdata[3] = 'h00000003;
 
 assign address[4] = 'h00008004;
@@ -67,8 +67,6 @@ assign dbus.wrdata = wdata[req];
 assign current_type = req_type[req];
 assign dbus.read           = current_type == READ;
 assign dbus.write          = current_type == WRITE;
-assign dbus.uncached_read  = current_type == UNCACHED_READ;
-assign dbus.uncached_write = current_type == UNCACHED_WRITE;
 
 always_ff @(posedge clk or posedge rst) begin
 	if(rst) begin
@@ -83,7 +81,7 @@ always_ff @(negedge clk) begin
 	cycle <= rst ? '0 : cycle + 1;
 	if(~rst && req > 0 && ~dbus.stall) begin
 		$display("[%0d] req = %0d, data = %08x", cycle, req - 1, dbus.rddata);
-		if(req_type[req-1] == UNCACHED_WRITE) begin
+		if(req_type[req-1] == WRITE) begin
 			if(dbus.rddata != wdata[req-1]) begin
 				$display("[Error] expected = %08x", wdata[req-1]);
 				$stop;
