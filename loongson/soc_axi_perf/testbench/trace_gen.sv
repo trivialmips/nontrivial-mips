@@ -145,7 +145,7 @@ assign   ref_wb_rf_wdata_v[7 : 0] =   ref_wb_rf_wdata[7 : 0] & {8{debug_wb_rf_we
 
 logic icache_miss;
 assign icache_miss = soc_lite.u_cpu.nontrivial_mips_inst.cache_controller_inst.icache_inst.icache_miss;
-integer icache_miss_counter, instr_counter, cycle_counter, mispredict_counter, branch_counter, dcache_counter, uncache_counter, dcache_access_counter;
+integer icache_miss_counter, instr_counter, cycle_counter, mispredict_counter, branch_counter, dcache_counter, uncache_counter, dcache_access_counter, stall_mm_counter;
 branch_resolved_t resolved_branch;
 assign resolved_branch = soc_lite.u_cpu.nontrivial_mips_inst.cpu_core_inst.instr_fetch_inst.resolved_branch;
 
@@ -176,12 +176,14 @@ begin
 		dcache_counter <= '0;
 		dcache_access_counter <= '0;
 		uncache_counter <= '0;
+		stall_mm_counter <= '0;
     end
     else begin
 		cycle_counter <= cycle_counter + 1;
 		icache_miss_counter <= icache_miss_counter + icache_miss;
 		instr_counter <= instr_counter + (pipe_wb[0].valid) + (pipe_wb[1].valid);
 		dcache_access_counter <= dcache_access_counter + soc_lite.u_cpu.nontrivial_mips_inst.cache_controller_inst.dcache_inst.debug_uncache_access;
+		stall_mm_counter <= stall_mm_counter + soc_lite.u_cpu.nontrivial_mips_inst.cpu_core_inst.stall_from_mm;
 		dcache_counter <= dcache_counter + soc_lite.u_cpu.nontrivial_mips_inst.cache_controller_inst.dcache_inst.debug_cache_miss;
 		uncache_counter <= uncache_counter + soc_lite.u_cpu.nontrivial_mips_inst.cache_controller_inst.uncached_inst.uncache_access;
 		branch_counter <= branch_counter + resolved_branch.valid;
@@ -297,6 +299,7 @@ begin
 			$display("cycle: %d", cycle_counter);
 			$display("branch: %d", branch_counter);
 			$display("mispredict: %d", mispredict_counter);
+			$display("mm_stall: %d", stall_mm_counter);
         end
 	    $finish;
 	end
