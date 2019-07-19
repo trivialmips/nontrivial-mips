@@ -229,6 +229,7 @@ typedef struct packed {
 
 // pipeline data (MEM -> WB)
 typedef struct packed {
+	logic          valid;  // for debug
 	virt_t         pc;
 	reg_addr_t     rd;
 	uint32_t       wdata;

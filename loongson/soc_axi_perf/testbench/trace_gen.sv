@@ -180,7 +180,7 @@ begin
     else begin
 		cycle_counter <= cycle_counter + 1;
 		icache_miss_counter <= icache_miss_counter + icache_miss;
-		instr_counter <= instr_counter + (pipe_wb[0].pc != '0) + (pipe_wb[1].pc != '0);
+		instr_counter <= instr_counter + (pipe_wb[0].valid) + (pipe_wb[1].valid);
 		dcache_access_counter <= dcache_access_counter + soc_lite.u_cpu.nontrivial_mips_inst.cache_controller_inst.dcache_inst.debug_uncache_access;
 		dcache_counter <= dcache_counter + soc_lite.u_cpu.nontrivial_mips_inst.cache_controller_inst.dcache_inst.debug_cache_miss;
 		uncache_counter <= uncache_counter + soc_lite.u_cpu.nontrivial_mips_inst.cache_controller_inst.uncached_inst.uncache_access;
@@ -188,8 +188,8 @@ begin
 		mispredict_counter <= mispredict_counter + (resolved_branch.valid & resolved_branch.mispredict);
 		//if(resolved_branch.valid)
 		//	$display("mispredict = %d, taken = %d, pc = 0x%08x, target = 0x%08x", resolved_branch.mispredict, resolved_branch.taken, resolved_branch.pc, resolved_branch.target);
-//		output_trace(pipe_wb[0]);
-//		output_trace(pipe_wb[1]);
+		output_trace(pipe_wb[0]);
+		output_trace(pipe_wb[1]);
     end
 end
 
@@ -231,7 +231,7 @@ end
 //monitor test
 initial
 begin
-	ftrace = $fopen("/tmp/traces/my_dhrystone.txt", "w");
+	ftrace = $fopen("/tmp/traces/my_bitcount.txt", "w");
     $timeformat(-9,0," ns",10);
     while(!resetn) #5;
     $display("==============================================================");

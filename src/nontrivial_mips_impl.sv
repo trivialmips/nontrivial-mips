@@ -147,12 +147,12 @@ module nontrivial_mips_impl #(
 
 
 	// synchronize reset
-	logic [1:0] sync_rst;
+	logic [2:0] sync_rst;
 	always_ff @(posedge clk) begin
-		sync_rst <= { sync_rst[0], ~reset_n };
+		sync_rst <= { sync_rst[1:0], ~reset_n };
 	end
 
-	wire rst = sync_rst[1];
+	wire rst = sync_rst[2];
 
 
     // pack AXI signals

@@ -157,7 +157,7 @@ begin
     else begin
 		cycle_counter <= cycle_counter + 1;
 		icache_miss_counter <= icache_miss_counter + icache_miss;
-		instr_counter <= instr_counter + (pipe_wb[0].pc != '0) + (pipe_wb[1].pc != '0);
+		instr_counter <= instr_counter + (pipe_wb[0].valid) + (pipe_wb[1].valid);
 		dcache_access_counter <= dcache_access_counter + soc_lite.u_cpu.nontrivial_mips_inst.cache_controller_inst.dcache_inst.debug_uncache_access;
 		dcache_counter <= dcache_counter + soc_lite.u_cpu.nontrivial_mips_inst.cache_controller_inst.dcache_inst.debug_cache_miss;
 		uncache_counter <= uncache_counter + soc_lite.u_cpu.nontrivial_mips_inst.cache_controller_inst.uncached_inst.uncache_access;
