@@ -25,6 +25,7 @@ stages:
   - init_project
   - tests
   - bitstreams
+  - extra_tests
 
 
 before_script:
@@ -93,7 +94,7 @@ perf_test_simulation:
   image: vivado:2018.3
   tags:
     - vivado
-  stage: tests
+  stage: extra_tests
   # run performance test only when specified, for it is also too slow
   only:
     variables:

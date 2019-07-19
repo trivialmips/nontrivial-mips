@@ -216,8 +216,6 @@ begin
     else if(test_end && !debug_end)
     begin
         debug_end <= 1'b1;
-        $display("==============================================================");
-        $display("Test end!");
         #40;
 
         $display("----PASS!!!");
@@ -229,7 +227,11 @@ begin
         $display("Branch count: %d", branch_counter);
         $display("Branch mispredict count: %d", mispredict_counter);
         $display("Performance test passed: %s", perf_test_pass ? "Yes" : "No");
-        $display("Performance test metric: %x", confreg_num_reg);
+        $display("Performance test cycles: 0x%x", confreg_num_reg);
+        
+        $display("\n\n");
+        $display("==============================================================");
+        $display("Test end!");
 
 	    $finish;
 	end
