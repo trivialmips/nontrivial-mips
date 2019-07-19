@@ -485,4 +485,10 @@ dcache_fifo #(
     .written (fifo_written)
 );
 
+// debug info
+logic debug_uncache_access, debug_cache_miss;
+assign debug_uncache_access = (pipe_read | pipe_write) & (state == IDLE);
+assign debug_cache_miss = state_d == WAIT_AXI_READY;
+
+
 endmodule
