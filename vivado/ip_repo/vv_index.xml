@@ -115,6 +115,48 @@
 		</Interfaces>
 	</IP>
 	<IP>
+		<VLNV value="harrychen.xyz:user:nontrivial_mips:1.0">
+		</VLNV>
+		<DisplayName value="NonTrivialMIPS CPU">
+		</DisplayName>
+		<Description value="NonTrivialMIPS is a synthesizable superscalar MIPS processor with branch prediction and FPU support, and it is capable of booting linux.">
+		</Description>
+		<CoreRevision value="2">
+		</CoreRevision>
+		<ComponentPath value="nontrivial_mips/component.xml">
+		</ComponentPath>
+		<Families>
+			<Family name="aartix7">
+				<Part status="Production" name="ALL">
+				</Part>
+			</Family>
+			<Family name="artix7">
+				<Part status="Production" name="ALL">
+				</Part>
+			</Family>
+			<Family name="artix7l">
+				<Part status="Production" name="ALL">
+				</Part>
+			</Family>
+		</Families>
+		<Taxonomies>
+			<Taxonomy value="/Embedded_Processing/Processor">
+			</Taxonomy>
+			<Taxonomy value="/UserIP">
+			</Taxonomy>
+		</Taxonomies>
+		<UpgradesFrom>
+			<Upgrade value="xilinx.com:user:nontrivial_mips:1.0">
+			</Upgrade>
+		</UpgradesFrom>
+		<LockPrevVersions value="false">
+		</LockPrevVersions>
+		<Interfaces>
+			<Interface value="AXI4">
+			</Interface>
+		</Interfaces>
+	</IP>
+	<IP>
 		<VLNV value="harrychen.xyz:user:nt35510_controller:1.0">
 		</VLNV>
 		<DisplayName value="NT35510 LCD Controller">
