@@ -231,6 +231,10 @@ begin
         $display("Cycle count: %d", cycle_counter);
         $display("Branch count: %d", branch_counter);
         $display("Branch mispredict count: %d", mispredict_counter);
+        $display("Memory (data) stall count: %d", stall_mm_counter);
+        $display("I$ miss rate:     %f", $bitstoreal(icache_miss) / $bitstoreal(instr_counter));
+        $display("Branch miss rate: %f", $bitstoreal(mispredict_counter) / $bitstoreal(branch_counter));
+        $display("CPI:              %f", $bitstoreal(cycle_counter) / $bitstoreal(instr_counter));
         $display("Performance test passed: %s", perf_test_pass ? "Yes" : "No");
         $display("Performance test cycles: 0x%x", confreg_num_reg);
         
