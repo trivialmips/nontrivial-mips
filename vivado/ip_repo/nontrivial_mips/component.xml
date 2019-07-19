@@ -937,28 +937,6 @@
         </spirit:parameter>
       </spirit:parameters>
     </spirit:busInterface>
-    <spirit:busInterface>
-      <spirit:name>intr</spirit:name>
-      <spirit:busType spirit:vendor="xilinx.com" spirit:library="signal" spirit:name="interrupt" spirit:version="1.0"/>
-      <spirit:abstractionType spirit:vendor="xilinx.com" spirit:library="signal" spirit:name="interrupt_rtl" spirit:version="1.0"/>
-      <spirit:slave/>
-      <spirit:portMaps>
-        <spirit:portMap>
-          <spirit:logicalPort>
-            <spirit:name>INTERRUPT</spirit:name>
-          </spirit:logicalPort>
-          <spirit:physicalPort>
-            <spirit:name>intr</spirit:name>
-          </spirit:physicalPort>
-        </spirit:portMap>
-      </spirit:portMaps>
-      <spirit:parameters>
-        <spirit:parameter>
-          <spirit:name>SENSITIVITY</spirit:name>
-          <spirit:value spirit:id="BUSIFPARAM_VALUE.INTR.SENSITIVITY" spirit:choiceRef="choice_list_99a1d2b9">LEVEL_HIGH</spirit:value>
-        </spirit:parameter>
-      </spirit:parameters>
-    </spirit:busInterface>
   </spirit:busInterfaces>
   <spirit:addressSpaces>
     <spirit:addressSpace>
@@ -2884,15 +2862,6 @@
       </spirit:modelParameter>
     </spirit:modelParameters>
   </spirit:model>
-  <spirit:choices>
-    <spirit:choice>
-      <spirit:name>choice_list_99a1d2b9</spirit:name>
-      <spirit:enumeration>LEVEL_HIGH</spirit:enumeration>
-      <spirit:enumeration>LEVEL_LOW</spirit:enumeration>
-      <spirit:enumeration>EDGE_RISING</spirit:enumeration>
-      <spirit:enumeration>EDGE_FALLING</spirit:enumeration>
-    </spirit:choice>
-  </spirit:choices>
   <spirit:fileSets>
     <spirit:fileSet>
       <spirit:name>xilinx_anylanguagesynthesis_view_fileset</spirit:name>
@@ -3354,11 +3323,11 @@
         <xilinx:xpmLibrary>XPM_FIFO</xilinx:xpmLibrary>
         <xilinx:xpmLibrary>XPM_MEMORY</xilinx:xpmLibrary>
       </xilinx:xpmLibraries>
-      <xilinx:coreRevision>2</xilinx:coreRevision>
+      <xilinx:coreRevision>3</xilinx:coreRevision>
       <xilinx:upgrades>
         <xilinx:canUpgradeFrom>xilinx.com:user:nontrivial_mips:1.0</xilinx:canUpgradeFrom>
       </xilinx:upgrades>
-      <xilinx:coreCreationDateTime>2019-07-19T18:15:07Z</xilinx:coreCreationDateTime>
+      <xilinx:coreCreationDateTime>2019-07-19T19:36:18Z</xilinx:coreCreationDateTime>
       <xilinx:tags>
         <xilinx:tag xilinx:name="nopcore"/>
         <xilinx:tag xilinx:name="ui.data.coregen.dd@5c0e3ab_ARCHIVE_LOCATION">c:/Workspace/nontrivial-mips/src</xilinx:tag>
@@ -3385,11 +3354,17 @@
         <xilinx:tag xilinx:name="ui.data.coregen.dd@1ac9796a_ARCHIVE_LOCATION">c:/Workspace/nontrivial-mips/vivado/ip_repo/nontrivial_mips</xilinx:tag>
         <xilinx:tag xilinx:name="ui.data.coregen.dd@315aa79a_ARCHIVE_LOCATION">c:/Workspace/nontrivial-mips/vivado/ip_repo/nontrivial_mips</xilinx:tag>
         <xilinx:tag xilinx:name="ui.data.coregen.dd@43dbf86f_ARCHIVE_LOCATION">c:/Workspace/nontrivial-mips/vivado/ip_repo/nontrivial_mips</xilinx:tag>
+        <xilinx:tag xilinx:name="ui.data.coregen.dd@49e90e53_ARCHIVE_LOCATION">c:/Workspace/nontrivial-mips/vivado/ip_repo/nontrivial_mips</xilinx:tag>
+        <xilinx:tag xilinx:name="ui.data.coregen.dd@1bf011b4_ARCHIVE_LOCATION">c:/Workspace/nontrivial-mips/vivado/ip_repo/nontrivial_mips</xilinx:tag>
+        <xilinx:tag xilinx:name="ui.data.coregen.dd@7d0820d5_ARCHIVE_LOCATION">c:/Workspace/nontrivial-mips/vivado/ip_repo/nontrivial_mips</xilinx:tag>
+        <xilinx:tag xilinx:name="ui.data.coregen.dd@33575cd4_ARCHIVE_LOCATION">c:/Workspace/nontrivial-mips/vivado/ip_repo/nontrivial_mips</xilinx:tag>
+        <xilinx:tag xilinx:name="ui.data.coregen.dd@576b4101_ARCHIVE_LOCATION">c:/Workspace/nontrivial-mips/vivado/ip_repo/nontrivial_mips</xilinx:tag>
+        <xilinx:tag xilinx:name="ui.data.coregen.dd@5544b116_ARCHIVE_LOCATION">c:/Workspace/nontrivial-mips/vivado/ip_repo/nontrivial_mips</xilinx:tag>
       </xilinx:tags>
     </xilinx:coreExtensions>
     <xilinx:packagingInfo>
       <xilinx:xilinxVersion>2018.3_AR71898</xilinx:xilinxVersion>
-      <xilinx:checksum xilinx:scope="busInterfaces" xilinx:value="81449005"/>
+      <xilinx:checksum xilinx:scope="busInterfaces" xilinx:value="2c9b91ca"/>
       <xilinx:checksum xilinx:scope="addressSpaces" xilinx:value="12b10a3b"/>
       <xilinx:checksum xilinx:scope="fileGroups" xilinx:value="afb2d488"/>
       <xilinx:checksum xilinx:scope="ports" xilinx:value="a05f6ae2"/>

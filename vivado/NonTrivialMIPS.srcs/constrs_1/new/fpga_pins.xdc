@@ -137,14 +137,14 @@ set_property PACKAGE_PIN AA8 [get_ports {btn_key_row[3]}]
 # switches
 set_property IOSTANDARD LVCMOS33 [get_ports {switch[*]}]
 
-set_property PACKAGE_PIN AC21 [get_ports {switch[0]}]
-set_property PACKAGE_PIN AD24 [get_ports {switch[1]}]
-set_property PACKAGE_PIN AC22 [get_ports {switch[2]}]
-set_property PACKAGE_PIN AC23 [get_ports {switch[3]}]
-set_property PACKAGE_PIN AB6  [get_ports {switch[4]}]
-set_property PACKAGE_PIN W6   [get_ports {switch[5]}]
-set_property PACKAGE_PIN AA7  [get_ports {switch[6]}]
-set_property PACKAGE_PIN Y6   [get_ports {switch[7]}]
+set_property PACKAGE_PIN AC21 [get_ports {switch[7]}]
+set_property PACKAGE_PIN AD24 [get_ports {switch[6]}]
+set_property PACKAGE_PIN AC22 [get_ports {switch[5]}]
+set_property PACKAGE_PIN AC23 [get_ports {switch[4]}]
+set_property PACKAGE_PIN AB6  [get_ports {switch[3]}]
+set_property PACKAGE_PIN W6   [get_ports {switch[2]}]
+set_property PACKAGE_PIN AA7  [get_ports {switch[1]}]
+set_property PACKAGE_PIN Y6   [get_ports {switch[0]}]
 
 
 # step buttons
