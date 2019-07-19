@@ -22,9 +22,12 @@ typedef uint32_t      phys_t;
 // I$ is 2-stage pipelined
 interface cpu_ibus_if();
 	logic read;
-	logic stall, valid;
-	phys_t address;   // aligned in 8-bytes
-	uint64_t rddata;
+	logic stall;
+	logic valid;        // is rddata valid?
+	logic extra_valid;  // is rddata_extra valid?
+	phys_t address;     // aligned in 8-bytes
+	uint64_t rddata;        // data from mem[address]
+	uint64_t rddata_extra;  // data from mem[address + 8]
 
 	// indicate that corresponding stage shall be directly terminated.
 	// flush_1 will be '1' whenever flush_2 is '1'.
@@ -34,13 +37,15 @@ interface cpu_ibus_if();
     modport master (
 		output read, address,
 		output flush_1, flush_2,
-		input  stall, rddata, valid
+		input  stall, rddata, valid,
+		input  rddata_extra, extra_valid
     );
 
     modport slave (
 		input  read, address,
 		input  flush_1, flush_2,
-		output stall, rddata, valid
+		output stall, rddata, valid,
+		output rddata_extra, extra_valid
     );
 
 endinterface
