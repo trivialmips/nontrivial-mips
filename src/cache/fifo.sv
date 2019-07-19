@@ -46,7 +46,7 @@ logic [DEPTH-1:0] hit;
 logic [DEPTH-1:0] hit_non_pop;
 for(genvar i = 0; i < DEPTH; i++) begin
     assign hit[i] = valid[i] && mem[i][DATA_WIDTH +: TAG_WIDTH] == query_tag;
-    assign hit_non_pop[i] = (pop && i == head) ? 1'b0 : hit[i];
+    assign hit_non_pop[i] = (pop && head == i[ADDR_WIDTH-1:0]) ? 1'b0 : hit[i];
 end
 
 assign query_found = |hit;
@@ -115,7 +115,6 @@ always_comb begin
 
         written = 1'b1;
     end
-
 end
 
 always_ff @(posedge clk or posedge rst) begin

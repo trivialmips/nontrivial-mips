@@ -36,10 +36,10 @@ localparam int BURST_LIMIT = (LINE_WIDTH / 32) - 1;
 
 typedef enum logic [2:0] {
 	IDLE,
+    REFILL,
     WAIT_AXI_READY,
     MEM_WRITE,
     RECEIVING,
-    PUSH_FIFO,
     FINISH
 } state_t;
 
@@ -130,6 +130,9 @@ assign tag_wdata.dirty = pipe_write;
 always_comb begin
     if(state == MEM_WRITE) begin
         data_wdata = dbus.rddata;
+    end else if(state == REFILL) begin
+        // If we are writing during REFILL stage, we must be fetching from the line being written-back
+        data_wdata = wb_line;
     end else begin
         data_wdata = line_recv;
         data_wdata[DATA_PER_LINE - 1][DATA_WIDTH - 1 -: 32] = axi_resp.rdata;
@@ -154,14 +157,18 @@ always_comb begin
         for(int i = 0; i < SET_ASSOC; ++i) begin
             dbus.rddata |= {DATA_WIDTH{hit[i]}} & data_rdata[i][get_offset(pipe_addr)];
         end
-    end else if(fifo_found) begin
-        dbus.rddata = pipe_fifo_qdata[get_offset(pipe_addr)];
+    end else if(pipe_fifo_found) begin
+        if(state == IDLE && pipe_fifo_written) begin // FIFO write merge
+            dbus.rddata = pipe_wdata;
+        end else begin
+            dbus.rddata = pipe_fifo_qdata[get_offset(pipe_addr)];
+        end
     end else if(wb_current) begin
         dbus.rddata = wb_line[get_offset(pipe_addr)];
     end
 end
-assign read_miss = ~|hit && ~pipe_fifo_found && ~wb_current && pipe_read;
-assign write_miss = ~|hit && ~pipe_fifo_written && pipe_write;
+assign read_miss = (~|hit) && (~pipe_fifo_found) && (~wb_current) && pipe_read;
+assign write_miss = (~|hit) && pipe_write;
 
 // Sync read / write
 always_comb begin
@@ -177,15 +184,16 @@ always_comb begin
 	lfsr_update = 1'b0;
 	burst_cnt_d = burst_cnt;
 
+    // Random RW into FIFO occurs in the first stage
     fifo_wqtag = get_fifo_tag(dbus.address);
     fifo_wdata = fifo_qdata;
-    fifo_wdata[get_offset(pipe_addr)] = dbus.wrdata;
+    fifo_wdata[get_offset(dbus.address)] = dbus.wrdata;
 
     fifo_ptag = { tag_rdata[assoc_waddr].tag, get_index(pipe_addr) };
     fifo_pdata = data_rdata[assoc_waddr];
 
-    fifo_write = state_d == MEM_WRITE && dbus.write && ~dbus.stall;
-    fifo_push = state == PUSH_FIFO;
+    fifo_write = state_d == IDLE && dbus.write && ~dbus.stall;
+    fifo_push = state == REFILL && tag_rdata[assoc_waddr].valid && tag_rdata[assoc_waddr].dirty;
 
 	// AXI defaults
     axi_req_arid = 1'b0;
@@ -210,6 +218,15 @@ always_comb begin
             tag_we = hit;
             data_we = hit;
         end
+        REFILL: begin
+            if(~(fifo_full && fifo_push)) begin
+                // See state transfer for detailed comments
+                if(wb_state != WB_IDLE && get_fifo_tag(wb_addr) == get_fifo_tag(pipe_addr)) begin
+                    tag_we[assoc_waddr] = 1'b1;
+                    data_we[assoc_waddr] = 1'b1;
+                end
+            end
+        end
 		RECEIVING: begin
 			if(axi_resp.rvalid) begin
 				axi_req.rready = 1'b1;
@@ -229,29 +246,34 @@ end
 always_comb begin
 	state_d = state;
 	unique case(state)
-		IDLE:
-			if(read_miss || write_miss)
-				state_d = WAIT_AXI_READY;
-            else if(pipe_write)
+        IDLE: begin
+            if(read_miss || write_miss) begin
+                if(pipe_write && pipe_fifo_written)
+                    state_d = IDLE; // FIFO hit, wait for new data to come out
+                else state_d = REFILL;
+            end else if(pipe_write)
                 state_d = MEM_WRITE;
 			else state_d = IDLE;
+        end
         MEM_WRITE:
             state_d = FINISH;
+        REFILL: begin
+            if(~(fifo_full && fifo_push)) begin
+                // Victim will be pushed into FIFO in the next clock
+                // Check for wb for match
+                if(wb_state != WB_IDLE && get_fifo_tag(wb_addr) == get_fifo_tag(pipe_addr)) begin
+                    state_d = FINISH;
+                end else begin
+                    state_d = WAIT_AXI_READY;
+                end
+            end
+        end
         FINISH:
             state_d = IDLE;
 		WAIT_AXI_READY:
             if(axi_resp.arready) begin
-                if(tag_rdata[assoc_waddr].valid
-                    && tag_rdata[assoc_waddr].dirty
-                ) begin
-                    state_d = PUSH_FIFO;
-                end else begin
-                    state_d = RECEIVING;
-                end
-            end
-        PUSH_FIFO:
-            if(~fifo_full) // TODO: optimize
                 state_d = RECEIVING;
+            end
 		RECEIVING:
 			if(axi_resp.rvalid & axi_resp.rlast) begin
                 state_d = FINISH;
@@ -329,7 +351,7 @@ always_comb begin
 
     case(wb_state)
         WB_IDLE: begin
-            fifo_pop = 1'b1;
+            fifo_pop = 1'b0;
             wb_addr_d = { fifo_rtag, {LINE_BYTE_OFFSET{1'b0}} };
             wb_line_d = fifo_rdata;
 
