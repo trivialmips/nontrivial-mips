@@ -25,7 +25,6 @@ stages:
   - init_project
   - tests
   - bitstreams
-  - extra_tests
 
 
 before_script:
@@ -94,8 +93,8 @@ perf_test_simulation:
   image: vivado:2018.3
   tags:
     - vivado
-  stage: extra_tests
-  # run performance test only when specified, for it is also too slow
+  stage: tests
+  # run performance test only when specified, for it is also slow
   # the result of performance test will not be checked
   only:
     variables:
@@ -116,6 +115,9 @@ func_test_bitstream:
   tags:
     - vivado
   stage: bitstreams
+  only:
+    variables:
+      - $CI_COMMIT_MESSAGE =~ /\[bitstream\]/i
   script:
     - ${VIVADO_PATH} -mode tcl -source scripts/generate_bitstream.tcl loongson/soc_axi_func/run_vivado/mycpu_prj1/mycpu.xpr
   artifacts:
@@ -130,6 +132,9 @@ perf_test_bitstream:
   tags:
     - vivado
   stage: bitstreams
+  only:
+    variables:
+      - $CI_COMMIT_MESSAGE =~ /\[bitstream\]/i
   script:
     - ${VIVADO_PATH} -mode tcl -source scripts/generate_bitstream.tcl loongson/soc_axi_perf/run_vivado/mycpu_prj1/mycpu.xpr
   artifacts:
