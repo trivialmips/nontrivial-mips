@@ -34,6 +34,9 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 `define TRACE_REF_FILE "../../../../../../../cpu132_gettrace/golden_trace.txt"
 `define CONFREG_NUM_REG      soc_lite.u_confreg.num_data
+`define CONFREG_LED_RG0      soc_lite.u_confreg.led_rg0
+`define CONFREG_LED_RG1      soc_lite.u_confreg.led_rg1
+
 //for func test, no define RUN_PERF_TEST
 //`define CONFREG_OPEN_TRACE   soc_lite.u_confreg.open_trace
 `define CONFREG_OPEN_TRACE   1'b0
@@ -103,11 +106,6 @@ assign debug_wb_rf_wen   = soc_lite.debug_wb_rf_wen;
 assign debug_wb_rf_wnum  = soc_lite.debug_wb_rf_wnum;
 assign debug_wb_rf_wdata = soc_lite.debug_wb_rf_wdata;
 
-// open the trace file;
-integer trace_ref;
-initial begin
-    trace_ref = $fopen(`TRACE_REF_FILE, "r");
-end
 
 //get reference result in falling edge
 reg        trace_cmp_flag;
@@ -117,19 +115,6 @@ reg [31:0] ref_wb_pc;
 reg [4 :0] ref_wb_rf_wnum;
 reg [31:0] ref_wb_rf_wdata;
 
-always @(posedge cpu_clk)
-begin 
-    #1;
-    if(|debug_wb_rf_wen && debug_wb_rf_wnum!=5'd0 && !debug_end && `CONFREG_OPEN_TRACE)
-    begin
-        trace_cmp_flag=1'b0;
-        while (!trace_cmp_flag && !($feof(trace_ref)))
-        begin
-            $fscanf(trace_ref, "%h %h %h %h", trace_cmp_flag,
-                    ref_wb_pc, ref_wb_rf_wnum, ref_wb_rf_wdata);
-        end
-    end
-end
 
 //wdata[i*8+7 : i*8] is valid, only wehile wen[i] is valid
 wire [31:0] debug_wb_rf_wdata_v;
@@ -184,39 +169,9 @@ begin
 end
 
 //monitor numeric display
-reg [7:0] err_count;
 wire [31:0] confreg_num_reg = `CONFREG_NUM_REG;
-reg  [31:0] confreg_num_reg_r;
-always @(posedge sys_clk)
-begin
-    confreg_num_reg_r <= confreg_num_reg;
-    if (!resetn)
-    begin
-        err_count <= 8'd0;
-    end
-    else if (confreg_num_reg_r != confreg_num_reg && `CONFREG_NUM_MONITOR)
-    begin
-        if(confreg_num_reg[7:0]!=confreg_num_reg_r[7:0]+1'b1)
-        begin
-            $display("--------------------------------------------------------------");
-            $display("[%t] Error(%d)!!! Occurred in number 8'd%02d Functional Test Point!",$time, err_count, confreg_num_reg[31:24]);
-            $display("--------------------------------------------------------------");
-            err_count <= err_count + 1'b1;
-        end
-        else if(confreg_num_reg[31:24]!=confreg_num_reg_r[31:24]+1'b1)
-        begin
-            $display("--------------------------------------------------------------");
-            $display("[%t] Error(%d)!!! Unknown, Functional Test Point numbers are unequal!",$time,err_count);
-            $display("--------------------------------------------------------------");
-            $display("==============================================================");
-            err_count <= err_count + 1'b1;
-        end
-        else
-        begin
-            $display("----[%t] Number 8'd%02d Functional Test Point PASS!!!", $time, confreg_num_reg[31:24]);
-        end
-    end
-end
+wire [1:0]  confreg_led_rg0 = `CONFREG_LED_RG0;
+wire [1:0]  confreg_led_rg1 = `CONFREG_LED_RG1;
 
 //monitor test
 initial
@@ -225,13 +180,6 @@ begin
     while(!resetn) #5;
     $display("==============================================================");
     $display("Test begin!");
-
-  //  #10000;
-   // while(`CONFREG_NUM_MONITOR)
-  //  begin
- //       #10000;
-//        $display ("        [%t] Test is running, debug_wb_pc = 0x%8h",$time, debug_wb_pc);
-  //  end
 end
 
 //模拟串口打印
@@ -256,8 +204,9 @@ begin
 end
 
 //test end
-wire global_err = debug_wb_err || (err_count!=8'd0);
 wire test_end = (debug_wb_pc==`END_PC) || (uart_display && uart_data==8'hff);
+wire perf_test_pass = (confreg_led_rg0 == 2'b01) && (confreg_led_rg1 == 2'b01);
+
 always @(posedge cpu_clk)
 begin
     if (!resetn)
@@ -270,22 +219,18 @@ begin
         $display("==============================================================");
         $display("Test end!");
         #40;
-        $fclose(trace_ref);
-        if (global_err)
-        begin
-            $display("Fail!!!Total %d errors!",err_count);
-        end
-        else
-        begin
-            $display("----PASS!!!");
-			$display("I$ miss: %d", icache_miss_counter);
-			$display("D$ miss: %d", dcache_counter);
-			$display("UD miss: %d", uncache_counter);
-			$display("instr: %d", instr_counter);
-			$display("cycle: %d", cycle_counter);
-			$display("branch: %d", branch_counter);
-			$display("mispredict: %d", mispredict_counter);
-        end
+
+        $display("----PASS!!!");
+        $display("I$ miss count: %d", icache_miss_counter);
+        $display("D$ miss count: %d", dcache_counter);
+        $display("UD miss count: %d", uncache_counter);
+        $display("Instruction count: %d", instr_counter);
+        $display("Cycle count: %d", cycle_counter);
+        $display("Branch count: %d", branch_counter);
+        $display("Branch mispredict count: %d", mispredict_counter);
+        $display("Performance test passed: %s", perf_test_pass ? "Yes" : "No");
+        $display("Performance test metric: %x", confreg_num_reg);
+
 	    $finish;
 	end
 end
