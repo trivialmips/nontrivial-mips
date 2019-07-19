@@ -96,6 +96,7 @@ perf_test_simulation:
     - vivado
   stage: extra_tests
   # run performance test only when specified, for it is also too slow
+  # the result of performance test will not be checked
   only:
     variables:
       - $CI_COMMIT_MESSAGE =~ /\[perf test\]/i
@@ -104,7 +105,6 @@ perf_test_simulation:
     - export LOG_PATH=loongson/soc_axi_perf/run_vivado/mycpu_prj1/mycpu.sim/${SIMULATION}/behav/xsim/simulate.log
     - export FLAG='All tests done!'
     - ${VIVADO_PATH} -mode tcl -source scripts/run_perf_simulations.tcl loongson/soc_axi_perf/run_vivado/mycpu_prj1/mycpu.xpr
-    - bash scripts/check_simulation.sh
   artifacts:
     paths:
       - loongson/soc_axi_perf/run_vivado/mycpu_prj1/mycpu.sim/*/behav/xsim/simulate.log
