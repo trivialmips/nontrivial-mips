@@ -388,7 +388,9 @@ always_comb begin
 		OP_BLTZ, OP_BLTZAL, OP_BGEZ, OP_BGEZAL,
 		OP_BEQ,  OP_BNE,    OP_BLEZ, OP_BGTZ: begin
 			resolved_branch.target = default_jump_i;
-			resolved_branch.mispredict = (branch_sbt.cf == ControlFlow_Branch) ^ resolved_branch.taken;
+			resolved_branch.mispredict = (branch_sbt.cf == ControlFlow_None) ^ ~resolved_branch.taken;
+			if(resolved_branch.taken)
+				resolved_branch.mispredict |= branch_sbt.target != resolved_branch.target;
 		end
 		OP_JAL:  begin
 			resolved_branch.target = default_jump_j;

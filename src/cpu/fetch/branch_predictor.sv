@@ -17,6 +17,9 @@ module branch_predictor #(
 	// resolved branch information
 	input  branch_resolved_t resolved_branch,
 
+	// presolved branch misprediction
+	input  presolved_branch_t presolved_branch,
+
 	// prediction comes out next cycle
 	output branch_predict_t  prediction,
 	output logic [1:0]       prediction_sel
@@ -99,6 +102,7 @@ btb #(
 ) btb_inst (
 	.clk,
 	.rst,
+
 	.vaddr   ( pc_cur      ),
 	.update  ( btb_update  ),
 	.predict ( btb_predict )

@@ -88,6 +88,7 @@ pc_generator pc_gen(
 	.predict_valid ( pipe_s2.bp.valid  ),
 	.predict_vaddr ( pipe_s2.bp.target ),
 	.resolved_branch,
+	.presolved_branch,
 	.pc    ( pipe_s1.pc    ),
 	.pc_en ( pipe_s1.valid )
 );
@@ -102,6 +103,7 @@ branch_predictor #(
 	.pc_cur         ( pipe_s1.pc ),
 	.pc_prev        ( pipe_s2.pc ),
 	.resolved_branch,
+	.presolved_branch,
 	.prediction     ( pipe_s2.bp ),
 	.prediction_sel ( pipe_s2.prediction_sel )
 );
@@ -201,6 +203,7 @@ always_comb begin
 
 	entry_s3[1].branch_predict.valid &= ~presolved_branch.mispredict;
 	entry_s3[0].branch_predict.valid &= ~presolved_branch.mispredict;
+
 	if(entry_s3[2].valid & presolved_branch.mispredict) begin
 		entry_s3[2] = '0;
 		avail_instr_s3 -= 1;
@@ -211,9 +214,7 @@ always_comb begin
 		entry_s3[1] = entry_s3[2];
 		entry_s3[2].valid = 1'b0;
 	end
-
 end
-
 
 fetch_entry_t [1:0] fetch_entry_pop;
 logic [1:0] fetch_entry_valid;

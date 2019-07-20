@@ -9,7 +9,8 @@ module btb #(
 	// lookup address, aligned in 8-bytes
 	input  virt_t        vaddr,
 	input  btb_update_t  update,
-	output btb_predict_t [1:0] predict
+	input  btb_update_t  update_rch,
+	output btb_predict_t [1:0] predict,
 );
 
 localparam OFFSET        = 2;
@@ -20,14 +21,25 @@ function index_t get_index(input virt_t vaddr);
 	return vaddr[$clog2(CHANNEL_SIZE) + 2:3];
 endfunction
 
-logic [1:0] we;
-index_t waddr, raddr;
+logic [1:0] we, wea;
+index_t waddr, raddr, addra;
 btb_predict_t wdata;
 btb_predict_t [1:0] rdata;
 
 // read request
 assign raddr   = get_index(vaddr);
 assign predict = rdata;
+
+// write request through read channel
+assign wea[0] = presolved_branch.mispredict & ~presolved_branch.pc[2];
+assign wea[1] = presolved_branch.mispredict & presolved_branch.pc[2];
+always_comb begin
+	if(presolved_branch.mispredict) begin
+		addra = get_index(presolved_branch.pc);
+	end else begin
+		adddra = raddr;
+	end
+end
 
 // write request
 assign we[0] = ~update.pc[2] & update.valid;
@@ -43,9 +55,9 @@ for(genvar i = 0; i < 2; ++i) begin : gen_btb_ram
 	) btb_ram (
 		.clk,
 		.rst,
-		.wea   ( 1'b0     ),
-		.addra ( raddr    ),
-		.dina  (          ),
+		.wea   ( wea[i]   ),
+		.addra ( addra    ),
+		.dina  ( '0       ),
 		.douta ( rdata[i] ),
 		.web   ( we[i]    ),
 		.addrb ( waddr    ),
