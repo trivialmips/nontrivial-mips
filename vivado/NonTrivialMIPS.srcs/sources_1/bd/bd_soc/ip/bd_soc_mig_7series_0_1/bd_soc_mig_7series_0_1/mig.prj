@@ -1,7 +1,7 @@
-<?xml version="1.0" encoding="UTF-8" standalone="no" ?>
+﻿<?xml version="1.0" encoding="UTF-8" standalone="no" ?>
 <Project NoOfControllers="1">
 
-  <ModuleName>bd_soc_mig_7series_0_0</ModuleName>
+  <ModuleName>bd_soc_mig_7series_0_1</ModuleName>
 
   <dci_inouts_inputs>1</dci_inouts_inputs>
 
@@ -140,8 +140,8 @@
     <AXIParameters>
       <C0_C_RD_WR_ARB_ALGORITHM>RD_PRI_REG</C0_C_RD_WR_ARB_ALGORITHM>
       <C0_S_AXI_ADDR_WIDTH>27</C0_S_AXI_ADDR_WIDTH>
-      <C0_S_AXI_DATA_WIDTH>64</C0_S_AXI_DATA_WIDTH>
-      <C0_S_AXI_ID_WIDTH>3</C0_S_AXI_ID_WIDTH>
+      <C0_S_AXI_DATA_WIDTH>32</C0_S_AXI_DATA_WIDTH>
+      <C0_S_AXI_ID_WIDTH>7</C0_S_AXI_ID_WIDTH>
       <C0_S_AXI_SUPPORTS_NARROW_BURST>1</C0_S_AXI_SUPPORTS_NARROW_BURST>
     </AXIParameters>
   </Controller>
