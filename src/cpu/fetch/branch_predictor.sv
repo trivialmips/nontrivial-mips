@@ -26,7 +26,7 @@ module branch_predictor #(
 	output logic [1:0]       prediction_sel
 );
 
-localparam int ICACHE_ADDR_WIDTH = $clog2(ICACHE_LINE_WIDTH);
+localparam int ICACHE_ADDR_WIDTH = $clog2(ICACHE_LINE_WIDTH / 8);
 
 // BHT information
 bht_update_t  bht_update;
@@ -84,7 +84,7 @@ always_comb begin
 	else prediction.taken = 1'b1;
 
 	// the last data in a cache line, no delayslot available
-	if(&pc_prev[ICACHE_ADDR_WIDTH - 1 : 2] || pipe_flush)
+	if((&pc_prev[ICACHE_ADDR_WIDTH - 1 : 3] & bt_index) || pipe_flush)
 		prediction.valid = 1'b0;
 end
 

@@ -102,20 +102,12 @@ for(genvar i = 0; i < SET_ASSOC; ++i) begin : gen_icache_hit
 end
 assign cache_miss = ~(|hit) & pipe_read;
 
-// setup IBus
-assign ibus.stall = (state_d != IDLE) & pipe_read & ~ibus.flush_2;
-always_comb begin
-	ibus.rddata = '0;
-	// at most one `hit` will be 1.
-	for(int i = 0; i < SET_ASSOC; ++i) begin
-		ibus.rddata |= {DATA_WIDTH{hit[i]}} & data_rdata[i][get_offset(pipe_addr)];
-	end
-end
 
 // stall signals
 logic stall_s2, stall_s3;
 assign stall_s3 = ibus.stall_req;
 assign stall_s2 = ibus.stall_req | ibus.stall;
+assign ibus.stall = (state_d != IDLE) & pipe_read & ~ibus.flush_2;
 
 // send rddata next cycle
 logic [SET_ASSOC-1:0] pipe_hit;
