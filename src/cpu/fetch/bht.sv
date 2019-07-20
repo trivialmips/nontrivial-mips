@@ -1,8 +1,8 @@
 `include "cpu_defs.svh"
 
 module bht #(
-	parameter int SIZE = 4096,
-)(
+	parameter int SIZE = 4096
+) (
 	input  logic         clk,
 	input  logic         rst,
 
@@ -13,7 +13,7 @@ module bht #(
 );
 
 localparam OFFSET        = 2;
-localparam CHANNEL_SIZE  = ENTRIES_NUM / 2;
+localparam CHANNEL_SIZE  = SIZE / 2;
 
 typedef logic [$clog2(CHANNEL_SIZE) - 1:0] index_t;
 function index_t get_index(input virt_t vaddr);

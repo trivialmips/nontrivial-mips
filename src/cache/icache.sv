@@ -58,7 +58,7 @@ function logic [TAG_WIDTH-1:0] get_tag( input logic [31:0] addr );
 	return addr[31 : LINE_BYTE_OFFSET + INDEX_WIDTH];
 endfunction
 
-function logic offset_t get_offset( input logic [31:0] addr );
+function offset_t get_offset( input logic [31:0] addr );
 	return addr[LINE_BYTE_OFFSET - 1 : DATA_BYTE_OFFSET];
 endfunction
 
@@ -138,7 +138,7 @@ always_ff @(posedge clk) begin
 		pipe_hit <= hit;
 		pipe_rddata_valid <= pipe_read & ~ibus.stall & ~ibus.flush_2;
 		pipe_rddata_extra_valid <= ~&get_offset(pipe_addr);
-		for(int i = 0; i < `SET_ASSOC; ++i) begin
+		for(int i = 0; i < SET_ASSOC; ++i) begin
 			pipe_rdata[i] <= data_rdata[i][get_offset(pipe_addr)];
 			pipe_rdata_extra[i] <= data_rdata[i][get_offset(pipe_addr) + 1];
 		end

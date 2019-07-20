@@ -1,8 +1,8 @@
 `include "cpu_defs.svh"
 
 module btb #(
-	parameter int SIZE = 4096,
-)(
+	parameter int SIZE = 4096
+) (
 	input  logic         clk,
 	input  logic         rst,
 
@@ -13,7 +13,7 @@ module btb #(
 );
 
 localparam OFFSET        = 2;
-localparam CHANNEL_SIZE  = ENTRIES_NUM / 2;
+localparam CHANNEL_SIZE  = SIZE / 2;
 
 typedef logic [$clog2(CHANNEL_SIZE) - 1:0] index_t;
 function index_t get_index(input virt_t vaddr);
@@ -23,7 +23,7 @@ endfunction
 logic [1:0] we;
 index_t waddr, raddr;
 btb_predict_t wdata;
-bht_predict_t [1:0] rdata;
+btb_predict_t [1:0] rdata;
 
 // read request
 assign raddr   = get_index(vaddr);

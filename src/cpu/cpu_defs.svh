@@ -70,6 +70,11 @@ typedef struct packed {
 	controlflow_t cf;
 } branch_resolved_t;
 
+typedef struct packed {
+	logic mispredict;
+	virt_t pc, target;
+} presolved_branch_t;
+
 // branch prediction information
 typedef struct packed {
 	logic valid, taken;
@@ -124,8 +129,8 @@ typedef struct packed {
 } instr_fetch_memreq_t;
 
 typedef struct packed {
-	logic stall;
-	uint64_t data;
+	logic stall, valid, valid_extra;
+	uint64_t data, data_extra;
 	address_exception_t iaddr_ex;
 } instr_fetch_memres_t;
 
@@ -203,6 +208,7 @@ typedef struct packed {
 	reg_addr_t   rs2;
 	reg_addr_t   rd;
 	oper_t       op;
+	controlflow_t cf;       // controlflow type
 	logic  imm_signed;      // use sign-extened immediate
 	logic  use_imm;         // use immediate as reg2
 	logic  is_controlflow;  // controlflow maybe changed
