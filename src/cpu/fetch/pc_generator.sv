@@ -33,9 +33,6 @@ always_comb begin
 	// default
 	npc = { pc[31:3] + 1, 3'b0 };
 
-	// branch prediction
-	if(predict_valid) npc = predict_vaddr;
-
 	// hold pc
 	if(hold_pc) npc = pc_now;
 
