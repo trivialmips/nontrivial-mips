@@ -1,26 +1,39 @@
 `include "common_defs.svh"
 
+//
+// D$
+//
+// Some notable corner cases:
+//
+//   - Victimized in stage 3, but hit in stage 2:
+//   Reselect victim. Search for `victim_locked`
+//
+//   - Two successive requests points to the same line, both causing a refill
+//   Do not cause a refill for the second request, and use assoc_waddr to determine
+//   where to R/W in stage 2. Search for `adjacent`
+//
+
 module dcache #(
-	parameter BUS_WIDTH = 4,
-	parameter DATA_WIDTH = 32, 
-	parameter LINE_WIDTH = 256, 
-	parameter SET_ASSOC  = 4,
-	parameter CACHE_SIZE = 16 * 1024 * 8
+    parameter BUS_WIDTH = 4,
+    parameter DATA_WIDTH = 32, 
+    parameter LINE_WIDTH = 256, 
+    parameter SET_ASSOC  = 4,
+    parameter CACHE_SIZE = 16 * 1024 * 8
 ) (
-	// external logics
-	input  logic            clk,
-	input  logic            rst,
-	// CPU signals
-	cpu_dbus_if.slave       dbus,
-	// AXI request
-	output axi_req_t                axi_req,
-	output logic [BUS_WIDTH - 1 :0] axi_req_arid,
-	output logic [BUS_WIDTH - 1 :0] axi_req_awid,
-	output logic [BUS_WIDTH - 1 :0] axi_req_wid,
-	// AXI response
-	input  axi_resp_t               axi_resp,
-	input  logic [BUS_WIDTH - 1 :0] axi_resp_rid,
-	input  logic [BUS_WIDTH - 1 :0] axi_resp_bid
+    // external logics
+    input  logic            clk,
+    input  logic            rst,
+    // CPU signals
+    cpu_dbus_if.slave       dbus,
+    // AXI request
+    output axi_req_t                axi_req,
+    output logic [BUS_WIDTH - 1 :0] axi_req_arid,
+    output logic [BUS_WIDTH - 1 :0] axi_req_awid,
+    output logic [BUS_WIDTH - 1 :0] axi_req_wid,
+    // AXI response
+    input  axi_resp_t               axi_resp,
+    input  logic [BUS_WIDTH - 1 :0] axi_resp_rid,
+    input  logic [BUS_WIDTH - 1 :0] axi_resp_bid
 );
 
 localparam int LINE_NUM    = CACHE_SIZE / LINE_WIDTH;
@@ -35,10 +48,9 @@ localparam int TAG_WIDTH   = 32 - INDEX_WIDTH - LINE_BYTE_OFFSET;
 localparam int BURST_LIMIT = (LINE_WIDTH / 32) - 1;
 
 typedef enum logic [2:0] {
-	IDLE,
+    IDLE,
     REFILL,
     WAIT_AXI_READY,
-    MEM_WRITE,
     RECEIVING,
     FINISH
 } state_t;
@@ -53,7 +65,7 @@ typedef enum logic [2:0] {
 typedef struct packed {
     logic valid;
     logic dirty;
-	logic [TAG_WIDTH-1:0] tag;
+    logic [TAG_WIDTH-1:0] tag;
 } tag_t;
 
 typedef logic [DATA_PER_LINE-1:0][DATA_WIDTH-1:0] line_t;
@@ -61,48 +73,58 @@ typedef logic [INDEX_WIDTH-1:0] index_t;
 typedef logic [LINE_BYTE_OFFSET-DATA_BYTE_OFFSET-1:0] offset_t;
 typedef logic [TAG_WIDTH+INDEX_WIDTH-1:0] fifo_tag_t;
 
+typedef logic [SET_ASSOC-1:0] we_t;
+
 function index_t get_index( input logic [31:0] addr );
-	return addr[LINE_BYTE_OFFSET + INDEX_WIDTH - 1 : LINE_BYTE_OFFSET];
+    return addr[LINE_BYTE_OFFSET + INDEX_WIDTH - 1 : LINE_BYTE_OFFSET];
 endfunction
 
 function logic [TAG_WIDTH-1:0] get_tag( input logic [31:0] addr );
-	return addr[31 : LINE_BYTE_OFFSET + INDEX_WIDTH];
+    return addr[31 : LINE_BYTE_OFFSET + INDEX_WIDTH];
 endfunction
 
 function logic [TAG_WIDTH-1:0] get_offset( input logic [31:0] addr );
-	return addr[LINE_BYTE_OFFSET - 1 : DATA_BYTE_OFFSET];
+    return addr[LINE_BYTE_OFFSET - 1 : DATA_BYTE_OFFSET];
 endfunction
 
 function logic [TAG_WIDTH-1:0] get_fifo_tag( input logic [31:0] addr );
-	return addr[31 : LINE_BYTE_OFFSET];
+    return addr[31 : LINE_BYTE_OFFSET];
 endfunction
 
 function logic [31:0] mux_byteenable(
-	input logic [31:0] rdata,
-	input logic [31:0] wdata,
-	input logic [3:0] sel 
+    input logic [31:0] rdata,
+    input logic [31:0] wdata,
+    input logic [3:0] sel 
 );
-	return { 
-		sel[3] ? wdata[31:24] : rdata[31:24],
-		sel[2] ? wdata[23:16] : rdata[23:16],
-		sel[1] ? wdata[15:8] : rdata[15:8],
-		sel[0] ? wdata[7:0] : rdata[7:0]
-	};
+    return { 
+        sel[3] ? wdata[31:24] : rdata[31:24],
+        sel[2] ? wdata[23:16] : rdata[23:16],
+        sel[1] ? wdata[15:8] : rdata[15:8],
+        sel[0] ? wdata[7:0] : rdata[7:0]
+    };
 endfunction
 
 state_t state, state_d;
 wb_state_t wb_state, wb_state_d;
 
 // RAM requests of tag
+// RF = refill, wm = write-merge
+index_t ram_addr, rf_ram_addr, wm_ram_addr, tag_read_addr;
+
 tag_t [SET_ASSOC-1:0] tag_rdata;
-tag_t tag_wdata;
-logic [SET_ASSOC-1:0] tag_we;
+tag_t tag_wdata, rf_tag_wdata, wm_tag_wdata;
+we_t tag_we, rf_tag_we, wm_tag_we;
 
 // RAM requests of line data
 line_t [SET_ASSOC-1:0] data_rdata;
-line_t data_wdata, data_mux_line, pipe_mux_line;
-logic [SET_ASSOC-1:0] data_we;
-index_t ram_addr;
+line_t data_wdata, rf_data_wdata, wm_data_wdata;
+we_t data_we, rf_data_we, wm_data_we;
+
+assign ram_addr   = ~dbus.stall ? rf_ram_addr   : wm_ram_addr;
+assign tag_wdata  = ~dbus.stall ? rf_tag_wdata  : wm_tag_wdata;
+assign tag_we     = ~dbus.stall ? rf_tag_we     : wm_tag_we;
+assign data_wdata = ~dbus.stall ? rf_data_wdata : wm_data_wdata;
+assign data_we    = ~dbus.stall ? rf_data_we    : wm_data_we;
 
 // Rand
 logic lfsr_update;
@@ -122,164 +144,244 @@ line_t wb_line, wb_line_d;
 logic [BURST_LIMIT:0][31:0] wb_burst_lines;
 logic [LINE_BYTE_OFFSET-1:0] wb_burst_cnt, wb_burst_cnt_d;
 
-logic read_miss, write_miss;
+/* Reg + Outputs */
+// Stage 1 output: tag_rdata
+
+// Stage 2 reg + output
+logic [31:0] pipe_2_addr;
+logic [3:0] pipe_2_byteenable;
+logic [DATA_WIDTH-1:0] pipe_2_wdata;
+logic pipe_2_write, pipe_2_read;
+logic pipe_2_fifo_found, pipe_2_fifo_written;
+line_t pipe_2_fifo_qdata;
+
+line_t data_mux_line;
+logic [DATA_WIDTH-1:0] rdata;
+logic request_refill;
 logic wb_current;
+
+logic read_miss, write_miss;
+logic adjacent; // Same line with the previous request
 logic [SET_ASSOC-1:0] hit;
+
+// Stage 3 reg
 logic pipe_read;
 logic pipe_write;
+logic pipe_request_refill;
 logic [3:0] pipe_byteenable;
 logic [31:0] pipe_addr;
-logic [DATA_WIDTH-1:0] pipe_wdata;
-logic pipe_fifo_found, pipe_fifo_written;
-line_t pipe_fifo_qdata;
+logic [DATA_WIDTH-1:0] pipe_wdata, pipe_rdata;
 
+logic victim_locked; // Victim is hit in stage 2
 logic [BURST_LIMIT:0][31:0] line_recv;
 logic [$clog2(SET_ASSOC)-1:0] assoc_waddr;
 
-// Write requests
-assign assoc_waddr     = SET_ASSOC == 1 ? 1'b0 : lfsr_val[$clog2(SET_ASSOC)-1:0];
-assign tag_wdata.valid = 1'b1;
-assign tag_wdata.tag   = get_tag(pipe_addr);
-assign tag_wdata.dirty = pipe_write;
+// Write hit write requests
+assign wm_tag_wdata.valid = 1'b1;
+assign wm_tag_wdata.dirty = pipe_2_write;
+assign wm_tag_wdata.tag = get_tag(pipe_2_addr);
+
 always_comb begin
-    if(state == MEM_WRITE) begin
-        data_wdata = pipe_mux_line;
-    end else if(state == REFILL) begin
+    wm_tag_we = '0;
+    wm_data_we = '0;
+
+    if(pipe_2_write && ~dbus.stall) begin
+        if(|hit) begin
+            wm_tag_we = hit;
+            wm_data_we = hit;
+        end else if(adjacent) begin
+            // The next request must be causing a refill
+            wm_tag_we[assoc_waddr] = 1'b1;
+            wm_data_we[assoc_waddr] = 1'b1;
+        end
+    end
+end
+
+always_comb begin
+    wm_data_wdata = data_mux_line;
+
+    // If write occurs in stage 2, we are dealing with write-hit, so we don't
+    // have to test pipe_2_write here.
+    wm_data_wdata[get_offset(pipe_2_addr)] = mux_byteenable(
+        wm_data_wdata[get_offset(pipe_2_addr)], pipe_2_wdata, pipe_2_byteenable);
+end
+
+// Refill write requests
+assign assoc_waddr     = SET_ASSOC == 1 ? 1'b0 : lfsr_val[$clog2(SET_ASSOC)-1:0];
+assign rf_tag_wdata.valid = 1'b1;
+assign rf_tag_wdata.tag   = get_tag(pipe_addr);
+assign rf_tag_wdata.dirty = pipe_write;
+always_comb begin
+    if(state == REFILL) begin
         // If we are writing during REFILL stage, we must be fetching from the line being written-back
-        data_wdata = wb_line;
+        rf_data_wdata = wb_line;
     end else begin
-        data_wdata = line_recv;
-        data_wdata[DATA_PER_LINE - 1][DATA_WIDTH - 1 -: 32] = axi_resp.rdata;
+        rf_data_wdata = line_recv;
+        rf_data_wdata[DATA_PER_LINE - 1][DATA_WIDTH - 1 -: 32] = axi_resp.rdata;
     end
 
     if(pipe_write) begin
-        data_wdata[get_offset(pipe_addr)] = mux_byteenable(
-			data_wdata[get_offset(pipe_addr)], pipe_wdata, pipe_byteenable);
+        rf_data_wdata[get_offset(pipe_addr)] = mux_byteenable(
+            rf_data_wdata[get_offset(pipe_addr)], pipe_wdata, pipe_byteenable);
     end
 end
 
 assign dbus.stall = state_d != IDLE;
 
-for(genvar i = 0; i < SET_ASSOC; ++i) begin
-	assign hit[i] = tag_rdata[i].valid & (get_tag(pipe_addr) == tag_rdata[i].tag);
-end
-
-assign wb_current = wb_state != WB_IDLE && wb_addr == pipe_addr; //get_offset(wb_addr) == get_offset(pipe_addr);
-
 always_comb begin
-	data_mux_line = '0;
-	for(int i = 0; i < SET_ASSOC; ++i)
-		data_mux_line |= {LINE_WIDTH{hit[i]}} & data_rdata[i];
-end
+    dbus.rddata = pipe_rdata;
 
-always_comb begin
-    dbus.rddata = data_mux_line[get_offset(pipe_addr)];
-    if(pipe_fifo_found) begin
-        if(state == IDLE && pipe_fifo_written) begin // FIFO write merge
-            dbus.rddata = pipe_wdata;
-        end else begin
-            dbus.rddata = pipe_fifo_qdata[get_offset(pipe_addr)];
-        end
-    end else if(wb_current) begin
-        dbus.rddata = wb_line[get_offset(pipe_addr)];
+    if(pipe_request_refill) begin
+        dbus.rddata = line_recv[get_offset(pipe_addr)];
     end
 end
-assign read_miss = (~|hit) && (~pipe_fifo_found) && (~wb_current) && pipe_read;
-assign write_miss = (~|hit) && pipe_write;
 
-// Sync read / write
+/* Read / Write: Sync part */
+
+// Stage 1
+//   - Tag query + Data query
+//   - FIFO query + write-merge
+//
+// Setup Tag RAM port B. We only use this port for tag query, not writing
+// Setup FIFO write channel
+//
+// If all queries results in missed in stage 1, the line is not present in
+// cache right now.
+assign tag_read_addr = get_index(dbus.address);
+
+assign fifo_wqtag = get_fifo_tag(dbus.address);
+
 always_comb begin
-	// RAM / FIFO requests
-	tag_we      = '0;
-	data_we     = '0;
-	if(state_d == IDLE) begin
-		ram_addr   = get_index(dbus.address);
-	end else begin
-		ram_addr   = get_index(pipe_addr);
-	end
-
-	lfsr_update = 1'b0;
-	burst_cnt_d = burst_cnt;
-
-    // Random RW into FIFO occurs in the first stage
-    fifo_wqtag = get_fifo_tag(dbus.address);
     fifo_wdata = fifo_qdata;
-    fifo_wdata[get_offset(dbus.address)] = dbus.wrdata;
+    fifo_wdata[get_offset(dbus.address)] = mux_byteenable(fifo_qdata[get_offset(dbus.address)], dbus.wrdata, dbus.byteenable);
+end
 
+assign fifo_write = ~dbus.stall && dbus.write;
+
+// Stage 2
+//   - Data query
+//   - Way select among RAM, FIFO and write-back line
+//   - Tag/Data overwrite
+//
+// Setup Tag RAM port A / Data RAM. If the pipeline is stalled, we must be
+// refilling, so set the ram addr to stage 3 addr
+
+for(genvar i = 0; i < SET_ASSOC; ++i) begin
+    assign hit[i] = tag_rdata[i].valid & (get_tag(pipe_2_addr) == tag_rdata[i].tag);
+end
+
+assign wm_ram_addr = get_index(pipe_2_addr);
+
+assign wb_current = wb_state != WB_IDLE && wb_addr == pipe_2_addr; //get_offset(wb_addr) == get_offset(pipe_addr);
+assign adjacent = get_fifo_tag(pipe_2_addr) == get_fifo_tag(pipe_addr);
+assign read_miss = (~adjacent) && (~|hit) && (~pipe_2_fifo_found) && (~wb_current) && pipe_2_read;
+assign write_miss = (~adjacent) && (~|hit) && pipe_2_write;
+
+assign request_refill = read_miss || write_miss && ~(pipe_2_write && wb_current);
+
+always_comb begin
+    data_mux_line = '0;
+    if(|hit) begin
+        for(int i = 0; i < SET_ASSOC; ++i)
+            data_mux_line |= {LINE_WIDTH{hit[i]}} & data_rdata[i];
+    end else if(adjacent) begin
+        data_mux_line = data_rdata[assoc_waddr];
+    end
+
+    rdata = data_mux_line[get_offset(pipe_2_addr)];
+
+    // Following two conditions may both be true, if the hit in FIFO is popped
+    // right now
+
+    if(pipe_2_fifo_found) begin
+        rdata = pipe_2_fifo_qdata[get_offset(pipe_2_addr)];
+    end else if(wb_current) begin
+        rdata = wb_line[get_offset(pipe_2_addr)];
+    end
+end
+
+// Stage 3, Refill
+
+always_comb begin
+    rf_tag_we      = '0;
+    rf_data_we     = '0;
+    
+    rf_ram_addr = get_index(pipe_addr);
+
+    // FIFO push
+    victim_locked = get_index(pipe_2_addr) == get_index(pipe_addr) && hit[assoc_waddr];
+    fifo_push = state == REFILL && ~victim_locked && tag_rdata[assoc_waddr].valid && tag_rdata[assoc_waddr].dirty;
     fifo_ptag = { tag_rdata[assoc_waddr].tag, get_index(pipe_addr) };
     fifo_pdata = data_rdata[assoc_waddr];
 
-    fifo_write = state_d == IDLE && dbus.write && ~dbus.stall;
-    fifo_push = state == REFILL && tag_rdata[assoc_waddr].valid && tag_rdata[assoc_waddr].dirty;
+    lfsr_update = 1'b0;
+    burst_cnt_d = burst_cnt;
 
-	// AXI defaults
+    // AXI defaults
     axi_req_arid = 1'b0;
 
     axi_req.arvalid = 1'b0;
     axi_req.rready = 1'b0;
 
-	axi_req.arlen   = BURST_LIMIT;
-	axi_req.arsize  = 3'b010; // 4 bytes
-	axi_req.arburst = 2'b01;  // INCR
+    axi_req.arlen   = BURST_LIMIT;
+    axi_req.arsize  = 3'b010; // 4 bytes
+    axi_req.arburst = 2'b01;  // INCR
     axi_req.araddr = { pipe_addr[31 : LINE_BYTE_OFFSET], {LINE_BYTE_OFFSET{1'b0}} };
     axi_req.arlock = '0;
     axi_req.arprot = '0;
     axi_req.arcache = '0;
 
-	case(state)
-		WAIT_AXI_READY: begin
-			burst_cnt_d     = '0;
-			axi_req.arvalid = 1'b1;
-		end
-        MEM_WRITE: begin
-            tag_we  = hit;
-            data_we = hit;
+    case(state)
+        WAIT_AXI_READY: begin
+            burst_cnt_d     = '0;
+            axi_req.arvalid = 1'b1;
+            lfsr_update = 1'b1; // Shuffles at least once
         end
         REFILL: begin
-            if(~(fifo_full && fifo_push)) begin
+            if(victim_locked) begin
+                // Victim hit in stage 2. Re-select victim
+                lfsr_update = 1'b1;
+            end else if(~(fifo_full && fifo_push)) begin
                 // See state transfer for detailed comments
                 if(wb_state != WB_IDLE && get_fifo_tag(wb_addr) == get_fifo_tag(pipe_addr)) begin
-                    tag_we[assoc_waddr] = 1'b1;
-                    data_we[assoc_waddr] = 1'b1;
+                    rf_tag_we[assoc_waddr] = 1'b1;
+                    rf_data_we[assoc_waddr] = 1'b1;
                 end
             end
         end
-		RECEIVING: begin
-			if(axi_resp.rvalid) begin
-				axi_req.rready = 1'b1;
-				burst_cnt_d    = burst_cnt + 1;
-			end
+        RECEIVING: begin
+            if(axi_resp.rvalid) begin
+                axi_req.rready = 1'b1;
+                burst_cnt_d    = burst_cnt + 1;
+            end
 
-			if(axi_resp.rvalid & axi_resp.rlast) begin
-				tag_we[assoc_waddr]  = 1'b1;
-				data_we[assoc_waddr] = 1'b1;
-				lfsr_update = 1'b1;
-			end
-		end
-	endcase
+            if(axi_resp.rvalid & axi_resp.rlast) begin
+                rf_tag_we[assoc_waddr]  = 1'b1;
+                rf_data_we[assoc_waddr] = 1'b1;
+            end
+        end
+    endcase
 end
 
 // update state
 always_comb begin
-	state_d = state;
-	unique case(state)
+    state_d = state;
+    unique case(state)
         IDLE: begin
-            if(read_miss || write_miss) begin
-                if(pipe_write && pipe_fifo_written)
-                    state_d = IDLE; // FIFO hit, wait for new data to come out
-                else state_d = REFILL;
-            end else if(pipe_write)
-                state_d = MEM_WRITE;
-			else state_d = IDLE;
+            if(request_refill) state_d = REFILL;
+            else state_d = IDLE;
         end
-        MEM_WRITE:
-            state_d = FINISH;
         REFILL: begin
-            if(~(fifo_full && fifo_push)) begin
-                // Victim will be pushed into FIFO in the next clock
-                // Check for wb for match
+            if(victim_locked) begin
+                // Change victim
+                state_d = REFILL;
+            end else if(~(fifo_full && fifo_push)) begin
+                // We are not targeting a dirty victim, or
+                // victim will be pushed into FIFO on the next clock tick
+                //
+                // Check for wb for matches
                 if(wb_state != WB_IDLE && get_fifo_tag(wb_addr) == get_fifo_tag(pipe_addr)) begin
-                    state_d = FINISH;
+                    state_d = IDLE;
                 end else begin
                     state_d = WAIT_AXI_READY;
                 end
@@ -287,55 +389,75 @@ always_comb begin
         end
         FINISH:
             state_d = IDLE;
-		WAIT_AXI_READY:
+        WAIT_AXI_READY:
             if(axi_resp.arready) begin
                 state_d = RECEIVING;
             end
-		RECEIVING:
-			if(axi_resp.rvalid & axi_resp.rlast) begin
+        RECEIVING:
+            if(axi_resp.rvalid & axi_resp.rlast) begin
                 state_d = FINISH;
-			end
-	endcase
+            end
+    endcase
 end
 
 always_ff @(posedge clk) begin
-	if(rst) begin
-		line_recv <= '0;
-	end else if(state == RECEIVING && axi_resp.rvalid) begin
-		line_recv[burst_cnt] <= axi_resp.rdata;
-	end
+    if(rst) begin
+        line_recv <= '0;
+    end else if(state == RECEIVING && axi_resp.rvalid) begin
+        line_recv[burst_cnt] <= axi_resp.rdata;
+    end
 
-	if(rst) begin
-		state     <= IDLE;
-		burst_cnt <= '0;
-		pipe_mux_line <= '0;
-	end else begin
-		state     <= state_d;
-		burst_cnt <= burst_cnt_d;
-		pipe_mux_line <= data_mux_line;
-	end
+    if(rst) begin
+        state     <= IDLE;
+        burst_cnt <= '0;
+    end else begin
+        state     <= state_d;
+        burst_cnt <= burst_cnt_d;
+    end
 end
 
+// Stage 3 reg
+
 always_ff @(posedge clk) begin
-	if(rst) begin
-		pipe_read <= 1'b0;
-		pipe_write <= 1'b0;
-		pipe_addr <= '0;
+    if(rst) begin
+        // Stage 1 -> 2
+        pipe_2_read <= 1'b0;
+        pipe_2_write <= 1'b0;
+        pipe_2_byteenable <= '0;
+        pipe_2_addr <= '0;
+        pipe_2_wdata <= '0;
+        pipe_2_fifo_found <= 1'b0;
+        pipe_2_fifo_written <= 1'b0;
+        pipe_2_fifo_qdata <= '0;
+
+        // Stage 2 -> 3
+        pipe_read <= 1'b0;
+        pipe_write <= 1'b0;
+        pipe_addr <= '0;
         pipe_wdata <= '0;
-        pipe_fifo_found <= '0;
-        pipe_fifo_written <= '0;
-        pipe_fifo_qdata <= '0;
-		pipe_byteenable <= '0;
-	end else if(~dbus.stall) begin
-		pipe_read <= dbus.read;
-		pipe_write <= dbus.write;
-		pipe_addr <= dbus.address;
-        pipe_wdata <= dbus.wrdata;
-		pipe_byteenable <= dbus.byteenable;
-        pipe_fifo_found <= fifo_found;
-        pipe_fifo_written <= fifo_written;
-        pipe_fifo_qdata <= fifo_qdata;
-	end
+        pipe_byteenable <= '0;
+        pipe_request_refill <= 1'b0;
+        pipe_rdata <= '0;
+    end else if(~dbus.stall) begin
+        // Stage 1 -> 2
+        pipe_2_read <= dbus.read;
+        pipe_2_write <= dbus.write;
+        pipe_2_byteenable <= dbus.byteenable;
+        pipe_2_addr <= dbus.address;
+        pipe_2_wdata <= dbus.wrdata;
+        pipe_2_fifo_found <= fifo_found;
+        pipe_2_fifo_written <= fifo_written;
+        pipe_2_fifo_qdata <= fifo_qdata;
+
+        // Stage 2 -> 3
+        pipe_read <= pipe_2_read;
+        pipe_write <= pipe_2_write;
+        pipe_addr <= pipe_2_addr;
+        pipe_wdata <= pipe_2_wdata;
+        pipe_byteenable <= pipe_2_byteenable;
+        pipe_request_refill <= request_refill;
+        pipe_rdata <= rdata;
+    end
 end
 
 // Write-back
@@ -355,9 +477,9 @@ always_comb begin
     axi_req_awid = '0;
     axi_req_wid = '0;
 
-	axi_req.awsize  = 2'b010;
-	axi_req.awlen = BURST_LIMIT;
-	axi_req.awburst = 2'b01;
+    axi_req.awsize  = 2'b010;
+    axi_req.awlen = BURST_LIMIT;
+    axi_req.awburst = 2'b01;
     axi_req.awaddr = wb_addr;
     axi_req.awlock = '0;
     axi_req.awprot = '0;
@@ -425,47 +547,55 @@ end
 
 // generate block RAMs
 for(genvar i = 0; i < SET_ASSOC; ++i) begin : gen_dcache_mem
-	single_port_ram #(
-		.SIZE  ( GROUP_NUM ),
-		.dtype ( tag_t     )
-	) mem_tag (
-		.clk,
-		.rst,
+    // We need dual-port for simutanious R/W
+    dual_port_ram #(
+        .SIZE  ( GROUP_NUM ),
+        .dtype ( tag_t     )
+    ) mem_tag (
+        .clk,
+        .rst,
 
-		.we   ( tag_we[i]    ),
-		.addr ( ram_addr     ),
-		.din  ( tag_wdata    ),
-		.dout ( tag_rdata[i] )
-	);
+        // Port A, handles tag write, controlled by stage 1
+        .wea   ( tag_we[i] ),
+        .addra ( ram_addr ),
+        .dina  ( tag_wdata ),
+        .douta ( /* Open, tag read happens in stage 1, port B */ ),
 
-	single_port_ram #(
-		.SIZE  ( GROUP_NUM ),
-		.dtype ( line_t    )
-	) mem_data (
-		.clk,
-		.rst,
+        // Port B, handles tag read, controlled by stage 2 & 3
+        .web   ( 1'b0 ),
+        .addrb ( tag_read_addr ),
+        .dinb  ( '0 ),
+        .doutb ( tag_rdata[i] )
+    );
 
-		.we   ( data_we[i]    ),
-		.addr ( ram_addr      ),
-		.din  ( data_wdata    ),
-		.dout ( data_rdata[i] )
-	);
+    single_port_ram #(
+        .SIZE  ( GROUP_NUM ),
+        .dtype ( line_t    )
+    ) mem_data (
+        .clk,
+        .rst,
+
+        .we   ( data_we[i]    ),
+        .addr ( ram_addr      ),
+        .din  ( data_wdata    ),
+        .dout ( data_rdata[i] )
+    );
 end
 
 // generate random number
 lfsr_8bits lfsr_inst(
-	.clk,
-	.rst,
-	.update ( lfsr_update ),
-	.val    ( lfsr_val    )
+    .clk,
+    .rst,
+    .update ( lfsr_update ),
+    .val    ( lfsr_val    )
 );
 
 dcache_fifo #(
     .TAG_WIDTH (TAG_WIDTH + INDEX_WIDTH),
     .DATA_WIDTH (LINE_WIDTH)
 ) fifo_inst (
-	.clk,
-	.rst,
+    .clk,
+    .rst,
 
     .pline ({ fifo_ptag, fifo_pdata }),
     .rline ({ fifo_rtag, fifo_rdata }),

@@ -34,15 +34,15 @@ dcache #(
 	.axi_resp_bid (4'b0000)
 );
 
-localparam int unsigned REQ_COUNT = 7;
-logic [$clog2(REQ_COUNT+2):0] req;
-logic [REQ_COUNT+2:0][31:0] address;
-logic [REQ_COUNT+2:0][31:0] wdata;
-logic [REQ_COUNT+2:0][31:0] rdata;
+localparam int unsigned REQ_COUNT = 10;
+logic [$clog2(REQ_COUNT+3):0] req;
+logic [REQ_COUNT+3:0][31:0] address;
+logic [REQ_COUNT+3:0][31:0] wdata;
+logic [REQ_COUNT+3:0][31:0] rdata;
 typedef enum logic [1:0] {
 	READ, WRITE
 } req_type_t;
-req_type_t req_type [REQ_COUNT+2:0];
+req_type_t req_type [REQ_COUNT+3:0];
 req_type_t current_type;
 
 assign address[0] = 'h00008000;
@@ -75,11 +75,28 @@ assign address[6] = 'h00008004;
 assign req_type[6] = READ;
 assign rdata[6] = 'h00000001;
 
+assign address[7] = 'h00008004;
+assign req_type[7] = WRITE;
+assign wdata[7] = 'h00000002;
+
+assign address[8] = 'h00008004;
+assign req_type[8] = READ;
+assign rdata[8] = 'h00000002;
+
+assign address[9] = 'h00008008;
+assign req_type[9] = WRITE;
+assign wdata[9] = 'h00000003;
+
+assign address[10] = 'h00008008;
+assign req_type[10] = READ;
+assign rdata[10] = 'h00000003;
+
 assign dbus.address = address[req];
 assign dbus.wrdata = wdata[req];
 assign current_type = req_type[req];
 assign dbus.read           = current_type == READ;
 assign dbus.write          = current_type == WRITE;
+assign dbus.byteenable = 4'b1111;
 
 always_ff @(posedge clk or posedge rst) begin
 	if(rst) begin
@@ -93,16 +110,16 @@ integer cycle;
 always_ff @(negedge clk) begin
 	cycle <= rst ? '0 : cycle + 1;
 	if(~rst && req > 0 && ~dbus.stall) begin
-		$display("[%0d] req = %0d, data = %08x", cycle, req - 1, dbus.rddata);
-		if(req_type[req-1] == WRITE) begin
-			if(dbus.rddata != wdata[req-1]) begin
-				$display("[Error] expected = %08x", wdata[req-1]);
-				$stop;
-			end
-		end else if(dbus.rddata != rdata[req-1]) begin
-			$display("[Error] expected = %08x", rdata[req-1]);
+		$display("[%0d] req = %0d, data = %08x", cycle, req-2, dbus.rddata);
+		if(req_type[req-2] == READ && ~(dbus.rddata == rdata[req-2])) begin
+			$display("[Error] expected = %08x", rdata[req-2]);
 			$stop;
 		end
+
+        if(req == REQ_COUNT + 2) begin
+            $display("[pass]");
+            $finish;
+        end
 	end
 end
 
@@ -111,9 +128,7 @@ initial begin
 	clk = 1'b1;
 
 	#51 rst = 1'b0;
-	wait(req == REQ_COUNT + 1);
-	$display("[pass]");
-	$finish;
+	wait(req == REQ_COUNT + 2);
 end
 
 endmodule

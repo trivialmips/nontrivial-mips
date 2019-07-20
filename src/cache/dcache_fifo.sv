@@ -28,7 +28,8 @@ module dcache_fifo #(
     input logic push,
     input logic write,
 
-    output logic written
+    output logic written,
+    output logic pushed
 );
 
 // TODO: fall-through
@@ -76,6 +77,7 @@ always_comb begin
     valid_d = valid;
 
     written = 1'b0;
+    pushed = 1'b0;
 
     if(push && ~full) begin
         mem_d[tail] = pline;
@@ -89,7 +91,7 @@ always_comb begin
 
         cnt_d = cnt+1;
 
-        written = 1'b1;
+        pushed = 1'b1;
     end
 
     if(pop && ~empty) begin
@@ -134,7 +136,7 @@ end
 always_ff @(posedge clk or posedge rst) begin
     if(rst) begin
         mem <= '0;
-    end else if(written) begin
+    end else if(written || pushed) begin
         mem <= mem_d;
     end
 end
