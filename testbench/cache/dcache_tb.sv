@@ -18,7 +18,7 @@ mem_device id (
 cpu_dbus_if dbus();
 
 dcache #(
-    .SET_ASSOC (1), // Testing write-back
+    .SET_ASSOC (2), // Testing write-back
     .CACHE_SIZE(2048)
 ) cache (
 	.clk (clk),

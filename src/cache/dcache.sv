@@ -110,6 +110,7 @@ wb_state_t wb_state, wb_state_d;
 // RAM requests of tag
 // RF = refill, wm = write-merge
 index_t ram_addr, rf_ram_addr, wm_ram_addr, tag_read_addr;
+logic use_rf;
 
 tag_t [SET_ASSOC-1:0] tag_rdata;
 tag_t tag_wdata, rf_tag_wdata, wm_tag_wdata;
@@ -120,11 +121,12 @@ line_t [SET_ASSOC-1:0] data_rdata;
 line_t data_wdata, rf_data_wdata, wm_data_wdata;
 we_t data_we, rf_data_we, wm_data_we;
 
-assign ram_addr   = ~dbus.stall ? rf_ram_addr   : wm_ram_addr;
-assign tag_wdata  = ~dbus.stall ? rf_tag_wdata  : wm_tag_wdata;
-assign tag_we     = ~dbus.stall ? rf_tag_we     : wm_tag_we;
-assign data_wdata = ~dbus.stall ? rf_data_wdata : wm_data_wdata;
-assign data_we    = ~dbus.stall ? rf_data_we    : wm_data_we;
+assign use_rf = state_d != IDLE && state_d != FINISH;
+assign ram_addr   = use_rf ? rf_ram_addr   : wm_ram_addr;
+assign tag_wdata  = use_rf ? rf_tag_wdata  : wm_tag_wdata;
+assign tag_we     = use_rf ? rf_tag_we     : wm_tag_we;
+assign data_wdata = use_rf ? rf_data_wdata : wm_data_wdata;
+assign data_we    = use_rf ? rf_data_we    : wm_data_we;
 
 // Rand
 logic lfsr_update;
@@ -154,6 +156,7 @@ logic [DATA_WIDTH-1:0] pipe_2_wdata;
 logic pipe_2_write, pipe_2_read;
 logic pipe_2_fifo_found, pipe_2_fifo_written;
 line_t pipe_2_fifo_qdata;
+tag_t [SET_ASSOC-1:0] pipe_2_tag_rdata;
 
 line_t data_mux_line;
 logic [DATA_WIDTH-1:0] rdata;
@@ -175,6 +178,7 @@ logic [DATA_WIDTH-1:0] pipe_wdata, pipe_rdata;
 logic victim_locked; // Victim is hit in stage 2
 logic [BURST_LIMIT:0][31:0] line_recv;
 logic [$clog2(SET_ASSOC)-1:0] assoc_waddr;
+tag_t [SET_ASSOC-1:0] delayed_tag_rdata;
 
 // Write hit write requests
 assign wm_tag_wdata.valid = 1'b1;
@@ -259,7 +263,6 @@ end
 assign fifo_write = ~dbus.stall && dbus.write;
 
 // Stage 2
-//   - Data query
 //   - Way select among RAM, FIFO and write-back line
 //   - Tag/Data overwrite
 //
@@ -267,7 +270,7 @@ assign fifo_write = ~dbus.stall && dbus.write;
 // refilling, so set the ram addr to stage 3 addr
 
 for(genvar i = 0; i < SET_ASSOC; ++i) begin
-    assign hit[i] = tag_rdata[i].valid & (get_tag(pipe_2_addr) == tag_rdata[i].tag);
+    assign hit[i] = pipe_2_tag_rdata[i].valid & (get_tag(pipe_2_addr) == pipe_2_tag_rdata[i].tag);
 end
 
 assign wm_ram_addr = get_index(pipe_2_addr);
@@ -310,8 +313,8 @@ always_comb begin
 
     // FIFO push
     victim_locked = get_index(pipe_2_addr) == get_index(pipe_addr) && hit[assoc_waddr];
-    fifo_push = state == REFILL && ~victim_locked && tag_rdata[assoc_waddr].valid && tag_rdata[assoc_waddr].dirty;
-    fifo_ptag = { tag_rdata[assoc_waddr].tag, get_index(pipe_addr) };
+    fifo_push = state == REFILL && ~victim_locked && delayed_tag_rdata[assoc_waddr].valid && delayed_tag_rdata[assoc_waddr].dirty;
+    fifo_ptag = { delayed_tag_rdata[assoc_waddr].tag, get_index(pipe_addr) };
     fifo_pdata = data_rdata[assoc_waddr];
 
     lfsr_update = 1'b0;
@@ -332,10 +335,14 @@ always_comb begin
     axi_req.arcache = '0;
 
     case(state)
+        IDLE: begin
+            if(pipe_request_refill) begin
+                lfsr_update = 1'b1; // Shuffles at least once
+            end
+        end
         WAIT_AXI_READY: begin
             burst_cnt_d     = '0;
             axi_req.arvalid = 1'b1;
-            lfsr_update = 1'b1; // Shuffles at least once
         end
         REFILL: begin
             if(victim_locked) begin
@@ -368,7 +375,7 @@ always_comb begin
     state_d = state;
     unique case(state)
         IDLE: begin
-            if(request_refill) state_d = REFILL;
+            if(pipe_request_refill) state_d = REFILL;
             else state_d = IDLE;
         end
         REFILL: begin
@@ -429,6 +436,7 @@ always_ff @(posedge clk) begin
         pipe_2_fifo_found <= 1'b0;
         pipe_2_fifo_written <= 1'b0;
         pipe_2_fifo_qdata <= '0;
+        pipe_2_tag_rdata <= '0;
 
         // Stage 2 -> 3
         pipe_read <= 1'b0;
@@ -448,6 +456,7 @@ always_ff @(posedge clk) begin
         pipe_2_fifo_found <= fifo_found;
         pipe_2_fifo_written <= fifo_written;
         pipe_2_fifo_qdata <= fifo_qdata;
+        pipe_2_tag_rdata <= tag_rdata;
 
         // Stage 2 -> 3
         pipe_read <= pipe_2_read;
@@ -559,7 +568,7 @@ for(genvar i = 0; i < SET_ASSOC; ++i) begin : gen_dcache_mem
         .wea   ( tag_we[i] ),
         .addra ( ram_addr ),
         .dina  ( tag_wdata ),
-        .douta ( /* Open, tag read happens in stage 1, port B */ ),
+        .douta ( delayed_tag_rdata[i] ),
 
         // Port B, handles tag read, controlled by stage 2 & 3
         .web   ( 1'b0 ),
