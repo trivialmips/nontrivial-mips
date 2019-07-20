@@ -77,6 +77,7 @@ assign flush_s2 = flush_s3 | presolved_branch.mispredict;
 assign flush_s1 = flush_s2;
 assign icache_req.flush_s1 = flush_s1;
 assign icache_req.flush_s2 = flush_s2;
+assign icache_req.stall_s3 = stall_s3;
 
 /* ====== stage 1 (PCGen) ====== */
 pc_generator pc_gen(

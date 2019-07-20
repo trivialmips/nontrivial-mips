@@ -14,40 +14,9 @@ _start:
 	mtc0 $12, $3        # entry_lo1
 	mtc0 $0, $0         # index
 	tlbwi
-	nop
-	nop
-	nop
-	nop
-	nop
-	nop
-	nop
-	nop
-	nop
-	nop
-	nop
-	nop
-	nop
-	nop
-	nop
-	nop
-	nop
-	nop
-	nop
-	nop
-	nop
-	nop
-	nop
-	nop
-	nop
-	nop
-	nop
-	nop
-	nop
-	nop
-
 	addi $10, $10, 0xffc # ans: $10=0x12340ffc
 	addi $11, $10, 0x8 # ans: $11=0x12341004
-	jr $10
+	jr $10 
 
 .org 0x0ffc
 	jr $11

@@ -80,6 +80,7 @@ assign ibus.flush_1     = icache_req.flush_s1;
 assign ibus.flush_2     = icache_req.flush_s2;
 assign ibus.read        = icache_req.read;
 assign ibus.address     = mmu_inst_result.phy_addr;
+assign ibus.stall_req   = icache_req.stall_s3;
 assign icache_res.data  = ibus.rddata;
 assign icache_res.valid = ibus.valid;
 assign icache_res.stall = ibus.stall;

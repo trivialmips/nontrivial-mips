@@ -9,8 +9,8 @@ module btb #(
 	// lookup address, aligned in 8-bytes
 	input  virt_t        vaddr,
 	input  btb_update_t  update,
-	input  btb_update_t  update_rch,
 	output btb_predict_t [1:0] predict,
+	input  presolved_branch_t presolved_branch
 );
 
 localparam OFFSET        = 2;
@@ -37,7 +37,7 @@ always_comb begin
 	if(presolved_branch.mispredict) begin
 		addra = get_index(presolved_branch.pc);
 	end else begin
-		adddra = raddr;
+		addra = raddr;
 	end
 end
 

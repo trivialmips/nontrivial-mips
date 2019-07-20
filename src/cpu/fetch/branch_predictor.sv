@@ -1,8 +1,8 @@
 `include "cpu_defs.svh"
 
 module branch_predictor #(
-	parameter int SIZE,
-	parameter int ICACHE_LINE_WIDTH
+	parameter int SIZE = 4096,
+	parameter int ICACHE_LINE_WIDTH = `ICACHE_LINE_WIDTH
 )(
 	input  logic   clk,
 	input  logic   rst,
@@ -30,25 +30,36 @@ localparam int ICACHE_ADDR_WIDTH = $clog2(ICACHE_LINE_WIDTH);
 
 // BHT information
 bht_update_t  bht_update;
-bht_predict_t [1:0] bht_predict;
+bht_predict_t [1:0] bht_predict, bht_predict_delay;
 
 // BTB information
 btb_update_t  btb_update;
-btb_predict_t [1:0] btb_predict;
+btb_predict_t [1:0] btb_predict, btb_predict_delay;
 
 // evaluate prediction results
 logic bt_index;
+logic pipe_flush, pipe_stall;
 btb_predict_t btb_selected;
 bht_predict_t bht_selected;
-assign btb_selected = btb_predict[bt_index];
-assign bht_selected = bht_predict[bt_index];
+assign btb_selected = pipe_stall ? btb_predict_delay[bt_index] : btb_predict[bt_index];
+assign bht_selected = pipe_stall ? bht_predict_delay[bt_index] : bht_predict[bt_index];
 
-logic pipe_flush;
 always_ff @(posedge clk) begin
-	if(rst)
+	if(rst) begin
 		pipe_flush <= 1'b0;
-	else if(~stall)
+		btb_predict_delay <= '0;
+		bht_predict_delay <= '0;
+	end else if(~stall) begin
 		pipe_flush <= flush;
+		btb_predict_delay <= btb_predict;
+		bht_predict_delay <= bht_predict;
+	end
+
+	if(rst) begin
+		pipe_stall <= 1'b0;
+	end else begin
+		pipe_stall <= stall;
+	end
 end
 
 always_comb begin
@@ -105,6 +116,7 @@ btb #(
 ) btb_inst (
 	.clk,
 	.rst,
+	.presolved_branch,
 	.vaddr   ( pc_cur      ),
 	.update  ( btb_update  ),
 	.predict ( btb_predict )

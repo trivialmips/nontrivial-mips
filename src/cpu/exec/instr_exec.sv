@@ -390,15 +390,15 @@ always_comb begin
 			resolved_branch.target = default_jump_i;
 			resolved_branch.mispredict = (branch_sbt.cf == ControlFlow_None) ^ ~resolved_branch.taken;
 			if(resolved_branch.taken)
-				resolved_branch.mispredict |= branch_sbt.target != resolved_branch.target;
+				resolved_branch.mispredict |= (branch_sbt.target != resolved_branch.target) | ~branch_sbt.valid;
 		end
 		OP_JAL:  begin
 			resolved_branch.target = default_jump_j;
-			resolved_branch.mispredict = (branch_sbt.target != resolved_branch.target);
+			resolved_branch.mispredict = (branch_sbt.target != resolved_branch.target) | ~branch_sbt.valid;
 		end
 		OP_JALR: begin
 			resolved_branch.target = reg1;
-			resolved_branch.mispredict = (branch_sbt.target != resolved_branch.target);
+			resolved_branch.mispredict = (branch_sbt.target != resolved_branch.target) | ~branch_sbt.valid;
 		end
 		default: begin
 			resolved_branch.target     = '0;

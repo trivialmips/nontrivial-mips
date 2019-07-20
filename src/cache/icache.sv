@@ -112,6 +112,11 @@ always_comb begin
 	end
 end
 
+// stall signals
+logic stall_s2, stall_s3;
+assign stall_s3 = ibus.stall_req;
+assign stall_s2 = ibus.stall_req | ibus.stall;
+
 // send rddata next cycle
 logic [SET_ASSOC-1:0] pipe_hit;
 logic [SET_ASSOC-1:0][DATA_WIDTH-1:0] pipe_rdata, pipe_rdata_extra;
@@ -134,7 +139,7 @@ always_ff @(posedge clk) begin
 		pipe_rdata_extra <= '0;
 		pipe_rddata_valid <= 1'b0;
 		pipe_rddata_extra_valid <= 1'b0;
-	end else begin
+	end else if(~stall_s3) begin
 		pipe_hit <= hit;
 		pipe_rddata_valid <= pipe_read & ~ibus.stall & ~ibus.flush_2;
 		pipe_rddata_extra_valid <= ~&get_offset(pipe_addr);
@@ -242,7 +247,7 @@ always_ff @(posedge clk) begin
 	if(rst) begin
 		pipe_addr <= '0;
 		pipe_read <= 1'b0;
-	end else if(~ibus.stall) begin
+	end else if(~stall_s2) begin
 		pipe_read <= ibus.read & ~ibus.flush_1;
 		pipe_addr <= ibus.address;
 	end
