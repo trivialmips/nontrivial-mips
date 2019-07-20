@@ -6,6 +6,7 @@ module branch_predictor #(
 )(
 	input  logic   clk,
 	input  logic   rst,
+	input  logic   stall,
 	input  logic   flush,
 
 	// current program counter, aligned in 4-bytes
@@ -44,8 +45,10 @@ assign bht_selected = bht_predict[bt_index];
 
 logic pipe_flush;
 always_ff @(posedge clk) begin
-	if(rst) pipe_flush <= 1'b0;
-	else    pipe_flush <= flush;
+	if(rst)
+		pipe_flush <= 1'b0;
+	else if(~stall)
+		pipe_flush <= flush;
 end
 
 always_comb begin
@@ -102,7 +105,6 @@ btb #(
 ) btb_inst (
 	.clk,
 	.rst,
-
 	.vaddr   ( pc_cur      ),
 	.update  ( btb_update  ),
 	.predict ( btb_predict )

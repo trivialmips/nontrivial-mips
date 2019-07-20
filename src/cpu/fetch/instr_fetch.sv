@@ -99,6 +99,7 @@ branch_predictor #(
 ) bpu_inst (
 	.clk,
 	.rst,
+	.stall          ( stall_s1   ),
 	.flush          ( flush_s1   ),
 	.pc_cur         ( pipe_s1.pc ),
 	.pc_prev        ( pipe_s2.pc ),
