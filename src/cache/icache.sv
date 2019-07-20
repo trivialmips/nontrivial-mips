@@ -104,9 +104,6 @@ assign cache_miss = ~(|hit) & pipe_read;
 
 
 // stall signals
-logic stall_s2, stall_s3;
-assign stall_s3 = ibus.stall_req;
-assign stall_s2 = ibus.stall_req | ibus.stall;
 assign ibus.stall = (state_d != IDLE) & pipe_read & ~ibus.flush_2;
 
 // send rddata next cycle
@@ -124,6 +121,8 @@ always_comb begin
 	end
 end
 
+offset_t next_offset;
+assign next_offset = get_offset(pipe_addr) + 1;
 always_ff @(posedge clk) begin
 	if(rst) begin
 		pipe_hit <= '0;
@@ -131,13 +130,13 @@ always_ff @(posedge clk) begin
 		pipe_rdata_extra <= '0;
 		pipe_rddata_valid <= 1'b0;
 		pipe_rddata_extra_valid <= 1'b0;
-	end else if(~stall_s3) begin
+	end else begin
 		pipe_hit <= hit;
 		pipe_rddata_valid <= pipe_read & ~ibus.stall & ~ibus.flush_2;
 		pipe_rddata_extra_valid <= ~&get_offset(pipe_addr);
 		for(int i = 0; i < SET_ASSOC; ++i) begin
-			pipe_rdata[i] <= data_rdata[i][get_offset(pipe_addr)];
-			pipe_rdata_extra[i] <= data_rdata[i][get_offset(pipe_addr) + 1];
+			pipe_rdata[i]       <= data_rdata[i][get_offset(pipe_addr)];
+			pipe_rdata_extra[i] <= data_rdata[i][next_offset];
 		end
 	end
 end
@@ -239,7 +238,7 @@ always_ff @(posedge clk) begin
 	if(rst) begin
 		pipe_addr <= '0;
 		pipe_read <= 1'b0;
-	end else if(~stall_s2) begin
+	end else if(~ibus.stall) begin
 		pipe_read <= ibus.read & ~ibus.flush_1;
 		pipe_addr <= ibus.address;
 	end

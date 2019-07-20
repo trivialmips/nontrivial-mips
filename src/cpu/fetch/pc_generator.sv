@@ -19,6 +19,10 @@ module pc_generator(
 	// branch misprediction
 	input  branch_resolved_t resolved_branch,
 
+	// replay
+	input  logic   replay_valid,
+	input  virt_t  replay_vaddr,
+
 	output virt_t  pc,
 	output logic   pc_en
 );
@@ -39,6 +43,10 @@ always_comb begin
 	// branch presolved misprediction
 	if(presolved_branch.mispredict)
 		npc = presolved_branch.target;
+
+	// replay
+	if(replay_valid)
+		npc = replay_vaddr;
 
 	// branch misprediction
 	if(resolved_branch.valid & resolved_branch.mispredict)

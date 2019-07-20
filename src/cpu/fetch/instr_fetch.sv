@@ -57,6 +57,9 @@ struct packed {
 	logic [1:0] prediction_sel;
 } pipe_s2;
 
+// replay (queue full)
+virt_t replay_valid, replay_vaddr;
+
 // presolved branch ( for non-controlflow )
 presolved_branch_t presolved_branch;
 
@@ -67,17 +70,15 @@ fetch_entry_t [2:0] entry_s2, entry_s2_d, entry_s3;
 logic queue_full, queue_empty;
 
 // control signals
-logic stall_s1, stall_s2, stall_s3;
+logic stall_s1, stall_s2;
 logic flush_s1, flush_s2, flush_s3;
-assign stall_s3 = queue_full;
-assign stall_s2 = stall_s3 | icache_res.stall;
+assign stall_s2 = icache_res.stall;
 assign stall_s1 = stall_s2;
-assign flush_s3 = flush_pc | (resolved_branch.valid & resolved_branch.mispredict);;
-assign flush_s2 = flush_s3 | presolved_branch.mispredict;
+assign flush_s3 = flush_pc | (resolved_branch.valid & resolved_branch.mispredict);
+assign flush_s2 = flush_s3 | presolved_branch.mispredict | replay_valid;
 assign flush_s1 = flush_s2;
 assign icache_req.flush_s1 = flush_s1;
 assign icache_req.flush_s2 = flush_s2;
-assign icache_req.stall_s3 = stall_s3;
 
 /* ====== stage 1 (PCGen) ====== */
 pc_generator pc_gen(
@@ -86,6 +87,8 @@ pc_generator pc_gen(
 	.hold_pc ( stall_s1 ),
 	.except_valid,
 	.except_vec,
+	.replay_valid,
+	.replay_vaddr,
 	.predict_valid ( pipe_s2.bp.valid  ),
 	.predict_vaddr ( pipe_s2.bp.target ),
 	.resolved_branch,
@@ -158,10 +161,12 @@ end
 
 /* pipeline between I$ and FIFO read */
 always_ff @(posedge clk) begin
-	if(rst || flush_s2 || stall_s2 & ~stall_s3) begin
+	if(rst || flush_s2 || stall_s2) begin
 		entry_s2_d        <= '0;
 		avail_instr_s2_d  <= '0;
-	end else if(~stall_s3) begin
+		replay_vaddr      <= '0;
+	end else begin
+		replay_vaddr      <= pipe_s2.pc;
 		entry_s2_d        <= entry_s2;
 		avail_instr_s2_d  <= avail_instr_s2;
 	end
@@ -190,6 +195,7 @@ for(genvar i = 0; i < 2; ++i) begin: gen_branch_decoder
 		&& entry_s2_d[i].branch_predict.cf != ControlFlow_None;
 end
 
+assign replay_valid = queue_full & avail_instr_s2_d != '0;
 assign presolved_branch.mispredict = |is_nocf_mispredict;
 assign presolved_branch.pc = is_nocf_mispredict[0] ?
 	entry_s2_d[0].vaddr : entry_s2_d[1].vaddr;
@@ -230,7 +236,7 @@ multi_queue #(
 	.clk,
 	.rst,
 	.flush      ( flush_s3    ),
-	.stall_push ( stall_s3    ),
+	.stall_push ( queue_full  ),
 	.stall_pop  ( stall_pop   ),
 	.full       ( queue_full  ),
 	.empty      ( queue_empty ),

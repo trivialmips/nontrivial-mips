@@ -23,7 +23,6 @@ typedef uint32_t      phys_t;
 interface cpu_ibus_if();
 	logic read;
 	logic stall;        // stall from cache
-	logic stall_req;    // stall from CPU
 	logic valid;        // is rddata valid?
 	logic extra_valid;  // is rddata_extra valid?
 	phys_t address;     // aligned in 8-bytes
@@ -36,14 +35,14 @@ interface cpu_ibus_if();
 	logic flush_1, flush_2;
 
     modport master (
-		output read, address, stall_req,
+		output read, address,
 		output flush_1, flush_2,
 		input  stall, rddata, valid,
 		input  rddata_extra, extra_valid
     );
 
     modport slave (
-		input  read, address, stall_req,
+		input  read, address,
 		input  flush_1, flush_2,
 		output stall, rddata, valid,
 		output rddata_extra, extra_valid

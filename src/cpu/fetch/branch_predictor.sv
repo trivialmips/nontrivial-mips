@@ -41,24 +41,32 @@ logic bt_index;
 logic pipe_flush, pipe_stall;
 btb_predict_t btb_selected;
 bht_predict_t bht_selected;
-assign btb_selected = pipe_stall ? btb_predict_delay[bt_index] : btb_predict[bt_index];
-assign bht_selected = pipe_stall ? bht_predict_delay[bt_index] : bht_predict[bt_index];
+
+always_comb begin
+	if(pipe_stall | pipe_flush) begin
+		btb_selected = btb_predict_delay[bt_index];
+		bht_selected = bht_predict_delay[bt_index];
+	end else begin
+		btb_selected = btb_predict[bt_index];
+		bht_selected = bht_predict[bt_index];
+	end
+end
 
 always_ff @(posedge clk) begin
-	if(rst) begin
-		pipe_flush <= 1'b0;
+	if(rst || flush) begin
 		btb_predict_delay <= '0;
 		bht_predict_delay <= '0;
 	end else if(~stall) begin
-		pipe_flush <= flush;
 		btb_predict_delay <= btb_predict;
 		bht_predict_delay <= bht_predict;
 	end
 
 	if(rst) begin
 		pipe_stall <= 1'b0;
+		pipe_flush <= 1'b0;
 	end else begin
 		pipe_stall <= stall;
+		pipe_flush <= flush;
 	end
 end
 
