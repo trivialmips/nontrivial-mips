@@ -77,7 +77,7 @@ logic [3:0] queue_valid;
 // control signals
 logic stall_s1, stall_s2;
 logic flush_s1, flush_s2, flush_s3;
-assign stall_s2 = icache_res.stall;
+assign stall_s2 = icache_res.stall & ~flush_s2;
 assign stall_s1 = stall_s2;
 assign flush_s3 = flush_pc | (resolved_branch.valid & resolved_branch.mispredict);
 assign flush_s2 = flush_s3 | presolved_branch.mispredict | replay_valid;
