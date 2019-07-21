@@ -149,15 +149,29 @@ integer icache_miss_counter, instr_counter, cycle_counter, mispredict_counter, b
 branch_resolved_t resolved_branch;
 assign resolved_branch = soc_lite.u_cpu.nontrivial_mips_inst.cpu_core_inst.instr_fetch_inst.resolved_branch;
 
-pipeline_memwb_t [1:0] pipe_wb;
+pipeline_memwb_t [1:0] pipe_wb, pipe_mem;
+pipeline_exec_t [1:0] pipe_dcache_last;
 assign pipe_wb = soc_lite.u_cpu.nontrivial_mips_inst.cpu_core_inst.pipeline_wb;
-integer ftrace;
+assign pipe_dcache_last = soc_lite.u_cpu.nontrivial_mips_inst.cpu_core_inst.pipeline_dcache_last;
+assign pipe_mem = soc_lite.u_cpu.nontrivial_mips_inst.cpu_core_inst.pipeline_mem;
+integer ftrace, fmem_trace;
+
+task output_mem_trace(input pipeline_exec_t pipe_dcache_last, input pipeline_memwb_t pipe_mem);
+	if(pipe_dcache_last.memreq.uncached | ~pipe_dcache_last.valid | soc_lite.u_cpu.nontrivial_mips_inst.cpu_core_inst.stall_mm) return;
+	if(pipe_dcache_last.memreq.read) begin
+		$fwrite(fmem_trace, "r %08x %08x\n", pipe_dcache_last.memreq.paddr, pipe_mem.wdata);
+	end else if(pipe_dcache_last.memreq.write) begin
+		$fwrite(fmem_trace, "w %08x %08x\n", pipe_dcache_last.memreq.paddr, pipe_dcache_last.memreq.wrdata);
+	end
+endtask
+
 task output_trace(input pipeline_memwb_t pipe_wb);
 	//$display("1 0x%8h 0x%2h 0x%8h\n", pipe_wb.pc, pipe_wb.rd, pipe_wb.wdata);
 	if(pipe_wb.rd!=5'd0) begin
 		$fwrite(ftrace, "1 0x%8h 0x%2h 0x%8h\n",
 				  pipe_wb.pc, pipe_wb.rd, pipe_wb.wdata);
 	end
+
 endtask
 
 //compare result in rsing edge 
@@ -194,6 +208,8 @@ begin
 		//	$display("mispredict = %d, taken = %d, pc = 0x%08x, target = 0x%08x", resolved_branch.mispredict, resolved_branch.taken, resolved_branch.pc, resolved_branch.target);
 		output_trace(pipe_wb[0]);
 		output_trace(pipe_wb[1]);
+		output_mem_trace(pipe_dcache_last[0], pipe_mem[0]);
+		output_mem_trace(pipe_dcache_last[1], pipe_mem[1]);
     end
 end
 
@@ -236,6 +252,7 @@ end
 initial
 begin
 	ftrace = $fopen("/tmp/traces/my_bitcount.txt", "w");
+	fmem_trace = $fopen("/tmp/traces/mem_bitcount.txt", "w");
     $timeformat(-9,0," ns",10);
     while(!resetn) #5;
     $display("==============================================================");
