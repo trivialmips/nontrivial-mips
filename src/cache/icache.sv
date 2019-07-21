@@ -38,7 +38,8 @@ typedef enum logic [2:0] {
 	RECEIVING,
 	FINISH,
 	FLUSH_WAIT_AXI_READY,
-	FLUSH_RECEIVING
+	FLUSH_RECEIVING,
+	INVALIDATING
 } state_t;
 
 typedef struct packed {
@@ -102,9 +103,11 @@ for(genvar i = 0; i < SET_ASSOC; ++i) begin : gen_icache_hit
 end
 assign cache_miss = ~(|hit) & pipe_read;
 
+// invalidate counter
+index_t invalite_cnt, invalite_cnt_d;
 
 // stall signals
-assign ibus.stall = ~((state == IDLE || state == FINISH) & ~cache_miss) & pipe_read;
+assign ibus.stall = ~((state == IDLE || state == FINISH) & ~cache_miss) & pipe_read || state == INVALIDATING;
 
 // send rddata next cycle
 logic [SET_ASSOC-1:0] pipe_hit;
@@ -158,6 +161,7 @@ always_comb begin
 
 	lfsr_update = 1'b0;
 	burst_cnt_d = burst_cnt;
+	invalite_cnt_d = '0;
 
 	// AXI defaults
 	axi_req = '0;
@@ -187,6 +191,12 @@ always_comb begin
 		FLUSH_RECEIVING: begin
 			axi_req.rready = 1'b1;
 		end
+		INVALIDATING: begin
+			invalite_cnt_d = invalite_cnt + 1;
+			tag_we   = '1;
+			data_we  = '1;
+			ram_addr = invalite_cnt;
+		end
 	endcase
 end
 
@@ -212,6 +222,8 @@ always_comb begin
 			end else if(ibus.flush_2) begin
 				state_d = FLUSH_RECEIVING;
 			end
+		INVALIDATING:
+			if(&invalite_cnt) state_d = IDLE;
 	endcase
 end
 
@@ -226,11 +238,13 @@ always_ff @(posedge clk) begin
 	end
 
 	if(rst) begin
-		state     <= IDLE;
-		burst_cnt <= '0;
+		state        <= INVALIDATING;
+		burst_cnt    <= '0;
+		invalite_cnt <= '0;
 	end else begin
-		state     <= state_d;
-		burst_cnt <= burst_cnt_d;
+		state        <= state_d;
+		burst_cnt    <= burst_cnt_d;
+		invalite_cnt <= invalite_cnt_d;
 	end
 end
 
