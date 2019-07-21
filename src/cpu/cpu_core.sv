@@ -4,9 +4,9 @@ module cpu_core(
 	input  logic           clk,
 	input  logic           rst,
 	input  cpu_interrupt_t intr,
-	cpu_ibus_if.master     ibus,
-	cpu_dbus_if.master     dbus,
-	cpu_dbus_if.master     dbus_uncached
+	(* mark_debug = "true" *) cpu_ibus_if.master     ibus,
+	(* mark_debug = "true" *) cpu_dbus_if.master     dbus,
+	(* mark_debug = "true" *) cpu_dbus_if.master     dbus_uncached
 );
 
 // flush and stall signals

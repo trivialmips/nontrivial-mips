@@ -1,7 +1,49 @@
 <?xml version="1.0"?>
 <Index Version="1" Minor="0">
-	<Repository value="c:/Workspace/nontrivial-mips/vivado/ip_repo">
+	<Repository value="/home/harry/Workspace/nontrivial-mips/vivado/ip_repo">
 	</Repository>
+	<IP>
+		<VLNV value="harrychen.xyz:user:nontrivial_mips:1.0">
+		</VLNV>
+		<DisplayName value="NonTrivialMIPS CPU">
+		</DisplayName>
+		<Description value="NonTrivialMIPS is a synthesizable superscalar MIPS processor with branch prediction and FPU support, and it is capable of booting linux.">
+		</Description>
+		<CoreRevision value="4">
+		</CoreRevision>
+		<ComponentPath value="nontrivial_mips/component.xml">
+		</ComponentPath>
+		<Families>
+			<Family name="aartix7">
+				<Part status="Production" name="ALL">
+				</Part>
+			</Family>
+			<Family name="artix7">
+				<Part status="Production" name="ALL">
+				</Part>
+			</Family>
+			<Family name="artix7l">
+				<Part status="Production" name="ALL">
+				</Part>
+			</Family>
+		</Families>
+		<Taxonomies>
+			<Taxonomy value="/Embedded_Processing/Processor">
+			</Taxonomy>
+			<Taxonomy value="/UserIP">
+			</Taxonomy>
+		</Taxonomies>
+		<UpgradesFrom>
+			<Upgrade value="xilinx.com:user:nontrivial_mips:1.0">
+			</Upgrade>
+		</UpgradesFrom>
+		<LockPrevVersions value="false">
+		</LockPrevVersions>
+		<Interfaces>
+			<Interface value="AXI4">
+			</Interface>
+		</Interfaces>
+	</IP>
 	<IP>
 		<VLNV value="harrychen.xyz:user:altera_ps2:1.0">
 		</VLNV>
@@ -25,6 +67,84 @@
 		</Taxonomies>
 		<UpgradesFrom>
 			<Upgrade value="xilinx.com:user:testPS2qsys_ps2_0:1.0">
+			</Upgrade>
+		</UpgradesFrom>
+		<LockPrevVersions value="false">
+		</LockPrevVersions>
+	</IP>
+	<IP>
+		<VLNV value="loongson.cn:user:loongson_cpu_gs232:1.0">
+		</VLNV>
+		<DisplayName value="Loongson GS232 CPU">
+		</DisplayName>
+		<Description value="IP package of Loongson GS232, an open source CPU">
+		</Description>
+		<CoreRevision value="5">
+		</CoreRevision>
+		<ComponentPath value="loongson_cpu_gs232/component.xml">
+		</ComponentPath>
+		<Families>
+			<Family name="aartix7">
+				<Part status="Production" name="ALL">
+				</Part>
+			</Family>
+			<Family name="artix7">
+				<Part status="Production" name="ALL">
+				</Part>
+			</Family>
+			<Family name="artix7l">
+				<Part status="Production" name="ALL">
+				</Part>
+			</Family>
+		</Families>
+		<Taxonomies>
+			<Taxonomy value="/Embedded_Processing/Processor">
+			</Taxonomy>
+			<Taxonomy value="/UserIP">
+			</Taxonomy>
+		</Taxonomies>
+		<UpgradesFrom>
+			<Upgrade value="xilinx.com:user:godson_cpu_mid:1.0">
+			</Upgrade>
+		</UpgradesFrom>
+		<LockPrevVersions value="false">
+		</LockPrevVersions>
+		<Interfaces>
+			<Interface value="AXI4">
+			</Interface>
+		</Interfaces>
+	</IP>
+	<IP>
+		<VLNV value="harrychen.xyz:user:nt35510_controller:1.0">
+		</VLNV>
+		<DisplayName value="NT35510 LCD Controller">
+		</DisplayName>
+		<Description value="APB adapter of NT35510 LCD">
+		</Description>
+		<CoreRevision value="1">
+		</CoreRevision>
+		<ComponentPath value="nt35510_controller/component.xml">
+		</ComponentPath>
+		<Families>
+			<Family name="aartix7">
+				<Part status="Production" name="ALL">
+				</Part>
+			</Family>
+			<Family name="artix7">
+				<Part status="Production" name="ALL">
+				</Part>
+			</Family>
+			<Family name="artix7l">
+				<Part status="Production" name="ALL">
+				</Part>
+			</Family>
+		</Families>
+		<Taxonomies>
+			<Taxonomy value="/UserIP">
+			</Taxonomy>
+		</Taxonomies>
+		<UpgradesFrom>
+			<Upgrade value="xilinx.com:user:nt35510_apb_adapter_v1_0:1.0">
 			</Upgrade>
 		</UpgradesFrom>
 		<LockPrevVersions value="false">
@@ -71,126 +191,6 @@
 			<Interface value="AXI4">
 			</Interface>
 		</Interfaces>
-	</IP>
-	<IP>
-		<VLNV value="loongson.cn:user:loongson_cpu_gs232:1.0">
-		</VLNV>
-		<DisplayName value="Loongson GS232 CPU">
-		</DisplayName>
-		<Description value="IP package of Loongson GS232, an open source CPU">
-		</Description>
-		<CoreRevision value="5">
-		</CoreRevision>
-		<ComponentPath value="loongson_cpu_gs232/component.xml">
-		</ComponentPath>
-		<Families>
-			<Family name="aartix7">
-				<Part status="Production" name="ALL">
-				</Part>
-			</Family>
-			<Family name="artix7">
-				<Part status="Production" name="ALL">
-				</Part>
-			</Family>
-			<Family name="artix7l">
-				<Part status="Production" name="ALL">
-				</Part>
-			</Family>
-		</Families>
-		<Taxonomies>
-			<Taxonomy value="/Embedded_Processing/Processor">
-			</Taxonomy>
-			<Taxonomy value="/UserIP">
-			</Taxonomy>
-		</Taxonomies>
-		<UpgradesFrom>
-			<Upgrade value="xilinx.com:user:godson_cpu_mid:1.0">
-			</Upgrade>
-		</UpgradesFrom>
-		<LockPrevVersions value="false">
-		</LockPrevVersions>
-		<Interfaces>
-			<Interface value="AXI4">
-			</Interface>
-		</Interfaces>
-	</IP>
-	<IP>
-		<VLNV value="harrychen.xyz:user:nontrivial_mips:1.0">
-		</VLNV>
-		<DisplayName value="NonTrivialMIPS CPU">
-		</DisplayName>
-		<Description value="NonTrivialMIPS is a synthesizable superscalar MIPS processor with branch prediction and FPU support, and it is capable of booting linux.">
-		</Description>
-		<CoreRevision value="3">
-		</CoreRevision>
-		<ComponentPath value="nontrivial_mips/component.xml">
-		</ComponentPath>
-		<Families>
-			<Family name="aartix7">
-				<Part status="Production" name="ALL">
-				</Part>
-			</Family>
-			<Family name="artix7">
-				<Part status="Production" name="ALL">
-				</Part>
-			</Family>
-			<Family name="artix7l">
-				<Part status="Production" name="ALL">
-				</Part>
-			</Family>
-		</Families>
-		<Taxonomies>
-			<Taxonomy value="/Embedded_Processing/Processor">
-			</Taxonomy>
-			<Taxonomy value="/UserIP">
-			</Taxonomy>
-		</Taxonomies>
-		<UpgradesFrom>
-			<Upgrade value="xilinx.com:user:nontrivial_mips:1.0">
-			</Upgrade>
-		</UpgradesFrom>
-		<LockPrevVersions value="false">
-		</LockPrevVersions>
-		<Interfaces>
-			<Interface value="AXI4">
-			</Interface>
-		</Interfaces>
-	</IP>
-	<IP>
-		<VLNV value="harrychen.xyz:user:nt35510_controller:1.0">
-		</VLNV>
-		<DisplayName value="NT35510 LCD Controller">
-		</DisplayName>
-		<Description value="APB adapter of NT35510 LCD">
-		</Description>
-		<CoreRevision value="1">
-		</CoreRevision>
-		<ComponentPath value="nt35510_controller/component.xml">
-		</ComponentPath>
-		<Families>
-			<Family name="aartix7">
-				<Part status="Production" name="ALL">
-				</Part>
-			</Family>
-			<Family name="artix7">
-				<Part status="Production" name="ALL">
-				</Part>
-			</Family>
-			<Family name="artix7l">
-				<Part status="Production" name="ALL">
-				</Part>
-			</Family>
-		</Families>
-		<Taxonomies>
-			<Taxonomy value="/UserIP">
-			</Taxonomy>
-		</Taxonomies>
-		<UpgradesFrom>
-			<Upgrade value="xilinx.com:user:nt35510_apb_adapter_v1_0:1.0">
-			</Upgrade>
-		</UpgradesFrom>
-		<LockPrevVersions value="false">
-		</LockPrevVersions>
 	</IP>
 </Index>
 
