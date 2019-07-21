@@ -29,7 +29,7 @@ logic mem_access_path1;
 pipeline_memwb_t [1:0] pipe_wb;
 pipeline_exec_t [1:0] pipe_exec_d;
 assign pipe_wb = core_inst.pipeline_wb;
-assign pipe_exec_d = core_inst.pipeline_exec_d;
+assign pipe_exec_d = core_inst.pipeline_dcache[1];
 assign mem_access_path1 = pipe_exec_d[0].memreq.read | pipe_exec_d[0].memreq.write;
 
 task judge(input integer fans, input integer cycle, input string out);

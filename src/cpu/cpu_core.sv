@@ -314,7 +314,7 @@ dbus_mux dbus_mux_inst(
 for(genvar i = 1; i < `DCACHE_PIPE_DEPTH; ++i) begin : gen_pipe_dcache
 	if(i == 1) begin : gen_first_pipe_dcache
 		always_ff @(posedge clk) begin
-			if(rst || flush_mm) begin
+			if(rst || flush_mm && ~stall_mm) begin
 				pipeline_dcache[1] <= '0;
 			end else if(~stall_mm) begin
 				if(except_req.valid & ~except_req.alpha_taken) begin
