@@ -179,8 +179,8 @@ always_comb begin
 			end
 
 			if(axi_resp.rvalid & axi_resp.rlast) begin
-				tag_we[assoc_waddr]  = ~ibus.flush_2;
-				data_we[assoc_waddr] = ~ibus.flush_2;
+				tag_we[assoc_waddr]  = 1'b1; // ~ibus.flush_2;
+				data_we[assoc_waddr] = 1'b1; // ~ibus.flush_2;
 				lfsr_update = 1'b1;
 			end
 		end
