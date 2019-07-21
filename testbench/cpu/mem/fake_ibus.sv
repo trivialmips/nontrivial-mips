@@ -25,7 +25,7 @@ always_ff @(posedge clk or posedge rst) begin
 	end else if(ibus.flush_2) begin
 		pipe_read <= ibus.read & ~ibus.flush_1;
 		pipe_addr <= ibus.address;
-	end else if(~ibus.stall & ~ibus.stall_req) begin
+	end else if(~ibus.stall) begin
 		pipe_read <= ibus.read;
 		pipe_addr <= ibus.address;
 	end
@@ -55,7 +55,7 @@ always_ff @(posedge clk) begin
 	if(rst || ~pipe_read) begin
 		ibus.rddata       <= 'x;
 		ibus.rddata_extra <= 'x;
-	end else if(~ibus.stall_req) begin
+	end else begin
 		ibus.rddata_extra[63:32] <= mem[pipe_addr[ADDR_WIDTH-1:2] + 3];
 		ibus.rddata_extra[31:0]  <= mem[pipe_addr[ADDR_WIDTH-1:2] + 2];
 		ibus.rddata[63:32]       <= mem[pipe_addr[ADDR_WIDTH-1:2] + 1];
