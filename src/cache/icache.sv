@@ -90,7 +90,7 @@ logic [$clog2(SET_ASSOC)-1:0] assoc_waddr;
 
 // setup write request
 assign assoc_waddr     = lfsr_val[$clog2(SET_ASSOC)-1:0];
-assign tag_wdata.valid = 1'b1;
+assign tag_wdata.valid = state != INVALIDATING;
 assign tag_wdata.tag   = get_tag(pipe_addr);
 always_comb begin
 	data_wdata = line_recv;
@@ -194,7 +194,6 @@ always_comb begin
 		INVALIDATING: begin
 			invalite_cnt_d = invalite_cnt + 1;
 			tag_we   = '1;
-			data_we  = '1;
 			ram_addr = invalite_cnt;
 		end
 	endcase
