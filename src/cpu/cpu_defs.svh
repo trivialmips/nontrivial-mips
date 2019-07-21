@@ -44,25 +44,43 @@ typedef struct packed {
 } except_req_t;
 
 // control flow type
-typedef enum logic [1:0] {
+typedef enum logic [2:0] {
 	ControlFlow_None,
+	ControlFlow_Jump,
 	ControlFlow_Branch,
-	ControlFlow_JumpImm,
-	ControlFlow_JumpReg
+	ControlFlow_Call,
+	ControlFlow_Return
 } controlflow_t;
 
 // resolved branch information (forward)
 typedef struct packed {
-	logic valid, mispredict, taken;
-	logic update_bht;
-	virt_t pc, target;
+	// Are we recognize this instruction as a controlflow?
+	logic valid;
+	// Are we mispredict?
+	logic mispredict;
+	// Are we change the controlflow?
+	logic taken;
+	// Instruction address
+	virt_t pc;
+	// Controlflow target address
+	virt_t target;
+	// BHT counter
+	logic [1:0] counter;
+	// Controlflow type
 	controlflow_t cf;
 } branch_resolved_t;
 
+typedef struct packed {
+	logic mispredict;
+	virt_t pc, target;
+} presolved_branch_t;
+
 // branch prediction information
 typedef struct packed {
+	logic valid, taken;
+	virt_t target;
+	logic [1:0] counter;
 	controlflow_t cf;
-	virt_t predict_vaddr;
 } branch_predict_t;
 
 // RAS information
@@ -75,22 +93,23 @@ typedef struct packed {
 typedef struct packed {
 	logic valid;
 	virt_t pc, target;
+	controlflow_t cf;
 } btb_update_t;
 
 typedef struct packed {
 	logic valid;
 	virt_t target;
+	controlflow_t cf;
 } btb_predict_t;
 
 // BHT information
 typedef struct packed {
 	logic valid, taken;
+	logic [1:0] counter;
 	virt_t pc;
 } bht_update_t;
 
-typedef struct packed {
-	logic valid, taken;
-} bht_predict_t;
+typedef logic [1:0] bht_predict_t;
 
 // fetched instruction
 typedef struct packed {
@@ -110,8 +129,8 @@ typedef struct packed {
 } instr_fetch_memreq_t;
 
 typedef struct packed {
-	logic stall;
-	uint64_t data;
+	logic stall, valid, valid_extra;
+	uint64_t data, data_extra;
 	address_exception_t iaddr_ex;
 } instr_fetch_memres_t;
 
@@ -189,6 +208,7 @@ typedef struct packed {
 	reg_addr_t   rs2;
 	reg_addr_t   rd;
 	oper_t       op;
+	controlflow_t cf;       // controlflow type
 	logic  imm_signed;      // use sign-extened immediate
 	logic  use_imm;         // use immediate as reg2
 	logic  is_controlflow;  // controlflow maybe changed

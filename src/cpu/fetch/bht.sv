@@ -1,46 +1,24 @@
 `include "cpu_defs.svh"
 
 module bht #(
-	parameter int ENTRIES_NUM = 1024
-)(
+	parameter int SIZE = 4096
+) (
 	input  logic         clk,
 	input  logic         rst,
-	input  logic         flush,
 
-	input  virt_t        pc,
+	// lookup address, aligned in 8-bytes
+	input  virt_t        vaddr,
 	input  bht_update_t  update,
-	output bht_predict_t [`FETCH_NUM-1:0] predict
+	output bht_predict_t [1:0] predict
 );
 
 localparam OFFSET        = 2;
-localparam ROW_NUM       = ENTRIES_NUM / `FETCH_NUM;
-localparam ROW_ADDR_BITS = $clog2(`FETCH_NUM);
-localparam INDEX_OFFSET  = OFFSET + ROW_ADDR_BITS;
-localparam ADDR_BITS     = $clog2(ENTRIES_NUM) + OFFSET;
+localparam CHANNEL_SIZE  = SIZE / 2;
 
-typedef struct packed {
-	// TODO: we can remove the `valid` field
-	logic valid;
-	logic [1:0] counter;
-} bht_status_t;
-
-bht_status_t bht_now[ROW_NUM-1:0][`FETCH_NUM-1:0];
-bht_status_t bht_nxt[ROW_NUM-1:0][`FETCH_NUM-1:0];
-
-// output prediction
-logic [$clog2(ROW_NUM)-1:0] index;
-assign index = pc[ADDR_BITS-1:INDEX_OFFSET];
-
-for(genvar i = 0; i < `FETCH_NUM; ++i) begin: gen_assign_bht_predict
-	assign predict[i].valid = bht_now[index][i].valid;
-	assign predict[i].taken = bht_now[index][i].counter[1];
-end
-
-// set new prediction
-logic [$clog2(ROW_NUM)-1:0] update_index;
-logic [ROW_ADDR_BITS-1:0] update_row_addr;
-assign update_index = update.pc[ADDR_BITS-1:INDEX_OFFSET];
-assign update_row_addr = update.pc[INDEX_OFFSET-1:OFFSET];
+typedef logic [$clog2(CHANNEL_SIZE) - 1:0] index_t;
+function index_t get_index(input virt_t vaddr);
+	return vaddr[$clog2(CHANNEL_SIZE) + 2:3];
+endfunction
 
 function logic [1:0] next_counter(
 	input logic [1:0] counter,
@@ -63,33 +41,37 @@ function logic [1:0] next_counter(
 	end
 endfunction
 
-always_comb begin
-	bht_nxt = bht_now;
-	if(update.valid) begin
-		bht_nxt[update_index][update_row_addr].valid = 1'b1;
-		bht_nxt[update_index][update_row_addr].counter = next_counter(
-			bht_now[update_index][update_row_addr].counter, update.taken);
-	end
-end
+logic [1:0] we;
+index_t waddr, raddr;
+bht_predict_t wdata;
+bht_predict_t [1:0] rdata;
 
-// update prediction
-always_ff @(posedge clk) begin
-	if(rst) begin
-		for(int i = 0; i < ROW_NUM; ++i) begin
-			bht_now[i] <= '{default: 0};
-		end
-	end else begin
-		if(flush) begin
-			for(int i = 0; i < ROW_NUM; ++i) begin
-				for(int j = 0; j < `FETCH_NUM; ++j) begin
-					bht_now[i][j].valid   <= 1'b0;
-					bht_now[i][j].counter <= 2'b10;
-				end
-			end
-		end else begin
-			bht_now <= bht_nxt;
-		end
-	end
+// read request
+assign raddr   = get_index(vaddr);
+assign predict = rdata;
+
+// write request
+assign we[0] = ~update.pc[2] & update.valid;
+assign we[1] = update.pc[2]  & update.valid;
+assign waddr = get_index(update.pc);
+assign wdata = next_counter(update.counter, update.taken);
+
+for(genvar i = 0; i < 2; ++i) begin : gen_bht_ram
+	dual_port_ram #(
+		.SIZE  ( CHANNEL_SIZE  ),
+		.dtype ( bht_predict_t )
+	) bht_ram (
+		.clk,
+		.rst,
+		.wea   ( 1'b0     ),
+		.addra ( raddr    ),
+		.dina  (          ),
+		.douta ( rdata[i] ),
+		.web   ( we[i]    ),
+		.addrb ( waddr    ),
+		.dinb  ( wdata    ),
+		.doutb (          )
+	);
 end
 
 endmodule

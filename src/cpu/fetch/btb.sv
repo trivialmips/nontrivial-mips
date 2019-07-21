@@ -1,66 +1,69 @@
 `include "cpu_defs.svh"
 
 module btb #(
-	parameter int ENTRIES_NUM = 16
-)(
+	parameter int SIZE = 4096
+) (
 	input  logic         clk,
 	input  logic         rst,
-	input  logic         flush,
 
-	input  virt_t        pc,     // aligned in 8-bytes
+	// lookup address, aligned in 8-bytes
+	input  virt_t        vaddr,
 	input  btb_update_t  update,
-	output btb_predict_t [`FETCH_NUM-1:0] predict
+	output btb_predict_t [1:0] predict,
+	input  presolved_branch_t presolved_branch
 );
 
 localparam OFFSET        = 2;
-localparam ROW_NUM       = ENTRIES_NUM / `FETCH_NUM;
-localparam ROW_ADDR_BITS = $clog2(`FETCH_NUM);
-localparam INDEX_OFFSET  = OFFSET + ROW_ADDR_BITS;
-localparam ADDR_BITS     = $clog2(ENTRIES_NUM) + OFFSET;
+localparam CHANNEL_SIZE  = SIZE / 2;
 
-btb_predict_t btb_now[ROW_NUM-1:0][`FETCH_NUM-1:0];
-btb_predict_t btb_nxt[ROW_NUM-1:0][`FETCH_NUM-1:0];
+typedef logic [$clog2(CHANNEL_SIZE) - 1:0] index_t;
+function index_t get_index(input virt_t vaddr);
+	return vaddr[$clog2(CHANNEL_SIZE) + 2:3];
+endfunction
 
-// output prediction
-logic [$clog2(ROW_NUM)-1:0] index;
-assign index = pc[ADDR_BITS-1:INDEX_OFFSET];
+logic [1:0] we, wea;
+index_t waddr, raddr, addra;
+btb_predict_t wdata;
+btb_predict_t [1:0] rdata;
 
-for(genvar i = 0; i < `FETCH_NUM; ++i) begin: gen_assign_btb_predict
-	assign predict[i] = btb_now[index][i];
-end
+// read request
+assign raddr   = get_index(vaddr);
+assign predict = rdata;
 
-// set new prediction
-logic [$clog2(ROW_NUM)-1:0] update_index;
-logic [ROW_ADDR_BITS-1:0] update_row_addr;
-assign update_index = update.pc[ADDR_BITS-1:INDEX_OFFSET];
-assign update_row_addr = update.pc[INDEX_OFFSET-1:OFFSET];
-
+// write request through read channel
+assign wea[0] = presolved_branch.mispredict & ~presolved_branch.pc[2];
+assign wea[1] = presolved_branch.mispredict & presolved_branch.pc[2];
 always_comb begin
-	btb_nxt = btb_now;
-	if(update.valid) begin
-		btb_nxt[update_index][update_row_addr].valid  = 1'b1;
-		btb_nxt[update_index][update_row_addr].target = update.target;
+	if(presolved_branch.mispredict) begin
+		addra = get_index(presolved_branch.pc);
+	end else begin
+		addra = raddr;
 	end
 end
 
-// update prediction
-always_ff @(posedge clk) begin
-	if(rst) begin
-		for(int i = 0; i < ROW_NUM; ++i) begin
-			btb_now[i] <= '{default: 0};
-		end
-	end else begin
-		if(flush) begin
-			for(int i = 0; i < ROW_NUM; ++i) begin
-				for(int j = 0; j < `FETCH_NUM; ++j) begin
-					// TODO: we can remove the `valid` field
-					btb_now[i][j].valid <= 1'b0;
-				end
-			end
-		end else begin
-			btb_now <= btb_nxt;
-		end
-	end
+// write request
+assign we[0] = ~update.pc[2] & update.valid;
+assign we[1] = update.pc[2]  & update.valid;
+assign waddr = get_index(update.pc);
+assign wdata.target = update.target;
+assign wdata.cf     = update.cf;
+
+for(genvar i = 0; i < 2; ++i) begin : gen_btb_ram
+	dual_port_ram #(
+		.SIZE  ( CHANNEL_SIZE  ),
+		.dtype ( btb_predict_t )
+	) btb_ram (
+		.clk,
+		.rst,
+		.wea   ( wea[i]   ),
+		.addra ( addra    ),
+		.dina  ( '0       ),
+		.douta ( rdata[i] ),
+		.web   ( we[i]    ),
+		.addrb ( waddr    ),
+		.dinb  ( wdata    ),
+		.doutb (          )
+	);
 end
 
 endmodule

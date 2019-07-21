@@ -51,6 +51,18 @@ always_ff @(posedge clk or posedge rst) begin
 	end
 end
 
+always_ff @(posedge clk) begin
+	if(rst || ~pipe_read) begin
+		ibus.rddata       <= 'x;
+		ibus.rddata_extra <= 'x;
+	end else begin
+		ibus.rddata_extra[63:32] <= mem[pipe_addr[ADDR_WIDTH-1:2] + 3];
+		ibus.rddata_extra[31:0]  <= mem[pipe_addr[ADDR_WIDTH-1:2] + 2];
+		ibus.rddata[63:32]       <= mem[pipe_addr[ADDR_WIDTH-1:2] + 1];
+		ibus.rddata[31:0]        <= mem[pipe_addr[ADDR_WIDTH-1:2]];
+	end
+end
+
 always_comb
 begin
 	if(rst || ~pipe_read)
@@ -59,8 +71,6 @@ begin
 		ibus.rddata = 'x;
 	end else begin
 		ibus.stall  = (cache_miss | (|stall)) & fake_stall_en & ~ibus.flush_2;
-		ibus.rddata[63:32] = mem[pipe_addr[ADDR_WIDTH-1:2] + 1];
-		ibus.rddata[31:0]  = mem[pipe_addr[ADDR_WIDTH-1:2]];
 	end
 end
 
