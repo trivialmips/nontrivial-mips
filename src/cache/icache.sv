@@ -195,7 +195,7 @@ always_comb begin
 	state_d = state;
 	unique case(state)
 		IDLE, FINISH:
-			if(cache_miss & ~ibus.flush_2)
+			if(cache_miss)
 				state_d = WAIT_AXI_READY;
 			else state_d = IDLE;
 		WAIT_AXI_READY:
@@ -225,7 +225,7 @@ always_ff @(posedge clk) begin
 		line_recv[burst_cnt] <= axi_resp.rdata;
 	end
 
-	if(rst) begin
+	if(rst || ibus.flush_2) begin
 		state     <= IDLE;
 		burst_cnt <= '0;
 	end else begin
