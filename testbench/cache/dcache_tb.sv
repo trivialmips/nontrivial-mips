@@ -2,7 +2,7 @@
 
 `define PATH_PREFIX "testbench/cache/cases/"
 
-`define CASE_NAME "sequential.data"
+`define CASE_NAME "random.data"
 
 module dcache_tb();
 
