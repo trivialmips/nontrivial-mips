@@ -89,18 +89,18 @@ always_ff @(posedge clk or posedge rst) begin
 	end
 end
 
-always_comb
+always_ff @(posedge clk)
 begin
 	if(rst) begin
-		dbus.stall  = 1'b0;
-		dbus.rddata = 'x;
-		dbus_uncached.stall  = 1'b0;
-		dbus_uncached.rddata = 'x;
+		dbus.stall  <= 1'b0;
+		dbus.rddata <= 'x;
+		dbus_uncached.stall  <= 1'b0;
+		dbus_uncached.rddata <= 'x;
 	end else begin
-		dbus.stall  = (cache_miss | (|stall)) & fake_stall_en;
-		dbus.rddata = pipe_read ? rddata : 'x;
-		dbus_uncached.stall  = (cache_miss | (|stall)) & fake_stall_en;
-		dbus_uncached.rddata = pipe_uncached_read ? rddata : 'x;
+		dbus.stall  <= (cache_miss | (|stall)) & fake_stall_en;
+		dbus.rddata <= pipe_read ? rddata : 'x;
+		dbus_uncached.stall  <= (cache_miss | (|stall)) & fake_stall_en;
+		dbus_uncached.rddata <= pipe_uncached_read ? rddata : 'x;
 	end
 end
 

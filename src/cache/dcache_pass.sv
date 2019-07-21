@@ -44,8 +44,11 @@ assign axi_req_arid = '0;
 assign axi_req_awid = '0;
 assign axi_req_wid = '0;
 
-assign dbus.stall = (state_d != IDLE && state_d != WAIT_BVALID);
-assign dbus.rddata = axi_resp.rdata;
+logic stall_s2, stall_s3;
+uint32_t pipe_rddata;
+assign stall_s2 = (state_d != IDLE && state_d != WAIT_BVALID);
+assign dbus.rddata = pipe_rddata;
+assign dbus.stall  = stall_s3;
 
 logic uncache_access;
 assign uncache_access = (pipe_read | pipe_write) & (state == IDLE | state == WAIT_BVALID);
@@ -123,12 +126,22 @@ always_ff @(posedge clk) begin
 		pipe_read <= 1'b0;
 		pipe_write <= 1'b0;
 		pipe_byteenable <= '0;
-	end else if(~dbus.stall) begin
+	end else if(~stall_s2) begin
 		pipe_read <= dbus.read;
 		pipe_write <= dbus.write;
 		pipe_addr <= dbus.address;
 		pipe_wdata <= dbus.wrdata;
 		pipe_byteenable <= dbus.byteenable;
+	end
+end
+
+always_ff @(posedge clk) begin
+	if(rst) begin
+		stall_s3    <= 1'b0;
+		pipe_rddata <= '0;
+	end else begin
+		stall_s3    <= stall_s2;
+		pipe_rddata <= axi_resp.rdata;
 	end
 end
 
