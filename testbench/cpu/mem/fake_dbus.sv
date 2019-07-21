@@ -19,7 +19,13 @@ reg [SIZE / $clog2(CACHE_LINE)-1:0] hit;
 logic pipe_read, pipe_write, pipe_uncached_read, pipe_uncached_write;
 uint32_t pipe_addr;
 logic [3:0] pipe_sel;
-uint32_t wrdata, rddata, pipe_wrdata;
+uint32_t pipe_wrdata;
+logic pipe0_read, pipe0_write, pipe0_uncached_read, pipe0_uncached_write;
+uint32_t pipe0_addr;
+logic [3:0] pipe0_sel;
+uint32_t pipe0_wrdata;
+
+uint32_t wrdata, rddata;
 assign rddata = mem[pipe_addr[ADDR_WIDTH-1:2]];
 assign wrdata = {
 	pipe_sel[3] ? pipe_wrdata[31:24] : rddata[31:24],
@@ -46,14 +52,28 @@ end else begin : dcache_pipe2
 			pipe_sel    <= '0;
 			pipe_uncached_read  <= '0;
 			pipe_uncached_write <= '0;
+			pipe0_wrdata <= '0;
+			pipe0_read   <= '0;
+			pipe0_write  <= '0;
+			pipe0_addr   <= '0;
+			pipe0_sel    <= '0;
+			pipe0_uncached_read  <= '0;
+			pipe0_uncached_write <= '0;
 		end else if(~dbus.stall) begin
-			pipe_wrdata <= dbus.wrdata;
-			pipe_read   <= dbus.read;
-			pipe_write  <= dbus.write;
-			pipe_addr   <= dbus.address;
-			pipe_sel    <= dbus.byteenable;
-			pipe_uncached_read  <= dbus_uncached.read;
-			pipe_uncached_write <= dbus_uncached.write;
+			pipe0_wrdata <= dbus.wrdata;
+			pipe0_read   <= dbus.read;
+			pipe0_write  <= dbus.write;
+			pipe0_addr   <= dbus.address;
+			pipe0_sel    <= dbus.byteenable;
+			pipe0_uncached_read  <= dbus_uncached.read;
+			pipe0_uncached_write <= dbus_uncached.write;
+			pipe_wrdata <= pipe0_wrdata;
+			pipe_read   <= pipe0_read;
+			pipe_write  <= pipe0_write;
+			pipe_addr   <= pipe0_addr;
+			pipe_sel    <= pipe0_sel;
+			pipe_uncached_read  <= pipe0_uncached_read;
+			pipe_uncached_write <= pipe0_uncached_write;
 		end
 	end
 end

@@ -4,6 +4,8 @@ module multi_queue #(
 	parameter int unsigned DATA_WIDTH   = 32,   // default data width if the fifo is of type logic
 	parameter int unsigned DEPTH        = 8,    // depth per channel, must be the power of 2
 	parameter int unsigned CHANNEL      = 4,    // channel number, must be the power of 2
+	parameter int unsigned PUSH_CHANNEL = 3,
+	parameter int unsigned POP_CHANNEL  = 3,
 	parameter type dtype                = logic [DATA_WIDTH-1:0]
 )(
 	input  logic  clk,
@@ -14,13 +16,12 @@ module multi_queue #(
 	output logic  full,   // 1 if any channel is full
 	output logic  empty,  // 1 if all channels are empty
 
-	input  dtype  [CHANNEL-1:0] data_push,
-	input  logic  [$clog2(CHANNEL+1)-1:0] push_num,
-	input  logic  [$clog2(CHANNEL)-1:0]   push_offset,
+	input  dtype  [PUSH_CHANNEL-1:0] data_push,
+	input  logic  [$clog2(PUSH_CHANNEL+1)-1:0] push_num,
 
-	output dtype  [CHANNEL-1:0] data_pop,
-	output logic  [CHANNEL-1:0] pop_valid,
-	input  logic  [$clog2(CHANNEL+1)-1:0] pop_num
+	output dtype  [POP_CHANNEL-1:0] data_pop,
+	output logic  [POP_CHANNEL-1:0] pop_valid,
+	input  logic  [$clog2(POP_CHANNEL+1)-1:0] pop_num
 );
 
 typedef logic[$clog2(CHANNEL)-1:0] index_t;
@@ -29,14 +30,21 @@ typedef logic[$clog2(CHANNEL)-1:0] index_t;
 logic [CHANNEL-1:0] queue_push, queue_pop;
 logic [CHANNEL-1:0] queue_full, queue_empty;
 dtype [CHANNEL-1:0] data_in, data_out;
+logic [$clog2(CHANNEL+1)-1:0] full_cnt;
 
-assign full  = |queue_full;
+assign full  = full_cnt > CHANNEL - PUSH_CHANNEL;
 assign empty = &queue_empty;
 
 // index
 index_t [CHANNEL-1:0] shifted_read_idx, shifted_write_idx;
 index_t [CHANNEL-1:0] rshifted_read_idx, rshifted_write_idx;
 index_t read_ptr_now, write_ptr_now;
+
+always_comb begin
+	full_cnt = '0;
+	for(int i = 0; i < CHANNEL; ++i)
+		full_cnt += queue_full[i];
+end
 
 for(genvar i = 0; i < CHANNEL; ++i) begin : gen_shifted_rw_index
 	assign shifted_read_idx[i]   = read_ptr_now + i;
@@ -46,14 +54,14 @@ for(genvar i = 0; i < CHANNEL; ++i) begin : gen_shifted_rw_index
 end
 
 // queue logic
-for(genvar i = 0; i < CHANNEL; ++i) begin : gen_read_queue
+for(genvar i = 0; i < POP_CHANNEL; ++i) begin : gen_read_queue
 	assign data_pop[i]  = data_out[shifted_read_idx[i]];
 	assign pop_valid[i] = ~queue_empty[shifted_read_idx[i]];
 end
 
 // write queue logic
 for(genvar i = 0; i < CHANNEL; ++i) begin : gen_rw_req
-	assign data_in[i]    = data_push[push_offset + rshifted_write_idx[i]];
+	assign data_in[i]    = data_push[rshifted_write_idx[i]];
 	assign queue_pop[i]  = (rshifted_read_idx[i] < pop_num);
 	assign queue_push[i] = (rshifted_write_idx[i] < push_num);
 end
@@ -85,8 +93,8 @@ for(genvar i = 0; i < CHANNEL; ++i) begin : gen_instr_fifo
 		.usage_o     ( /* empty */    ),
 		.data_i      ( data_in[i]     ),
 		.data_o      ( data_out[i]    ),
-		.push_i      ( ~stall_push & ~flush & queue_push[i] ),
-		.pop_i       ( ~stall_pop  & ~flush & queue_pop[i]  )
+		.push_i      ( ~stall_push & queue_push[i] ),
+		.pop_i       ( ~stall_pop  & queue_pop[i]  )
 	);
 end
 

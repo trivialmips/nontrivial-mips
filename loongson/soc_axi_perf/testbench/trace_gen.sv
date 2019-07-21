@@ -145,19 +145,33 @@ assign   ref_wb_rf_wdata_v[7 : 0] =   ref_wb_rf_wdata[7 : 0] & {8{debug_wb_rf_we
 
 logic icache_miss;
 assign icache_miss = soc_lite.u_cpu.nontrivial_mips_inst.cache_controller_inst.icache_inst.icache_miss;
-integer icache_miss_counter, instr_counter, cycle_counter, mispredict_counter, branch_counter, dcache_counter, uncache_counter, dcache_access_counter, stall_mm_counter;
+integer icache_miss_counter, instr_counter, cycle_counter, mispredict_counter, branch_counter, dcache_counter, uncache_counter, dcache_access_counter, stall_mm_counter, noncf_miss_counter;
 branch_resolved_t resolved_branch;
 assign resolved_branch = soc_lite.u_cpu.nontrivial_mips_inst.cpu_core_inst.instr_fetch_inst.resolved_branch;
 
-pipeline_memwb_t [1:0] pipe_wb;
+pipeline_memwb_t [1:0] pipe_wb, pipe_mem;
+pipeline_exec_t [1:0] pipe_dcache_last;
 assign pipe_wb = soc_lite.u_cpu.nontrivial_mips_inst.cpu_core_inst.pipeline_wb;
-integer ftrace;
+assign pipe_dcache_last = soc_lite.u_cpu.nontrivial_mips_inst.cpu_core_inst.pipeline_dcache_last;
+assign pipe_mem = soc_lite.u_cpu.nontrivial_mips_inst.cpu_core_inst.pipeline_mem;
+integer ftrace, fmem_trace;
+
+task output_mem_trace(input pipeline_exec_t pipe_dcache_last, input pipeline_memwb_t pipe_mem);
+	if(pipe_dcache_last.memreq.uncached | ~pipe_dcache_last.valid | soc_lite.u_cpu.nontrivial_mips_inst.cpu_core_inst.stall_mm) return;
+	if(pipe_dcache_last.memreq.read) begin
+		$fwrite(fmem_trace, "r %08x %08x\n", pipe_dcache_last.memreq.paddr, pipe_mem.wdata);
+	end else if(pipe_dcache_last.memreq.write) begin
+		$fwrite(fmem_trace, "w %08x %08x\n", pipe_dcache_last.memreq.paddr, pipe_dcache_last.memreq.wrdata);
+	end
+endtask
+
 task output_trace(input pipeline_memwb_t pipe_wb);
 	//$display("1 0x%8h 0x%2h 0x%8h\n", pipe_wb.pc, pipe_wb.rd, pipe_wb.wdata);
 	if(pipe_wb.rd!=5'd0) begin
 		$fwrite(ftrace, "1 0x%8h 0x%2h 0x%8h\n",
 				  pipe_wb.pc, pipe_wb.rd, pipe_wb.wdata);
 	end
+
 endtask
 
 //compare result in rsing edge 
@@ -177,11 +191,13 @@ begin
 		dcache_access_counter <= '0;
 		uncache_counter <= '0;
 		stall_mm_counter <= '0;
+		noncf_miss_counter <= '0;
     end
     else begin
 		cycle_counter <= cycle_counter + 1;
 		icache_miss_counter <= icache_miss_counter + icache_miss;
 		instr_counter <= instr_counter + (pipe_wb[0].valid) + (pipe_wb[1].valid);
+		noncf_miss_counter <= noncf_miss_counter + soc_lite.u_cpu.nontrivial_mips_inst.cpu_core_inst.instr_fetch_inst.presolved_branch.mispredict;
 		dcache_access_counter <= dcache_access_counter + soc_lite.u_cpu.nontrivial_mips_inst.cache_controller_inst.dcache_inst.debug_uncache_access;
 		stall_mm_counter <= stall_mm_counter + soc_lite.u_cpu.nontrivial_mips_inst.cpu_core_inst.stall_from_mm;
 		dcache_counter <= dcache_counter + soc_lite.u_cpu.nontrivial_mips_inst.cache_controller_inst.dcache_inst.debug_cache_miss;
@@ -192,6 +208,8 @@ begin
 		//	$display("mispredict = %d, taken = %d, pc = 0x%08x, target = 0x%08x", resolved_branch.mispredict, resolved_branch.taken, resolved_branch.pc, resolved_branch.target);
 		output_trace(pipe_wb[0]);
 		output_trace(pipe_wb[1]);
+		output_mem_trace(pipe_dcache_last[0], pipe_mem[0]);
+		output_mem_trace(pipe_dcache_last[1], pipe_mem[1]);
     end
 end
 
@@ -234,6 +252,7 @@ end
 initial
 begin
 	ftrace = $fopen("/tmp/traces/my_bitcount.txt", "w");
+	fmem_trace = $fopen("/tmp/traces/mem_bitcount.txt", "w");
     $timeformat(-9,0," ns",10);
     while(!resetn) #5;
     $display("==============================================================");
@@ -299,6 +318,7 @@ begin
 			$display("cycle: %d", cycle_counter);
 			$display("branch: %d", branch_counter);
 			$display("mispredict: %d", mispredict_counter);
+			$display("NoCF mispredict: %d", noncf_miss_counter);
 			$display("mm_stall: %d", stall_mm_counter);
         end
 	    $finish;

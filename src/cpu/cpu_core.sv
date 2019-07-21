@@ -4,9 +4,9 @@ module cpu_core(
 	input  logic           clk,
 	input  logic           rst,
 	input  cpu_interrupt_t intr,
-	cpu_ibus_if.master     ibus,
-	cpu_dbus_if.master     dbus,
-	cpu_dbus_if.master     dbus_uncached
+	(* mark_debug = "true" *) cpu_ibus_if.master     ibus,
+	(* mark_debug = "true" *) cpu_dbus_if.master     dbus,
+	(* mark_debug = "true" *) cpu_dbus_if.master     dbus_uncached
 );
 
 // flush and stall signals
@@ -81,7 +81,10 @@ assign ibus.flush_2     = icache_req.flush_s2;
 assign ibus.read        = icache_req.read;
 assign ibus.address     = mmu_inst_result.phy_addr;
 assign icache_res.data  = ibus.rddata;
+assign icache_res.valid = ibus.valid;
 assign icache_res.stall = ibus.stall;
+assign icache_res.data_extra       = ibus.rddata_extra;
+assign icache_res.valid_extra      = ibus.extra_valid;
 assign icache_res.iaddr_ex.miss    = mmu_inst_result.miss;
 assign icache_res.iaddr_ex.illegal = mmu_inst_result.illegal;
 assign icache_res.iaddr_ex.invalid = mmu_inst_result.invalid;
@@ -137,16 +140,14 @@ mmu mmu_inst(
 );
 
 instr_fetch #(
-	.BTB_SIZE ( `BTB_SIZE ),
-	.BHT_SIZE ( `BHT_SIZE ),
-	.RAS_SIZE ( `RAS_SIZE ),
-	.INSTR_FIFO_DEPTH ( `INSTR_FIFO_DEPTH )
+	.BPU_SIZE ( `BPU_SIZE ),
+	.INSTR_FIFO_DEPTH  ( `INSTR_FIFO_DEPTH  ),
+	.ICACHE_LINE_WIDTH ( `ICACHE_LINE_WIDTH )
 ) instr_fetch_inst (
 	.clk,
 	.rst,
 	.flush_pc     ( flush_if              ),
-	.flush_bp     ( 1'b0                  ),
-	.stall_s2     ( stall_if              ),
+	.stall_pop    ( stall_if              ),
 	.except_valid ( except_req.valid      ),
 	.except_vec   ( except_req.except_vec ),
 	.resolved_branch_i ( resolved_branch  ),
@@ -207,7 +208,9 @@ resolve_delayslot resolve_delayslot_inst(
 );
 
 for(genvar i = 0; i < `ISSUE_NUM; ++i) begin : gen_exec
-	instr_exec exec_inst(
+	instr_exec #(
+		.HAS_DIV(i == 0)
+	) exec_inst (
 		.clk,
 		.rst,
 		.flush       ( flush_ex                   ),
@@ -296,7 +299,7 @@ cp0 cp0_inst(
 	.timer_int ( cp0_timer_int )
 );
 
-assign cp0_reg_wr  = pipeline_exec_d[0].cp0_req;
+assign cp0_reg_wr  = pipeline_exec_d[0].cp0_req & ~except_req.valid;
 assign tlbrw_we    = pipeline_exec_d[0].tlbreq.tlbwi | pipeline_exec_d[0].tlbreq.tlbwr;
 assign tlbrw_index = pipeline_exec_d[0].tlbreq.tlbwi ? cp0_regs.index : cp0_regs.random;
 
@@ -311,7 +314,7 @@ dbus_mux dbus_mux_inst(
 for(genvar i = 1; i < `DCACHE_PIPE_DEPTH; ++i) begin : gen_pipe_dcache
 	if(i == 1) begin : gen_first_pipe_dcache
 		always_ff @(posedge clk) begin
-			if(rst || flush_mm) begin
+			if(rst || flush_mm && ~stall_mm) begin
 				pipeline_dcache[1] <= '0;
 			end else if(~stall_mm) begin
 				if(except_req.valid & ~except_req.alpha_taken) begin

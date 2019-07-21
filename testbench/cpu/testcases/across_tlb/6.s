@@ -17,6 +17,33 @@ _start:
 	nop
 	nop
 	nop
+	nop
+	nop
+	nop
+	nop
+	nop
+	nop
+	nop
+	nop
+	nop
+	nop
+	nop
+	nop
+	nop
+	nop
+	nop
+	nop
+	nop
+	nop
+	nop
+	nop
+	nop
+	nop
+	nop
+	nop
+	nop
+	nop
+	nop
 
 	addi $10, $10, 0xffc # ans: $10=0x12340ffc
 	addi $11, $10, 0x8 # ans: $11=0x12341004

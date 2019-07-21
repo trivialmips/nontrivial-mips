@@ -38,7 +38,8 @@ typedef enum logic [2:0] {
 	RECEIVING,
 	FINISH,
 	FLUSH_WAIT_AXI_READY,
-	FLUSH_RECEIVING
+	FLUSH_RECEIVING,
+	INVALIDATING
 } state_t;
 
 typedef struct packed {
@@ -58,7 +59,7 @@ function logic [TAG_WIDTH-1:0] get_tag( input logic [31:0] addr );
 	return addr[31 : LINE_BYTE_OFFSET + INDEX_WIDTH];
 endfunction
 
-function logic [TAG_WIDTH-1:0] get_offset( input logic [31:0] addr );
+function offset_t get_offset( input logic [31:0] addr );
 	return addr[LINE_BYTE_OFFSET - 1 : DATA_BYTE_OFFSET];
 endfunction
 
@@ -89,7 +90,7 @@ logic [$clog2(SET_ASSOC)-1:0] assoc_waddr;
 
 // setup write request
 assign assoc_waddr     = lfsr_val[$clog2(SET_ASSOC)-1:0];
-assign tag_wdata.valid = 1'b1;
+assign tag_wdata.valid = state != INVALIDATING;
 assign tag_wdata.tag   = get_tag(pipe_addr);
 always_comb begin
 	data_wdata = line_recv;
@@ -102,14 +103,44 @@ for(genvar i = 0; i < SET_ASSOC; ++i) begin : gen_icache_hit
 end
 assign cache_miss = ~(|hit) & pipe_read;
 
-// setup IBus
-assign ibus.stall = (state_d != IDLE) & pipe_read & ~ibus.flush_2;
-assign ibus.valid = pipe_read & ~ibus.stall & ~ibus.flush_2;
+// invalidate counter
+index_t invalite_cnt, invalite_cnt_d;
+
+// stall signals
+assign ibus.stall = ~((state == IDLE || state == FINISH) & ~cache_miss) & pipe_read || state == INVALIDATING;
+
+// send rddata next cycle
+logic [SET_ASSOC-1:0] pipe_hit;
+logic [SET_ASSOC-1:0][DATA_WIDTH-1:0] pipe_rdata, pipe_rdata_extra;
+logic pipe_rddata_valid, pipe_rddata_extra_valid;
 always_comb begin
-	ibus.rddata = '0;
-	// at most one `hit` will be 1.
+	ibus.valid        = pipe_rddata_valid;
+	ibus.extra_valid  = pipe_rddata_extra_valid;
+	ibus.rddata       = '0;
+	ibus.rddata_extra = '0;
 	for(int i = 0; i < SET_ASSOC; ++i) begin
-		ibus.rddata |= {DATA_WIDTH{hit[i]}} & data_rdata[i][get_offset(pipe_addr)];
+		ibus.rddata |= {DATA_WIDTH{pipe_hit[i]}} & pipe_rdata[i];
+		ibus.rddata_extra |= {DATA_WIDTH{pipe_hit[i]}} & pipe_rdata_extra[i];
+	end
+end
+
+offset_t next_offset;
+assign next_offset = get_offset(pipe_addr) + 1;
+always_ff @(posedge clk) begin
+	if(rst) begin
+		pipe_hit <= '0;
+		pipe_rdata <= '0;
+		pipe_rdata_extra <= '0;
+		pipe_rddata_valid <= 1'b0;
+		pipe_rddata_extra_valid <= 1'b0;
+	end else begin
+		pipe_hit <= hit;
+		pipe_rddata_valid <= pipe_read & ~ibus.stall & ~ibus.flush_2;
+		pipe_rddata_extra_valid <= ~&get_offset(pipe_addr);
+		for(int i = 0; i < SET_ASSOC; ++i) begin
+			pipe_rdata[i]       <= data_rdata[i][get_offset(pipe_addr)];
+			pipe_rdata_extra[i] <= data_rdata[i][next_offset];
+		end
 	end
 end
 
@@ -130,6 +161,7 @@ always_comb begin
 
 	lfsr_update = 1'b0;
 	burst_cnt_d = burst_cnt;
+	invalite_cnt_d = '0;
 
 	// AXI defaults
 	axi_req = '0;
@@ -151,13 +183,18 @@ always_comb begin
 			end
 
 			if(axi_resp.rvalid & axi_resp.rlast) begin
-				tag_we[assoc_waddr]  = ~ibus.flush_2;
-				data_we[assoc_waddr] = ~ibus.flush_2;
+				tag_we[assoc_waddr]  = 1'b1; // ~ibus.flush_2;
+				data_we[assoc_waddr] = 1'b1; // ~ibus.flush_2;
 				lfsr_update = 1'b1;
 			end
 		end
 		FLUSH_RECEIVING: begin
 			axi_req.rready = 1'b1;
+		end
+		INVALIDATING: begin
+			invalite_cnt_d = invalite_cnt + 1;
+			tag_we   = '1;
+			ram_addr = invalite_cnt;
 		end
 	endcase
 end
@@ -184,6 +221,8 @@ always_comb begin
 			end else if(ibus.flush_2) begin
 				state_d = FLUSH_RECEIVING;
 			end
+		INVALIDATING:
+			if(&invalite_cnt) state_d = IDLE;
 	endcase
 end
 
@@ -198,11 +237,13 @@ always_ff @(posedge clk) begin
 	end
 
 	if(rst) begin
-		state     <= IDLE;
-		burst_cnt <= '0;
+		state        <= INVALIDATING;
+		burst_cnt    <= '0;
+		invalite_cnt <= '0;
 	end else begin
-		state     <= state_d;
-		burst_cnt <= burst_cnt_d;
+		state        <= state_d;
+		burst_cnt    <= burst_cnt_d;
+		invalite_cnt <= invalite_cnt_d;
 	end
 end
 
@@ -210,7 +251,7 @@ always_ff @(posedge clk) begin
 	if(rst) begin
 		pipe_addr <= '0;
 		pipe_read <= 1'b0;
-	end else if(~ibus.stall) begin
+	end else if(~ibus.stall || ibus.flush_2) begin
 		pipe_read <= ibus.read & ~ibus.flush_1;
 		pipe_addr <= ibus.address;
 	end

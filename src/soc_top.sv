@@ -240,13 +240,13 @@ module nscscc_soc_top(
         .LCD_rd,
         .LCD_rs,
         .LCD_wr,
-        .LCD_lighton,
+        .LCD_lighton
         // EJTAG
-        .EJTAG_trst,
-        .EJTAG_tck,
-        .EJTAG_tdi,
-        .EJTAG_tms,
-        .EJTAG_tdo
+        // .EJTAG_trst,
+        // .EJTAG_tck,
+        // .EJTAG_tdi,
+        // .EJTAG_tms,
+        // .EJTAG_tdo
     );
 
 endmodule

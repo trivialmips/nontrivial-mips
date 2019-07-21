@@ -15,14 +15,22 @@ assign rt        = instr[20:16];
 assign rd        = instr[15:11];
 assign funct     = instr[5:0];
 
-logic is_branch, is_jump_i, is_jump_r;
+logic is_branch, is_jump_i, is_jump_r, is_call, is_return;
 decode_branch branch_decoder_inst(
 	.*,
 	.imm_branch(),
-	.imm_jump(),
-	.is_call(),
-	.is_return()
+	.imm_jump()
 );
+
+always_comb begin
+	unique casez( { is_branch, is_return, is_call, is_jump_i | is_jump_r } )
+		4'b1???: decoded_instr.cf = ControlFlow_Branch;
+		4'b01??: decoded_instr.cf = ControlFlow_Return;
+		4'b001?: decoded_instr.cf = ControlFlow_Call;
+		4'b0001: decoded_instr.cf = ControlFlow_Jump;
+		default: decoded_instr.cf = ControlFlow_None;
+	endcase
+end
 
 always_comb begin
 	decoded_instr.rs1        = '0;
