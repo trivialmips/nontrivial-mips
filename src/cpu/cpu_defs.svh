@@ -78,6 +78,7 @@ typedef struct packed {
 // branch prediction information
 typedef struct packed {
 	logic valid, taken;
+	logic wait_delayslot;
 	virt_t target;
 	logic [1:0] counter;
 	controlflow_t cf;
@@ -97,7 +98,6 @@ typedef struct packed {
 } btb_update_t;
 
 typedef struct packed {
-	logic valid;
 	virt_t target;
 	controlflow_t cf;
 } btb_predict_t;

@@ -8,6 +8,7 @@ module branch_predictor #(
 	input  logic   rst,
 	input  logic   stall,
 	input  logic   flush,
+	input  logic   skip,
 
 	// current program counter, aligned in 4-bytes
 	input  virt_t  pc_cur,
@@ -43,20 +44,20 @@ btb_predict_t btb_selected;
 bht_predict_t bht_selected;
 
 always_comb begin
-	if(pipe_stall | pipe_flush) begin
+//	if(stall | pipe_flush) begin
 		btb_selected = btb_predict_delay[bt_index];
 		bht_selected = bht_predict_delay[bt_index];
-	end else begin
-		btb_selected = btb_predict[bt_index];
-		bht_selected = bht_predict[bt_index];
-	end
+//	end else begin
+//		btb_selected = btb_predict[bt_index];
+//		bht_selected = bht_predict[bt_index];
+//	end
 end
 
 always_ff @(posedge clk) begin
 	if(rst || flush) begin
 		btb_predict_delay <= '0;
 		bht_predict_delay <= '0;
-	end else if(~stall) begin
+	end else if(~pipe_stall) begin
 		btb_predict_delay <= btb_predict;
 		bht_predict_delay <= bht_predict;
 	end
@@ -83,7 +84,7 @@ always_comb begin
 	prediction_sel[bt_index] = 1'b1;
 
 	// set prediction result
-	prediction.valid   = btb_selected.cf != ControlFlow_None;
+	prediction.valid   = ~skip & (btb_selected.cf != ControlFlow_None);
 	prediction.target  = btb_selected.target;
 	prediction.cf      = btb_selected.cf;
 	prediction.counter = bht_selected;
@@ -92,7 +93,9 @@ always_comb begin
 	else prediction.taken = 1'b1;
 
 	// the last data in a cache line, no delayslot available
-	if((&pc_prev[ICACHE_ADDR_WIDTH - 1 : 3] & bt_index) || pipe_flush)
+	prediction.wait_delayslot = (&pc_prev[ICACHE_ADDR_WIDTH - 1 : 3] & bt_index);
+
+	if(pipe_flush)
 		prediction.valid = 1'b0;
 end
 

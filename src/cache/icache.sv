@@ -104,7 +104,7 @@ assign cache_miss = ~(|hit) & pipe_read;
 
 
 // stall signals
-assign ibus.stall = (state_d != IDLE) & pipe_read & ~ibus.flush_2;
+assign ibus.stall = ~((state == IDLE || state == FINISH) & ~cache_miss) & pipe_read;
 
 // send rddata next cycle
 logic [SET_ASSOC-1:0] pipe_hit;
@@ -179,8 +179,8 @@ always_comb begin
 			end
 
 			if(axi_resp.rvalid & axi_resp.rlast) begin
-				tag_we[assoc_waddr]  = ~ibus.flush_2;
-				data_we[assoc_waddr] = ~ibus.flush_2;
+				tag_we[assoc_waddr]  = 1'b1; // ~ibus.flush_2;
+				data_we[assoc_waddr] = 1'b1; // ~ibus.flush_2;
 				lfsr_update = 1'b1;
 			end
 		end
@@ -238,7 +238,7 @@ always_ff @(posedge clk) begin
 	if(rst) begin
 		pipe_addr <= '0;
 		pipe_read <= 1'b0;
-	end else if(~ibus.stall) begin
+	end else if(~ibus.stall || ibus.flush_2) begin
 		pipe_read <= ibus.read & ~ibus.flush_1;
 		pipe_addr <= ibus.address;
 	end

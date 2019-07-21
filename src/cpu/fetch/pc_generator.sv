@@ -10,6 +10,7 @@ module pc_generator(
 	input  virt_t  except_vec,
 
 	// branch prediction
+	input  logic   predict_delayed,
 	input  logic   predict_valid,
 	input  virt_t  predict_vaddr,
 
@@ -32,10 +33,14 @@ assign pc_en = ~rst;
 
 always_comb begin
 	// fetch address, i.e. current PC
-	pc  = predict_valid ? predict_vaddr : pc_now;
+	pc  = predict_valid & ~predict_delayed ? predict_vaddr : pc_now;
 	
 	// default
 	npc = { pc[31:3] + 1, 3'b0 };
+
+	// fetch delayslot
+	if(predict_delayed)
+		npc = predict_vaddr;
 
 	// hold pc
 	if(hold_pc) npc = pc_now;

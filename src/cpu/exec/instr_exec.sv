@@ -1,6 +1,8 @@
 `include "cpu_defs.svh"
 
-module instr_exec (
+module instr_exec #(
+	parameter int HAS_DIV = 1
+) (
 	input  logic    clk,
 	input  logic    rst,
 	input  logic    flush,
@@ -75,7 +77,9 @@ count_bit count_clo(
 logic multi_cyc_busy;
 uint32_t mult_word;
 uint64_t multi_cyc_ret;
-multi_cycle_exec multi_cyc_instance(
+multi_cycle_exec #(
+	.HAS_DIV(HAS_DIV)
+) multi_cyc_instance ( 
 	.*,
 	.ret     ( multi_cyc_ret  ),
 	.is_busy ( multi_cyc_busy )
@@ -388,7 +392,8 @@ always_comb begin
 		OP_BLTZ, OP_BLTZAL, OP_BGEZ, OP_BGEZAL,
 		OP_BEQ,  OP_BNE,    OP_BLEZ, OP_BGTZ: begin
 			resolved_branch.target = default_jump_i;
-			resolved_branch.mispredict = branch_sbt.taken ^ resolved_branch.taken;
+			resolved_branch.mispredict = branch_sbt.valid
+				& (branch_sbt.taken ^ resolved_branch.taken);
 			if(resolved_branch.taken)
 				resolved_branch.mispredict |= (branch_sbt.target != resolved_branch.target) | ~branch_sbt.valid;
 		end
