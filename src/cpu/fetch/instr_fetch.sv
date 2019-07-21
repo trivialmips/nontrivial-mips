@@ -89,7 +89,7 @@ pc_generator pc_gen(
 	.except_vec,
 	.replay_valid,
 	.replay_vaddr,
-	.predict_valid ( pipe_s2.bp.valid  ),
+	.predict_valid ( pipe_s2.bp.valid & pipe_s2.bp.taken ),
 	.predict_vaddr ( pipe_s2.bp.target ),
 	.resolved_branch,
 	.presolved_branch,
@@ -149,7 +149,7 @@ always_comb begin
 	entry_s2[1].valid = 1'b1;
 	// If a controlflow is recognized, the delayslot is always available
 	// in `rddata` or `rddata_extra`.
-	entry_s2[2].valid = entry_s2[1].branch_predict.valid;  // delayslot
+	entry_s2[2].valid = entry_s2[1].branch_predict.valid & entry_s2[1].branch_predict.taken;
 
 	avail_instr_s2  = entry_s2[0].valid + entry_s2[1].valid + entry_s2[2].valid;
 
