@@ -3,12 +3,15 @@ module dual_port_ram #(
 	parameter int unsigned DATA_WIDTH = 32,
 	// $bits(dtype) * SIZE = bits of the block RAM
 	parameter int unsigned SIZE       = 1024,
-	parameter type dtype              = logic [DATA_WIDTH-1:0]
+	parameter type dtype              = logic [DATA_WIDTH-1:0],
+    parameter int unsigned LATENCY    = 1
 ) (
 	input  logic  clk,
 	input  logic  rst,
 	input  logic  wea,
 	input  logic  web,
+    input  logic  ena,
+    input  logic  enb,
 	input  logic  [$clog2(SIZE)-1:0] addra,
 	input  logic  [$clog2(SIZE)-1:0] addrb,
 	input  dtype  dina,
@@ -32,14 +35,14 @@ xpm_memory_tdpram #(
 	.WRITE_DATA_WIDTH_A($bits(dtype)),
 	.READ_DATA_WIDTH_A($bits(dtype)),
 	.READ_RESET_VALUE_A("0"),
-	.READ_LATENCY_A(1),
+	.READ_LATENCY_A(LATENCY),
 	.WRITE_MODE_A("write_first"),
 
 	// Port B module parameters
 	.WRITE_DATA_WIDTH_B($bits(dtype)),
 	.READ_DATA_WIDTH_B($bits(dtype)),
 	.READ_RESET_VALUE_B("0"),
-	.READ_LATENCY_B(1),
+	.READ_LATENCY_B(LATENCY),
 	.WRITE_MODE_B("write_first")
 ) xpm_mem (
 	// Common module ports
@@ -48,7 +51,7 @@ xpm_memory_tdpram #(
 	// Port A module ports
 	.clka           ( clk   ),
 	.rsta           ( rst   ),
-	.ena            ( 1'b1  ),
+	.ena            ( ena   ),
 	.regcea         ( 1'b0  ),
 	.wea            ( wea   ),
 	.addra          ( addra ),
@@ -62,7 +65,7 @@ xpm_memory_tdpram #(
 	// Port B module ports
 	.clkb           ( clk   ),
 	.rstb           ( rst   ),
-	.enb            ( 1'b1  ),
+	.enb            ( enb   ),
 	.regceb         ( 1'b0  ),
 	.web            ( web   ),
 	.addrb          ( addrb ),

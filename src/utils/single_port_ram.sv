@@ -3,7 +3,8 @@ module single_port_ram #(
 	parameter int unsigned DATA_WIDTH = 32,
 	// $bits(dtype) * SIZE = bits of the block RAM
 	parameter int unsigned SIZE       = 1024,
-	parameter type dtype              = logic [DATA_WIDTH-1:0]
+	parameter type dtype              = logic [DATA_WIDTH-1:0],
+	parameter int unsigned LATENCY    = 1
 ) (
 	input  logic  clk,
 	input  logic  rst,
@@ -27,7 +28,7 @@ xpm_memory_spram #(
 	.WRITE_DATA_WIDTH_A($bits(dtype)),
 	.READ_DATA_WIDTH_A($bits(dtype)),
 	.READ_RESET_VALUE_A("0"),
-	.READ_LATENCY_A(1),
+	.READ_LATENCY_A(LATENCY),
 	.WRITE_MODE_A("write_first")
 ) xpm_mem (
 	// Common module ports
