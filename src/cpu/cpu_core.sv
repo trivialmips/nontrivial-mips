@@ -208,7 +208,9 @@ resolve_delayslot resolve_delayslot_inst(
 );
 
 for(genvar i = 0; i < `ISSUE_NUM; ++i) begin : gen_exec
-	instr_exec exec_inst(
+	instr_exec #(
+		.HAS_DIV(i == 0)
+	) exec_inst (
 		.clk,
 		.rst,
 		.flush       ( flush_ex                   ),
@@ -297,7 +299,7 @@ cp0 cp0_inst(
 	.timer_int ( cp0_timer_int )
 );
 
-assign cp0_reg_wr  = pipeline_exec_d[0].cp0_req;
+assign cp0_reg_wr  = pipeline_exec_d[0].cp0_req & ~except_req.valid;
 assign tlbrw_we    = pipeline_exec_d[0].tlbreq.tlbwi | pipeline_exec_d[0].tlbreq.tlbwr;
 assign tlbrw_index = pipeline_exec_d[0].tlbreq.tlbwi ? cp0_regs.index : cp0_regs.random;
 

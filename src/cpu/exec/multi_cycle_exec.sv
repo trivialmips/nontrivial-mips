@@ -1,6 +1,8 @@
 `include "cpu_defs.svh"
 
-module multi_cycle_exec(
+module multi_cycle_exec #(
+	parameter int HAS_DIV = 1
+) (
 	input  logic     clk,
 	input  logic     rst,
 	input  logic     flush,
@@ -37,7 +39,7 @@ begin
 		unique case(op)
 			OP_MADD, OP_MADDU, OP_MSUB, OP_MSUBU,
 			OP_MUL, OP_MULT, OP_MULTU:
-				cyc_number = 2;
+				cyc_number = 4;
 			OP_DIV, OP_DIVU:
 				cyc_number = DIV_CYC;
 			default:
@@ -61,20 +63,36 @@ uint32_t abs_reg1, abs_reg2;
 assign abs_reg1 = (is_signed && reg1[31]) ? -reg1 : reg1;
 assign abs_reg2 = (is_signed && reg2[31]) ? -reg2 : reg2;
 
-/* multiply */
-uint64_t mul_abs, mul_result;
-uint32_t pipe_mul_hi, pipe_mul_lo;
+uint64_t pipe_hilo, pipe_absmul;
+uint32_t pipe_absreg1, pipe_absreg2;
+uint32_t pipe_mul_hi, pipe_mul_lo, pipe_mul_md1, pipe_mul_md2;
 logic [32:0] pipe_mul_md;
-// assign mul_abs = abs_reg1 * abs_reg2;
-assign mul_abs = { pipe_mul_hi, pipe_mul_lo } + { 15'b0, pipe_mul_md, 16'b0 };
-assign mul_result = negate_result ? -mul_abs : mul_abs;
-assign mult_word = mul_result[31:0];
-
-always @(posedge clk) begin
-	pipe_mul_hi <= abs_reg1[31:16] * abs_reg2[31:16];
-	pipe_mul_md <= abs_reg1[15:0] * abs_reg2[31:16] + abs_reg1[31:16] * abs_reg2[15:0];
-	pipe_mul_lo <= abs_reg1[15:0] * abs_reg2[15:0];
+assign pipe_mul_md = pipe_mul_md1 + pipe_mul_md2;
+always_ff @(posedge clk) begin
+	if(rst) begin
+		pipe_hilo <= '0;
+		pipe_absreg1 <= '0;
+		pipe_absreg2 <= '0;
+		pipe_mul_hi  <= '0;
+		pipe_mul_lo  <= '0;
+		pipe_mul_md1 <= '0;
+		pipe_mul_md2 <= '0;
+	end else begin
+		pipe_hilo <= hilo;
+		pipe_absreg1 <= abs_reg1;
+		pipe_absreg2 <= abs_reg2;
+		pipe_mul_hi  <= pipe_absreg1[31:16] * pipe_absreg2[31:16];
+		pipe_mul_md1 <= pipe_absreg1[15:0] * pipe_absreg2[31:16];
+		pipe_mul_md2 <= pipe_absreg1[31:16] * pipe_absreg2[15:0];
+		pipe_mul_lo  <= pipe_absreg1[15:0] * pipe_absreg2[15:0];
+		pipe_absmul  <= { pipe_mul_hi, pipe_mul_lo } + { 15'b0, pipe_mul_md, 16'b0 };
+	end
 end
+
+/* multiply */
+uint64_t mul_result;
+assign mul_result = negate_result ? -pipe_absmul : pipe_absmul;
+assign mult_word = mul_result[31:0];
 
 /* division */
 uint32_t abs_quotient, abs_remainder;
@@ -82,6 +100,7 @@ uint32_t div_quotient, div_remainder;
 
 /* Note that the document of MIPS32 says if the divisor is zero,
  * the result is UNDEFINED. */
+generate if(HAS_DIV) begin : gen_divuu
 div_uu #(
 	.z_width(64)
 ) div_uu_instance (
@@ -94,6 +113,11 @@ div_uu #(
 	.div0(),
 	.ovf()
 );
+end else begin
+	assign abs_quotient  = '0;
+	assign abs_remainder = '0;
+end
+endgenerate
 
 /* |b| = |aq| + |r|
  *   1) b > 0, a < 0 ---> b = (-a)(-q) + r
@@ -104,8 +128,8 @@ assign div_remainder = (is_signed && (reg1[31] ^ abs_remainder[31])) ? -abs_rema
 /* set result */
 always_comb begin
 	unique case(op)
-		OP_MADDU, OP_MADD: ret = hilo + mul_result;
-		OP_MSUBU, OP_MSUB: ret = hilo - mul_result;
+		OP_MADDU, OP_MADD: ret = pipe_hilo + mul_result;
+		OP_MSUBU, OP_MSUB: ret = pipe_hilo - mul_result;
 		OP_DIV, OP_DIVU: ret = { div_remainder, div_quotient };
 		default: ret = mul_result;
 	endcase

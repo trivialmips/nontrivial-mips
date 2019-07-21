@@ -44,7 +44,7 @@ btb_predict_t btb_selected;
 bht_predict_t bht_selected;
 
 always_comb begin
-	if(stall | pipe_flush) begin
+	if(pipe_stall | pipe_flush) begin
 		btb_selected = btb_predict_delay[bt_index];
 		bht_selected = bht_predict_delay[bt_index];
 	end else begin
@@ -57,7 +57,7 @@ always_ff @(posedge clk) begin
 	if(rst || flush) begin
 		btb_predict_delay <= '0;
 		bht_predict_delay <= '0;
-	end else if(~pipe_stall) begin
+	end else if(~stall) begin
 		btb_predict_delay <= btb_predict;
 		bht_predict_delay <= bht_predict;
 	end

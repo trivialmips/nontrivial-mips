@@ -1,6 +1,8 @@
 `include "cpu_defs.svh"
 
-module instr_exec (
+module instr_exec #(
+	parameter int HAS_DIV = 1
+) (
 	input  logic    clk,
 	input  logic    rst,
 	input  logic    flush,
@@ -75,7 +77,9 @@ count_bit count_clo(
 logic multi_cyc_busy;
 uint32_t mult_word;
 uint64_t multi_cyc_ret;
-multi_cycle_exec multi_cyc_instance(
+multi_cycle_exec #(
+	.HAS_DIV(HAS_DIV)
+) multi_cyc_instance ( 
 	.*,
 	.ret     ( multi_cyc_ret  ),
 	.is_busy ( multi_cyc_busy )

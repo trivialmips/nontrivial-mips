@@ -106,7 +106,8 @@ assign instr2_not_taken =
    || delayslot_load_related
    || (is_ssnop(fetch_entry[0]) | is_ssnop(fetch_entry[1]))
    || (id_decoded[0].op == OP_SC || id_decoded[1].op == OP_SC)
-   || (id_decoded[0].is_priv | id_decoded[1].is_priv);
+   || (id_decoded[0].is_priv | id_decoded[1].is_priv)
+   || (id_decoded[1].op == OP_DIV || id_decoded[1].op == OP_DIVU);
 
 assign stall_req = load_related[0]
 	| (load_related[1] & ~instr2_not_taken)
