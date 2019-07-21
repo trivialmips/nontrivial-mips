@@ -63,8 +63,12 @@ module cache_controller #(
         .axi_resp_bid(icache_bid)
     );
 
-    dcache_pass #(
-        .BUS_WIDTH (BUS_WIDTH)
+    dcache #(
+        .BUS_WIDTH (BUS_WIDTH),
+        .DATA_WIDTH(32),
+        .LINE_WIDTH(`DCACHE_LINE_WIDTH), // max burst size is 16, so LINE_WIDTH should <= 8*32 = 256
+        .SET_ASSOC (`DCACHE_SET_ASSOC),
+        .CACHE_SIZE(`DCACHE_SIZE)  // in bit
     ) dcache_inst(
         .clk,
         .rst,

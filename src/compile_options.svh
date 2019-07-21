@@ -21,5 +21,8 @@
 `define ICACHE_LINE_WIDTH    256
 `define ICACHE_SET_ASSOC     4
 `define ICACHE_SIZE          16 * 1024 * 8
+`define DCACHE_LINE_WIDTH    256
+`define DCACHE_SET_ASSOC     4
+`define DCACHE_SIZE          16 * 1024 * 8
 
 `endif
