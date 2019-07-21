@@ -51,6 +51,7 @@ struct packed {
 
 struct packed {
 	logic valid;
+	logic delayslot;
 	virt_t pc;
 	branch_predict_t bp;
 	address_exception_t iaddr_ex;
@@ -66,8 +67,12 @@ presolved_branch_t presolved_branch;
 // fetch entries
 fetch_entry_t [2:0] entry_s2, entry_s2_d, entry_s3;
 
+// fetch delayslot next cycle
+logic predict_delayed, delayslot_s3;
+
 // instruction queue
 logic queue_full, queue_empty;
+logic [3:0] queue_valid;
 
 // control signals
 logic stall_s1, stall_s2;
@@ -79,6 +84,8 @@ assign flush_s2 = flush_s3 | presolved_branch.mispredict | replay_valid;
 assign flush_s1 = flush_s2;
 assign icache_req.flush_s1 = flush_s1;
 assign icache_req.flush_s2 = flush_s2;
+assign predict_delayed = pipe_s2.bp.valid
+	& pipe_s2.bp.taken & pipe_s2.bp.wait_delayslot;
 
 /* ====== stage 1 (PCGen) ====== */
 pc_generator pc_gen(
@@ -89,6 +96,7 @@ pc_generator pc_gen(
 	.except_vec,
 	.replay_valid,
 	.replay_vaddr,
+	.predict_delayed,
 	.predict_valid ( pipe_s2.bp.valid & pipe_s2.bp.taken ),
 	.predict_vaddr ( pipe_s2.bp.target ),
 	.resolved_branch,
@@ -107,6 +115,7 @@ branch_predictor #(
 	.flush          ( flush_s1   ),
 	.pc_cur         ( pipe_s1.pc ),
 	.pc_prev        ( pipe_s2.pc ),
+	.skip           ( pipe_s2.delayslot ),
 	.resolved_branch,
 	.presolved_branch,
 	.prediction     ( pipe_s2.bp ),
@@ -120,14 +129,16 @@ assign icache_req.vaddr = aligned_address(pipe_s1.pc);
 /* pipeline between PCGen and I$ read */
 always_ff @(posedge clk) begin
 	if(rst || flush_s1 || stall_s1 & ~stall_s2) begin
-		pipe_s2.pc       <= '0;
-		pipe_s2.valid    <= 1'b0;
-		pipe_s2.iaddr_ex <= '0;
+		pipe_s2.pc        <= '0;
+		pipe_s2.valid     <= 1'b0;
+		pipe_s2.iaddr_ex  <= '0;
+		pipe_s2.delayslot <= 1'b0;
 	end else if(~stall_s1) begin
 		// pipe_s2.bp comes from RAM
-		pipe_s2.pc       <= pipe_s1.pc;
-		pipe_s2.valid    <= pipe_s1.valid;
-		pipe_s2.iaddr_ex <= icache_res.iaddr_ex;
+		pipe_s2.pc        <= pipe_s1.pc;
+		pipe_s2.valid     <= pipe_s1.valid;
+		pipe_s2.iaddr_ex  <= icache_res.iaddr_ex;
+		pipe_s2.delayslot <= predict_delayed;
 	end
 end
 
@@ -147,9 +158,15 @@ always_comb begin
 
 	entry_s2[0].valid = (pipe_s2.pc[2] == 0);
 	entry_s2[1].valid = 1'b1;
-	// If a controlflow is recognized, the delayslot is always available
-	// in `rddata` or `rddata_extra`.
-	entry_s2[2].valid = entry_s2[1].branch_predict.valid & entry_s2[1].branch_predict.taken;
+	entry_s2[2].valid = ~predict_delayed
+		& entry_s2[1].branch_predict.valid
+		& entry_s2[1].branch_predict.taken;
+
+	// branch taken, but delayslot not fetched
+	if(pipe_s2.delayslot) begin
+		entry_s2[0].valid = ~pipe_s2.pc[2];
+		entry_s2[1].valid = pipe_s2.pc[2];
+	end
 
 	avail_instr_s2  = entry_s2[0].valid + entry_s2[1].valid + entry_s2[2].valid;
 
@@ -165,10 +182,12 @@ always_ff @(posedge clk) begin
 		entry_s2_d        <= '0;
 		avail_instr_s2_d  <= '0;
 		replay_vaddr      <= '0;
+		delayslot_s3      <= '0;
 	end else begin
 		replay_vaddr      <= pipe_s2.pc;
 		entry_s2_d        <= entry_s2;
 		avail_instr_s2_d  <= avail_instr_s2;
+		delayslot_s3      <= pipe_s2.delayslot;
 	end
 end
 
@@ -195,11 +214,15 @@ for(genvar i = 0; i < 2; ++i) begin: gen_branch_decoder
 		&& entry_s2_d[i].branch_predict.cf != ControlFlow_None;
 end
 
-assign replay_valid = queue_full & avail_instr_s2_d != '0;
 assign presolved_branch.mispredict = |is_nocf_mispredict;
 assign presolved_branch.pc = is_nocf_mispredict[0] ?
 	entry_s2_d[0].vaddr : entry_s2_d[1].vaddr;
 assign presolved_branch.target = { entry_s2_d[0].vaddr[31:3] + 1, 1'b0, entry_s2_d[0].vaddr[1:0] };
+
+// Since queue_full if one of channels is full and CHANNEL > PUSH_CHANNEL,
+// so after branch is pushed into FIFO, there exists at least one 
+// free channel for possible delayslot. We do not replay it.
+assign replay_valid = queue_full && (avail_instr_s2_d != '0) && ~delayslot_s3;
 
 // setup fetch entries
 always_comb begin
@@ -227,6 +250,8 @@ end
 fetch_entry_t [1:0] fetch_entry_pop;
 logic [1:0] fetch_entry_valid;
 multi_queue #(
+	// REQUIREMENT: CHANNEL >= PUSH_CHANNEL + 1
+	// for delayslot
 	.CHANNEL      ( 4 ),
 	.PUSH_CHANNEL ( 3 ),
 	.POP_CHANNEL  ( 2 ),
@@ -235,12 +260,12 @@ multi_queue #(
 ) ique_inst (
 	.clk,
 	.rst,
-	.flush      ( flush_s3    ),
-	.stall_push ( queue_full  ),
-	.stall_pop  ( stall_pop   ),
-	.full       ( queue_full  ),
-	.empty      ( queue_empty ),
-	.data_push  ( entry_s3    ),
+	.flush      ( flush_s3     ),
+	.stall_push ( replay_valid ),
+	.stall_pop  ( stall_pop    ),
+	.full       ( queue_full   ),
+	.empty      ( queue_empty  ),
+	.data_push  ( entry_s3     ),
 	.push_num   ( avail_instr_s3  ),
 	.data_pop   ( fetch_entry_pop ),
 	.pop_valid  ( fetch_entry_valid ),

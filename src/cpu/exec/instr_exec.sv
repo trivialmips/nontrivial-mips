@@ -388,7 +388,8 @@ always_comb begin
 		OP_BLTZ, OP_BLTZAL, OP_BGEZ, OP_BGEZAL,
 		OP_BEQ,  OP_BNE,    OP_BLEZ, OP_BGTZ: begin
 			resolved_branch.target = default_jump_i;
-			resolved_branch.mispredict = branch_sbt.taken ^ resolved_branch.taken;
+			resolved_branch.mispredict = branch_sbt.valid
+				& (branch_sbt.taken ^ resolved_branch.taken);
 			if(resolved_branch.taken)
 				resolved_branch.mispredict |= (branch_sbt.target != resolved_branch.target) | ~branch_sbt.valid;
 		end
