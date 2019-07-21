@@ -44,7 +44,8 @@ btb_predict_t btb_selected;
 bht_predict_t bht_selected;
 
 always_comb begin
-	if(stall | pipe_flush) begin
+//	if(stall | pipe_flush) begin
+	if(pipe_flush) begin
 		btb_selected = btb_predict_delay[bt_index];
 		bht_selected = bht_predict_delay[bt_index];
 	end else begin
