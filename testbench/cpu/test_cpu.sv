@@ -7,24 +7,29 @@ module test_cpu_tb();
 cpu_interrupt_t intr;
 assign intr = '0;
 
+logic sync_rst;
 logic rst, clk, fake_stall_en;
 assign fake_stall_en = 1'b1;
 cpu_clock clk_inst(.*);
 
+always_ff @(posedge clk) begin
+	sync_rst <= rst;
+end
+
 cpu_ibus_if ibus();
-fake_ibus ibus_inst(.*);
+fake_ibus ibus_inst(.rst(sync_rst), .*);
 
 cpu_dbus_if dbus();
 cpu_dbus_if dbus_uncached();
-fake_dbus dbus_inst(.*);
+fake_dbus dbus_inst(.rst(sync_rst), .*);
 
-cpu_core core_inst(.*);
+cpu_core core_inst(.rst(sync_rst), .*);
 
 logic mem_access_path1;
 pipeline_memwb_t [1:0] pipe_wb;
 pipeline_exec_t [1:0] pipe_exec_d;
 assign pipe_wb = core_inst.pipeline_wb;
-assign pipe_exec_d = core_inst.pipeline_exec_d;
+assign pipe_exec_d = core_inst.pipeline_dcache[1];
 assign mem_access_path1 = pipe_exec_d[0].memreq.read | pipe_exec_d[0].memreq.write;
 
 task judge(input integer fans, input integer cycle, input string out);
@@ -198,11 +203,11 @@ begin
 	unittest("across_tlb/4");
 	unittest("across_tlb/5");
 	unittest("across_tlb/6");
-	unittest_cycle("performance/loop");
-	unittest_cycle("performance/call_ras");
-	unittest_cycle("performance/call_ras_unaligned");
-	unittest_cycle("performance/call_btb");
-	unittest_cycle("performance/call_btb_conflict");
+	unittest("performance/loop");
+	unittest("performance/call_ras");
+	unittest("performance/call_ras_unaligned");
+	unittest("performance/call_btb");
+	unittest("performance/call_btb_conflict");
 	$display(summary);
 	$display("[Done]\n");
 	$finish;

@@ -32,9 +32,14 @@ typedef enum logic [2:0] {
 
 state_t state, state_d;
 
+logic pipe0_read;
+logic pipe0_write;
+logic [3:0] pipe0_byteenable;
+logic [31:0] pipe0_addr;
+uint32_t pipe0_wdata;
+
 logic pipe_read;
 logic pipe_write;
-logic pipe_cache_miss;
 logic [3:0] pipe_byteenable;
 logic [31:0] pipe_addr;
 uint32_t pipe_wdata;
@@ -44,7 +49,7 @@ assign axi_req_arid = '0;
 assign axi_req_awid = '0;
 assign axi_req_wid = '0;
 
-assign dbus.stall = (state_d != IDLE && state_d != WAIT_BVALID);
+assign dbus.stall  = (state_d != IDLE && state_d != WAIT_BVALID);
 assign dbus.rddata = axi_resp.rdata;
 
 logic uncache_access;
@@ -119,16 +124,25 @@ end
 
 always_ff @(posedge clk) begin
 	if(rst) begin
-		pipe_addr <= '0;
-		pipe_read <= 1'b0;
-		pipe_write <= 1'b0;
+		pipe0_addr       <= '0;
+		pipe0_read       <= 1'b0;
+		pipe0_write      <= 1'b0;
+		pipe0_byteenable <= '0;
+		pipe_addr       <= '0;
+		pipe_read       <= 1'b0;
+		pipe_write      <= 1'b0;
 		pipe_byteenable <= '0;
 	end else if(~dbus.stall) begin
-		pipe_read <= dbus.read;
-		pipe_write <= dbus.write;
-		pipe_addr <= dbus.address;
-		pipe_wdata <= dbus.wrdata;
-		pipe_byteenable <= dbus.byteenable;
+		pipe0_read       <= dbus.read;
+		pipe0_write      <= dbus.write;
+		pipe0_addr       <= dbus.address;
+		pipe0_wdata      <= dbus.wrdata;
+		pipe0_byteenable <= dbus.byteenable;
+		pipe_read       <= pipe0_read;
+		pipe_write      <= pipe0_write;
+		pipe_addr       <= pipe0_addr;
+		pipe_wdata      <= pipe0_wdata;
+		pipe_byteenable <= pipe0_byteenable;
 	end
 end
 

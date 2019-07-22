@@ -14,6 +14,8 @@ module ctrl(
 	output logic flush_ex,
 	output logic flush_mm,
 
+	input  pipeline_exec_t   [`DCACHE_PIPE_DEPTH-1:0][1:0] pipeline_dcache,
+
 	input  except_req_t      except_req,
 	input  fetch_entry_t     [`FETCH_NUM-1:0] fetch_entry,
 	input  pipeline_exec_t   [1:0] pipeline_exec,
@@ -65,6 +67,31 @@ always_comb begin
 	if(wait_delayslot) resolved_branch_o = '0;
 end
 
+function logic is_memory(input pipeline_exec_t pipe);
+	return pipe.memreq.read | pipe.memreq.write;
+endfunction
+
+function logic is_uncached(input pipeline_exec_t pipe);
+	return is_memory(pipe) & pipe.memreq.uncached;
+endfunction
+
+logic uncached_exec, memory_exec;
+logic uncached_accessing, memory_accessing;
+always_comb begin
+	uncached_accessing = 1'b0;
+	memory_accessing = 1'b0;
+	for(int i = 0; i < `DCACHE_PIPE_DEPTH; ++i) begin
+		uncached_accessing |= is_uncached(pipeline_dcache[i][0]) | is_uncached(pipeline_dcache[i][1]);
+		memory_accessing |= is_memory(pipeline_dcache[i][0]) | is_memory(pipeline_dcache[i][1]);
+	end
+	uncached_exec = is_uncached(pipeline_exec[0]) | is_uncached(pipeline_exec[1]);
+	memory_exec = is_memory(pipeline_exec[0]) | is_memory(pipeline_exec[1]);
+end
+
+logic mutex_uncached;
+assign mutex_uncached = uncached_exec & memory_accessing
+	|| memory_exec & uncached_accessing;
+
 always_comb begin
 	flush = '0;
 	if(except_req.valid) begin
@@ -79,7 +106,7 @@ always_comb begin
 		stall = 4'b1111;
 	else if(stall_from_mm)
 		stall = 4'b1111;
-	else if(stall_from_ex | wait_delayslot)
+	else if(stall_from_ex | wait_delayslot | mutex_uncached)
 		stall = 4'b1110;
 	else if(stall_from_id)
 		stall = 4'b1100;

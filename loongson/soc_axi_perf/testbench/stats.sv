@@ -130,7 +130,7 @@ assign   ref_wb_rf_wdata_v[7 : 0] =   ref_wb_rf_wdata[7 : 0] & {8{debug_wb_rf_we
 
 logic icache_miss;
 assign icache_miss = soc_lite.u_cpu.nontrivial_mips_inst.cache_controller_inst.icache_inst.icache_miss;
-integer icache_miss_counter, instr_counter, cycle_counter, mispredict_counter, branch_counter, dcache_counter, uncache_counter, dcache_access_counter, stall_mm_counter;
+integer icache_miss_counter, instr_counter, cycle_counter, mispredict_counter, branch_counter, dcache_counter, uncache_counter, dcache_access_counter, stall_mm_counter, noncf_miss_counter;
 branch_resolved_t resolved_branch;
 assign resolved_branch = soc_lite.u_cpu.nontrivial_mips_inst.cpu_core_inst.instr_fetch_inst.resolved_branch;
 
@@ -148,6 +148,7 @@ begin
 		icache_miss_counter <= '0;
 		instr_counter <= '0;
 		cycle_counter <= '0;
+		noncf_miss_counter <= '0;
 		mispredict_counter <= '0;
 		branch_counter <= '0;
 		dcache_counter <= '0;
@@ -160,6 +161,7 @@ begin
 		icache_miss_counter <= icache_miss_counter + icache_miss;
 		instr_counter <= instr_counter + (pipe_wb[0].valid) + (pipe_wb[1].valid);
 		dcache_access_counter <= dcache_access_counter + soc_lite.u_cpu.nontrivial_mips_inst.cache_controller_inst.dcache_inst.debug_uncache_access;
+		noncf_miss_counter <= noncf_miss_counter + soc_lite.u_cpu.nontrivial_mips_inst.cpu_core_inst.instr_fetch_inst.presolved_branch.mispredict;
 		dcache_counter <= dcache_counter + soc_lite.u_cpu.nontrivial_mips_inst.cache_controller_inst.dcache_inst.debug_cache_miss;
 		uncache_counter <= uncache_counter + soc_lite.u_cpu.nontrivial_mips_inst.cache_controller_inst.uncached_inst.uncache_access;
 		branch_counter <= branch_counter + resolved_branch.valid;
@@ -232,6 +234,7 @@ begin
         $display("Branch count: %d", branch_counter);
         $display("Branch mispredict count: %d", mispredict_counter);
         $display("Memory (data) stall count: %d", stall_mm_counter);
+		$display("NoCF mispredict: %d", noncf_miss_counter);
         $display("I$ miss rate:     %f", $bitstoreal(icache_miss) / $bitstoreal(instr_counter));
         $display("Branch miss rate: %f", $bitstoreal(mispredict_counter) / $bitstoreal(branch_counter));
         $display("CPI:              %f", $bitstoreal(cycle_counter) / $bitstoreal(instr_counter));

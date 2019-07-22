@@ -1,8 +1,6 @@
 `include "cpu_defs.svh"
 
-module pc_generator #(
-	parameter int unsigned RESET_BASE = `BOOT_VEC
-)(
+module pc_generator(
 	input  logic   clk,
 	input  logic   rst,
 	input  logic   hold_pc,
@@ -15,48 +13,57 @@ module pc_generator #(
 	input  logic   predict_delayed,
 	input  logic   predict_valid,
 	input  virt_t  predict_vaddr,
+
+	// branch presolved
+	input  presolved_branch_t presolved_branch,
 	
 	// branch misprediction
 	input  branch_resolved_t resolved_branch,
 
-	output virt_t  pc
+	// replay
+	input  logic   replay_valid,
+	input  virt_t  replay_vaddr,
+
+	output virt_t  pc,
+	output logic   pc_en
 );
 
-localparam int PC_INC_OFFSET = $clog2(`FETCH_NUM) + 2;
-
-virt_t npc, pc_now, fetch_vaddr;
-assign pc = pc_now;
-assign fetch_vaddr = predict_valid ? predict_vaddr : pc_now;
+virt_t pc_now, npc;
+assign pc_en = ~rst;
 
 always_comb begin
+	// fetch address, i.e. current PC
+	pc  = predict_valid & ~predict_delayed ? predict_vaddr : pc_now;
+	
 	// default
-	npc[31:PC_INC_OFFSET]  = fetch_vaddr[31:PC_INC_OFFSET] + 1;
-	npc[PC_INC_OFFSET-1:0] = '0;
+	npc = { pc[31:3] + 1, 3'b0 };
 
 	// fetch delayslot
-	if(predict_delayed) begin
+	if(predict_delayed)
 		npc = predict_vaddr;
-	end
 
 	// hold pc
-	if(hold_pc) begin
-		npc = pc_now;
-	end
+	if(hold_pc) npc = pc_now;
 
-	/* branch misprediction */
-	if(resolved_branch.valid & resolved_branch.mispredict) begin
+	// branch presolved misprediction
+	if(presolved_branch.mispredict)
+		npc = presolved_branch.target;
+
+	// replay
+	if(replay_valid)
+		npc = replay_vaddr;
+
+	// branch misprediction
+	if(resolved_branch.valid & resolved_branch.mispredict)
 		npc = resolved_branch.taken ? resolved_branch.target : resolved_branch.pc + 32'd8;
-	end
 
 	// exception
-	if(except_valid) begin
-		npc = except_vec;
-	end
+	if(except_valid) npc = except_vec;
 end
 
 always_ff @(posedge clk) begin
 	if(rst) begin
-		pc_now <= RESET_BASE;
+		pc_now <= `BOOT_VEC;
 	end else begin
 		pc_now <= npc;
 	end

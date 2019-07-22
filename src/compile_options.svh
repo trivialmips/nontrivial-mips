@@ -14,10 +14,15 @@
 `define REG_NUM              32
 `define TLB_ENTRIES_NUM      16
 `define BOOT_VEC             32'hbfc00000
-`define BTB_SIZE             8
-`define BHT_SIZE             1024
-`define RAS_SIZE             8
+`define BPU_SIZE             4096
 `define INSTR_FIFO_DEPTH     3
-`define DCACHE_PIPE_DEPTH    2
+`define DCACHE_PIPE_DEPTH    3
+
+`define ICACHE_LINE_WIDTH    256
+`define ICACHE_SET_ASSOC     4
+`define ICACHE_SIZE          16 * 1024 * 8
+`define DCACHE_LINE_WIDTH    256
+`define DCACHE_SET_ASSOC     4
+`define DCACHE_SIZE          16 * 1024 * 8
 
 `endif
