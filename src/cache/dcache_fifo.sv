@@ -8,7 +8,8 @@ module dcache_fifo #(
 
     parameter type line_t = logic [TAG_WIDTH + DATA_WIDTH - 1:0],
     parameter type tag_t = logic [TAG_WIDTH-1:0],
-    parameter type data_t = logic [DATA_WIDTH-1:0]
+    parameter type data_t = logic [DATA_WIDTH-1:0],
+    parameter type be_t = logic [DATA_WIDTH/8-1:0]
 ) (
     input logic  clk,
     input logic  rst,
@@ -23,6 +24,7 @@ module dcache_fifo #(
     output logic query_found,
     input data_t query_wdata,
     output data_t query_rdata,
+    input be_t query_wbe,
 
     input logic pop,
     input logic push,
@@ -111,9 +113,9 @@ always_comb begin
     end
 
     if(write && |hit_non_pop) begin
-        for(int i = 0; i < DEPTH; i++) begin
-            mem_d[i][0+:DATA_WIDTH] = hit_non_pop[i] ? query_wdata : mem[i][0+:DATA_WIDTH];
-        end
+        for(int i = 0; i < DEPTH; i++) if(hit_non_pop[i])
+            for(int j = 0; j<DATA_WIDTH/8; j++) if(query_wbe[j])
+                mem_d[i][j*8+:8] = query_wdata[j*8+:8];
 
         written = 1'b1;
     end

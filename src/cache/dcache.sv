@@ -138,6 +138,7 @@ logic [LINE_BYTE_OFFSET-1:0] burst_cnt, burst_cnt_d;
 // FIFO
 fifo_tag_t fifo_wqtag, fifo_rtag, fifo_ptag;
 line_t fifo_wdata, fifo_rdata, fifo_qdata, fifo_pdata;
+logic [DATA_PER_LINE-1:0][DATA_BYTE_OFFSET-1:0] fifo_wbe;
 logic fifo_found, fifo_full, fifo_empty, fifo_written;
 logic fifo_push, fifo_write, fifo_pop;
 
@@ -228,6 +229,12 @@ always_comb begin
         rf_data_wdata = wb_line;
     end else begin
         rf_data_wdata = line_recv;
+    end
+
+    // Only rewrite the last byte in RECEIVING state
+    // Because we may need rf_data_wdata for stage 2 write hit
+    // We don't want to write invalid data after our receiving is finished
+    if(state == RECEIVING) begin
         rf_data_wdata[DATA_PER_LINE - 1][DATA_WIDTH - 1 -: 32] = axi_resp.rdata;
     end
 
@@ -263,8 +270,11 @@ assign read_addr = get_index(dbus.address);
 assign fifo_wqtag = get_fifo_tag(dbus.address);
 
 always_comb begin
-    fifo_wdata = fifo_qdata;
-    fifo_wdata[get_offset(dbus.address)] = mux_byteenable(fifo_qdata[get_offset(dbus.address)], dbus.wrdata, dbus.byteenable);
+    fifo_wdata = '0;
+    fifo_wdata[get_offset(dbus.address)] = dbus.wrdata;
+
+    fifo_wbe = '0;
+    fifo_wbe[get_offset(dbus.address)] = dbus.byteenable;
 end
 
 assign fifo_write = ~dbus.stall && dbus.write;
@@ -647,6 +657,7 @@ dcache_fifo #(
     .query_found (fifo_found),
     .query_wdata (fifo_wdata),
     .query_rdata (fifo_qdata),
+    .query_wbe (fifo_wbe),
 
     .pop (fifo_pop),
     .push (fifo_push),
