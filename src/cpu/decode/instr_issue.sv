@@ -84,16 +84,18 @@ always_comb begin
 	end
 end
 
-logic delayslot_load_related;
-always_comb begin
-	delayslot_load_related = id_decoded[0].is_load;
-	for(int i = 0; i < `ISSUE_NUM; ++i) begin
-		delayslot_load_related |= ex_decoded[i].is_load;
-		for(int k = 0; k < `DCACHE_PIPE_DEPTH - 2; ++k)
-			delayslot_load_related |= dcache_decoded[k][i].is_load;
-	end
-	delayslot_load_related &= id_decoded[1].is_controlflow;
-end
+// logic delayslot_load_related;
+// always_comb begin
+// 	delayslot_load_related = id_decoded[0].is_load;
+// 	for(int i = 0; i < `ISSUE_NUM; ++i) begin
+// 		delayslot_load_related |= ex_decoded[i].is_load;
+// 		for(int k = 0; k < `DCACHE_PIPE_DEPTH - 2; ++k)
+// 			delayslot_load_related |= dcache_decoded[k][i].is_load;
+// 	end
+// 	delayslot_load_related &= id_decoded[1].is_controlflow;
+// end
+assign delayslot_not_loaded;
+assign delayslot_not_loaded = id_decoded[0].is_controlflow & ~instr_valid[1];
 
 assign instr2_not_taken = 
       ~instr_valid[1]
@@ -102,8 +104,8 @@ assign instr2_not_taken =
    || (hilo_access[0] & hilo_access[1])
       // mispredict but delayslot does not executed
    || delayslot_not_exec
-      // avoid load-related in delayslot
-   || delayslot_load_related
+      // branch must be issued on pipeline 1
+   || id_decoded[1].is_controlflow
    || (is_ssnop(fetch_entry[0]) | is_ssnop(fetch_entry[1]))
    || (id_decoded[0].op == OP_SC || id_decoded[1].op == OP_SC)
    || (id_decoded[0].is_priv | id_decoded[1].is_priv)
@@ -113,6 +115,7 @@ assign stall_req = load_related[0]
 	| (load_related[1] & ~instr2_not_taken)
 	| (id_decoded[0].is_nonrw_priv && priv_executing)
 	| nonrw_priv_executing
+	| delayslot_not_loaded
 	| (instr_valid == '0);
 
 always_comb begin
