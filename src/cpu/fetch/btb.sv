@@ -55,6 +55,8 @@ for(genvar i = 0; i < 2; ++i) begin : gen_btb_ram
 	) btb_ram (
 		.clk,
 		.rst,
+		.ena   ( 1'b1     ),
+		.enb   ( 1'b1     ),
 		.wea   ( wea[i]   ),
 		.addra ( addra    ),
 		.dina  ( '0       ),

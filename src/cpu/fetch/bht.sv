@@ -63,6 +63,8 @@ for(genvar i = 0; i < 2; ++i) begin : gen_bht_ram
 	) bht_ram (
 		.clk,
 		.rst,
+		.ena   ( 1'b1     ),
+		.enb   ( 1'b1     ),
 		.wea   ( 1'b0     ),
 		.addra ( raddr    ),
 		.dina  (          ),
