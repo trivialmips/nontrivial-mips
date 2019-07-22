@@ -138,6 +138,7 @@ logic [LINE_BYTE_OFFSET-1:0] burst_cnt, burst_cnt_d;
 // FIFO
 fifo_tag_t fifo_wqtag, fifo_rtag, fifo_ptag;
 line_t fifo_wdata, fifo_rdata, fifo_qdata, fifo_pdata;
+logic [DATA_PER_LINE-1:0][DATA_BYTE_OFFSET-1:0] fifo_wbe;
 logic fifo_found, fifo_full, fifo_empty, fifo_written;
 logic fifo_push, fifo_write, fifo_pop;
 
@@ -263,8 +264,11 @@ assign read_addr = get_index(dbus.address);
 assign fifo_wqtag = get_fifo_tag(dbus.address);
 
 always_comb begin
-    fifo_wdata = fifo_qdata;
-    fifo_wdata[get_offset(dbus.address)] = mux_byteenable(fifo_qdata[get_offset(dbus.address)], dbus.wrdata, dbus.byteenable);
+    fifo_wdata = '0;
+    fifo_wdata[get_offset(dbus.address)] = dbus.wrdata;
+
+    fifo_wbe = '0;
+    fifo_wbe[get_offset(dbus.address)] = dbus.byteenable;
 end
 
 assign fifo_write = ~dbus.stall && dbus.write;
@@ -647,6 +651,7 @@ dcache_fifo #(
     .query_found (fifo_found),
     .query_wdata (fifo_wdata),
     .query_rdata (fifo_qdata),
+    .query_wbe (fifo_wbe),
 
     .pop (fifo_pop),
     .push (fifo_push),

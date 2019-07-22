@@ -2,7 +2,7 @@
 
 `define PATH_PREFIX "testbench/cache/cases/"
 
-`define CASE_NAME "random.data"
+`define CASE_NAME "sequential.data"
 
 module dcache_tb();
 
@@ -12,7 +12,7 @@ axi_resp_t axi_resp;
 
 always #5 clk = ~clk;
 
-mem_device id (
+mem_device mem (
 	.clk (clk),
 	.rst (rst),
 	.axi_req (axi_req),
@@ -29,10 +29,7 @@ cpu_dbus_if dbus();
 // So we generated data in addr 0x00 ~ 0xFF should be enough to test all
 // scenarios
 
-dcache #(
-    .SET_ASSOC (2), // Testing write-back
-    .CACHE_SIZE(2048)
-) cache (
+dcache cache (
 	.clk (clk),
 	.rst (rst),
 	.axi_req (axi_req),
@@ -46,7 +43,7 @@ dcache #(
 	.axi_resp_bid (4'b0000)
 );
 
-localparam int unsigned REQ_COUNT = 256 * 5;
+localparam int unsigned REQ_COUNT = 32768;
 logic [$clog2(REQ_COUNT+3):0] req;
 logic [REQ_COUNT+3:0][31:0] address;
 logic [REQ_COUNT+3:0][31:0] data;
@@ -72,6 +69,10 @@ always_ff @(posedge clk or posedge rst) begin
 end
 
 integer cycle;
+int stall_counter;
+int w_counter;
+int r_counter;
+
 always_ff @(negedge clk) begin
 	cycle <= rst ? '0 : cycle + 1;
 	if(~rst && req > 1 && ~dbus.stall) begin
@@ -83,9 +84,36 @@ always_ff @(negedge clk) begin
 
         if(req == REQ_COUNT+1) begin
             $display("[pass]");
+            $display("  Stall count: %d", stall_counter);
+            $display("  Read count: %d", r_counter);
+            $display("  Write count: %d", w_counter);
             $finish;
         end
 	end
+end
+
+always_ff @(posedge rst or posedge dbus.stall) begin
+    if(rst) begin
+        stall_counter <= 0;
+    end else begin
+        stall_counter <= stall_counter + 1;
+    end
+end
+
+always_ff @(posedge rst or posedge axi_req.arvalid) begin
+    if(rst) begin
+        r_counter <= 0;
+    end else begin
+        r_counter <= r_counter + 1;
+    end
+end
+
+always_ff @(posedge rst or posedge axi_req.awvalid) begin
+    if(rst) begin
+        w_counter <= 0;
+    end else begin
+        w_counter <= w_counter + 1;
+    end
 end
 
 int fd, path_counter;
@@ -98,7 +126,7 @@ initial begin
 	clk = 1'b1;
 
 	path_counter = 0;
-	if(!$fopen({ path, `CASE_NAME, ".ans"}, "r")) begin
+	if(!$fopen({ path, `CASE_NAME }, "r")) begin
 		path = `PATH_PREFIX;
 		while(!$fopen({ path, `CASE_NAME }, "r") && path_counter < 20) begin
 			path_counter++;
