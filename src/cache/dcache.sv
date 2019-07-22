@@ -229,6 +229,12 @@ always_comb begin
         rf_data_wdata = wb_line;
     end else begin
         rf_data_wdata = line_recv;
+    end
+
+    // Only rewrite the last byte in RECEIVING state
+    // Because we may need rf_data_wdata for stage 2 write hit
+    // We don't want to write invalid data after our receiving is finished
+    if(state == RECEIVING) begin
         rf_data_wdata[DATA_PER_LINE - 1][DATA_WIDTH - 1 -: 32] = axi_resp.rdata;
     end
 
