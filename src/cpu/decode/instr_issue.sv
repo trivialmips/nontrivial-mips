@@ -94,7 +94,7 @@ end
 // 	end
 // 	delayslot_load_related &= id_decoded[1].is_controlflow;
 // end
-assign delayslot_not_loaded;
+logic delayslot_not_loaded;
 assign delayslot_not_loaded = id_decoded[0].is_controlflow & ~instr_valid[1];
 
 assign instr2_not_taken = 
