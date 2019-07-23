@@ -73,14 +73,14 @@ logic [SET_ASSOC-1:0] tag_we;
 line_t [SET_ASSOC-1:0] data_rdata;
 line_t data_wdata;
 logic [SET_ASSOC-1:0] data_we;
-index_t ram_addr;
+index_t ram_raddr, ram_waddr;
 
 // random number
 logic lfsr_update;
 logic [7:0] lfsr_val;
 
 // stage 2 status
-logic pipe_read;
+logic pipe_read, pipe_flush;
 logic [31:0] pipe_addr, axi_raddr;
 logic cache_miss;
 logic [SET_ASSOC-1:0] hit;
@@ -108,7 +108,7 @@ assign cache_miss = ~(|hit) & pipe_read;
 index_t invalite_cnt, invalite_cnt_d;
 
 // stall signals
-assign ibus.stall = ~((state == IDLE || state == FINISH) & ~cache_miss) & pipe_read || state == INVALIDATING;
+assign ibus.stall = (state_d != IDLE) && ~pipe_flush && pipe_read || state == INVALIDATING;
 
 // send rddata next cycle
 logic [SET_ASSOC-1:0] pipe_hit;
@@ -154,10 +154,11 @@ always_comb begin
 	// RAM requests
 	tag_we      = '0;
 	data_we     = '0;
-	if((state_d == REFILL || state_d == FINISH) && pipe_read) begin
-		ram_addr    = get_index(pipe_addr);
+	ram_waddr   = get_index(pipe_addr);
+	if(state_d == FINISH && ~pipe_flush && pipe_read) begin
+		ram_raddr    = get_index(pipe_addr);
 	end else begin
-		ram_addr    = get_index(ibus.address);
+		ram_raddr    = get_index(ibus.address);
 	end
 
 	lfsr_update = 1'b0;
@@ -194,8 +195,8 @@ always_comb begin
 		end
 		INVALIDATING: begin
 			invalite_cnt_d = invalite_cnt + 1;
-			tag_we   = '1;
-			ram_addr = invalite_cnt;
+			tag_we    = '1;
+			ram_waddr = invalite_cnt;
 		end
 	endcase
 end
@@ -205,13 +206,13 @@ always_comb begin
 	state_d = state;
 	unique case(state)
 		IDLE, FINISH:
-			if(cache_miss & ~ibus.flush_2)
+			if(cache_miss & ~pipe_flush)
 				state_d = WAIT_AXI_READY;
 			else state_d = IDLE;
 		WAIT_AXI_READY:
 			if(axi_resp.arready) 
-				state_d = ibus.flush_2 ? FLUSH_RECEIVING : RECEIVING;
-			else if(ibus.flush_2)
+				state_d = pipe_flush ? FLUSH_RECEIVING : RECEIVING;
+			else if(pipe_flush)
 				state_d = FLUSH_WAIT_AXI_READY;
 		FLUSH_WAIT_AXI_READY:
 			if(axi_resp.arready) 
@@ -219,7 +220,7 @@ always_comb begin
 		RECEIVING, FLUSH_RECEIVING:
 			if(axi_resp.rvalid & axi_resp.rlast) begin
 				state_d = REFILL;
-			end else if(ibus.flush_2) begin
+			end else if(pipe_flush) begin
 				state_d = FLUSH_RECEIVING;
 			end
 		REFILL: state_d = FINISH;
@@ -253,10 +254,13 @@ always_ff @(posedge clk) begin
 	if(rst) begin
 		pipe_addr <= '0;
 		pipe_read <= 1'b0;
-	end else if(~ibus.stall || ibus.flush_2) begin
+	end else if(~ibus.stall || pipe_flush) begin
 		pipe_read <= ibus.read & ~ibus.flush_1;
 		pipe_addr <= ibus.address;
 	end
+
+	if(rst) pipe_flush <= 1'b0;
+	else    pipe_flush <= ibus.flush_2;
 end
 
 // generate block RAMs
@@ -268,14 +272,14 @@ for(genvar i = 0; i < SET_ASSOC; ++i) begin : gen_icache_mem
 		.clk,
 		.rst,
 
-		.ena   ( 1'b1      ),
-		.wea   ( tag_we[i] ),
-		.addra ( ram_addr  ),
-		.dina  ( tag_wdata ),
-		.douta (           ),
+		.ena   ( 1'b1         ),
+		.wea   ( tag_we[i]    ),
+		.addra ( ram_waddr    ),
+		.dina  ( tag_wdata    ),
+		.douta (              ),
 
-		.enb   ( 1'b1      ),
-		.addrb ( ram_addr  ),
+		.enb   ( 1'b1         ),
+		.addrb ( ram_raddr    ),
 		.doutb ( tag_rdata[i] )
 	);
 
@@ -286,16 +290,16 @@ for(genvar i = 0; i < SET_ASSOC; ++i) begin : gen_icache_mem
 		.clk,
 		.rst,
 
-		.ena   ( 1'b1       ),
-		.wea   ( data_we[i] ),
-		.addra ( ram_addr   ),
-		.dina  ( data_wdata ),
-		.douta (            ),
+		.ena   ( 1'b1          ),
+		.wea   ( data_we[i]    ),
+		.addra ( ram_waddr     ),
+		.dina  ( data_wdata    ),
+		.douta (               ),
 
-		.enb   ( 1'b1       ),
-		.web   ( 1'b0       ),
-		.addrb ( ram_addr   ),
-		.dinb  (            ),
+		.enb   ( 1'b1          ),
+		.web   ( 1'b0          ),
+		.addrb ( ram_raddr     ),
+		.dinb  (               ),
 		.doutb ( data_rdata[i] )
 	);
 end
