@@ -25,6 +25,8 @@ assign kill[1] = except_req.valid;
 assign dbus_uncached.wrdata     = dbus.wrdata;
 assign dbus_uncached.address    = dbus.address;
 assign dbus_uncached.byteenable = dbus.byteenable;
+assign dbus_uncached.invalidate = 1'b0;
+assign dbus.invalidate = 1'b0;
 
 always_comb begin
 	dbus.read       = 1'b0;

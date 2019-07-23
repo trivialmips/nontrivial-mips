@@ -53,7 +53,7 @@ endinterface
 // interface of D$ and CPU
 interface cpu_dbus_if();
 	// signals for D$
-	logic read, write, stall;
+	logic read, write, stall, invalidate;
 	// only used for write
 	// byteenable[i] corresponds to wrdata[(i + 1) * 8 - 1 : i * 8]
 	logic [3:0] byteenable;
@@ -61,14 +61,14 @@ interface cpu_dbus_if();
 	uint32_t rddata, wrdata;
 
     modport master (
-		output read, write,
+		output read, write, invalidate,
 		output wrdata, address, byteenable,
 		input  stall,
 		input  rddata
     );
 
     modport slave (
-		input  read, write,
+		input  read, write, invalidate,
 		input  wrdata, address, byteenable,
 		output stall,
 		output rddata
