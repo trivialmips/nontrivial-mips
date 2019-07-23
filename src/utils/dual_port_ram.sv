@@ -4,7 +4,6 @@ module dual_port_ram #(
 	// $bits(dtype) * SIZE = bits of the block RAM
 	parameter int unsigned SIZE       = 1024,
 	parameter type dtype              = logic [DATA_WIDTH-1:0],
-	parameter int unsigned USE_LUTRAM = 0,
 	parameter int unsigned LATENCY    = 1
 ) (
 	input  logic  clk,
@@ -21,7 +20,6 @@ module dual_port_ram #(
 	output dtype  doutb
 );
 
-generate if(~USE_LUTRAM) begin
 // xpm_memory_tdpram: True Dual Port RAM
 // Xilinx Parameterized Macro, Version 2016.2
 xpm_memory_tdpram #(
@@ -79,13 +77,33 @@ xpm_memory_tdpram #(
 	.dbiterrb       (       )  // do not change
 );
 
-end else begin
+endmodule
+
+module dual_port_lutram #(
+	// default data width if the fifo is of type logic
+	parameter int unsigned DATA_WIDTH = 32,
+	// $bits(dtype) * SIZE = bits of the block RAM
+	parameter int unsigned SIZE       = 1024,
+	parameter type dtype              = logic [DATA_WIDTH-1:0],
+	parameter int unsigned LATENCY    = 1
+) (
+	input  logic  clk,
+	input  logic  rst,
+	input  logic  wea,
+	input  logic  ena,
+	input  logic  enb,
+	input  logic  [$clog2(SIZE)-1:0] addra,
+	input  logic  [$clog2(SIZE)-1:0] addrb,
+	input  dtype  dina,
+	output dtype  douta,
+	output dtype  doutb
+);
+
 // xpm_memory_dpdistram: Dual Port Distributed RAM
 // Xilinx Parameterized Macro, Version 2016.2
 xpm_memory_dpdistram #(
 	// Common module parameters
 	.MEMORY_SIZE($bits(dtype) * SIZE),
-	.MEMORY_PRIMITIVE("auto"),
 	.CLOCKING_MODE("common_clock"),
 	.USE_MEM_INIT(0),
 	.MESSAGE_CONTROL(0),
@@ -97,7 +115,6 @@ xpm_memory_dpdistram #(
 	.READ_LATENCY_A(LATENCY),
 
 	// Port B module parameters
-	.WRITE_DATA_WIDTH_B($bits(dtype)),
 	.READ_DATA_WIDTH_B($bits(dtype)),
 	.READ_RESET_VALUE_B("0"),
 	.READ_LATENCY_B(LATENCY)
@@ -117,13 +134,9 @@ xpm_memory_dpdistram #(
 	.rstb           ( rst   ),
 	.enb            ( enb   ),
 	.regceb         ( 1'b0  ),
-	.web            ( web   ),
 	.addrb          ( addrb ),
-	.dinb           ( dinb  ),
 	.doutb          ( doutb )
 );
-end
-endgenerate
 
 endmodule
 

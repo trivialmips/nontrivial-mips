@@ -587,8 +587,7 @@ end
 // generate block RAMs
 for(genvar i = 0; i < SET_ASSOC; ++i) begin : gen_dcache_mem
     // We need dual-port for simutanious R/W
-    dual_port_ram #(
-		.USE_LUTRAM ( 0 ),
+    dual_port_lutram #(
         .SIZE  ( GROUP_NUM ),
         .dtype ( tag_t     )
     ) mem_tag (
@@ -604,14 +603,13 @@ for(genvar i = 0; i < SET_ASSOC; ++i) begin : gen_dcache_mem
 
         // Port B, handles tag read, controlled by stage 1
         .enb   ( ~dbus.stall  ),
-        .web   ( 1'b0         ),
+        // .web   ( 1'b0         ),
         .addrb ( read_addr    ),
-        .dinb  ( '0           ),
+        // .dinb  ( '0           ),
         .doutb ( tag_rdata[i] )
     );
 
-    dual_port_ram #(
-		.USE_LUTRAM ( 0 ),
+    dual_port_lutram #(
         .SIZE  ( GROUP_NUM ),
         .dtype ( line_t    )
     ) mem_data (
@@ -627,9 +625,9 @@ for(genvar i = 0; i < SET_ASSOC; ++i) begin : gen_dcache_mem
 
         // Port B, handles data
         .enb   ( ~dbus.stall   ),
-        .web   ( 1'b0          ),
+        // .web   ( 1'b0          ),
         .addrb ( read_addr     ),
-        .dinb  ( '0            ),
+        // .dinb  ( '0            ),
         .doutb ( data_rdata[i] )
     );
 end
