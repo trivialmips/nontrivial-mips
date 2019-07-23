@@ -53,7 +53,8 @@ typedef enum logic [2:0] {
     WAIT_AXI_READY,
     RECEIVING,
     REFILL_WRITE,
-    FINISH
+    FINISH,
+    RST 
 } state_t;
 
 typedef enum logic [2:0] {
@@ -148,6 +149,9 @@ line_t wb_line, wb_line_d;
 logic [BURST_LIMIT:0][31:0] wb_burst_lines;
 logic [LINE_BYTE_OFFSET-1:0] wb_burst_cnt, wb_burst_cnt_d;
 
+// Invalidation
+index_t invalidate_cnt, invalidate_cnt_d;
+
 /* Reg + Outputs */
 // Stage 1 output: tag_rdata, compute hit
 logic [SET_ASSOC-1:0] hit;
@@ -221,7 +225,7 @@ end
 
 // Refill write requests
 assign assoc_waddr     = SET_ASSOC == 1 ? 1'b0 : lfsr_val[$clog2(SET_ASSOC)-1:0];
-assign rf_tag_wdata.valid = 1'b1;
+assign rf_tag_wdata.valid = state != RST;
 assign rf_tag_wdata.tag   = get_tag(pipe_addr);
 assign rf_tag_wdata.dirty = pipe_write;
 always_comb begin
@@ -245,7 +249,7 @@ always_comb begin
     end
 end
 
-assign dbus.stall = state_d != IDLE;
+assign dbus.stall = state_d != IDLE || state == RST;
 
 always_comb begin
     dbus.rddata = pipe_rdata;
@@ -387,6 +391,12 @@ always_comb begin
                 rf_data_we[assoc_waddr] = 1'b1;
             end
         end
+
+        RST: begin
+            rf_tag_we = 4'b1111;
+            rf_ram_addr = invalidate_cnt;
+            invalidate_cnt_d = invalidate_cnt + 1;
+        end
     endcase
 end
 
@@ -426,6 +436,8 @@ always_comb begin
             if(axi_resp.rvalid & axi_resp.rlast) begin
                 state_d = REFILL_WRITE;
             end
+        RST:
+            if(&invalidate_cnt) state_d = IDLE;
     endcase
 end
 
@@ -437,11 +449,13 @@ always_ff @(posedge clk) begin
     end
 
     if(rst) begin
-        state     <= IDLE;
+        state     <= RST;
         burst_cnt <= '0;
+		invalidate_cnt <= '0;
     end else begin
         state     <= state_d;
         burst_cnt <= burst_cnt_d;
+		invalidate_cnt <= invalidate_cnt_d;
     end
 end
 
