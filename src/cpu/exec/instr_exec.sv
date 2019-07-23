@@ -212,8 +212,10 @@ always_comb begin
 	result.memreq.paddr      = mmu_result.phy_addr;
 	result.memreq.wrdata     = mem_wrdata;
 	result.memreq.byteenable = mem_sel;
-	if(`BLOCK_VIRT_UART && mmu_vaddr == 32'hbfaf_fff0)
+`ifndef XILINX_SIMULATOR
+	if(~mmu_vaddr == `SIMU_ONLY_ADDR)
 		result.memreq = '0;
+`endif
 end
 
 always_comb begin
