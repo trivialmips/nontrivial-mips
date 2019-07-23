@@ -588,6 +588,7 @@ end
 for(genvar i = 0; i < SET_ASSOC; ++i) begin : gen_dcache_mem
     // We need dual-port for simutanious R/W
     dual_port_ram #(
+		.USE_LUTRAM ( 1 ),
         .SIZE  ( GROUP_NUM ),
         .dtype ( tag_t     )
     ) mem_tag (
@@ -610,6 +611,7 @@ for(genvar i = 0; i < SET_ASSOC; ++i) begin : gen_dcache_mem
     );
 
     dual_port_ram #(
+		.USE_LUTRAM ( 0 ),
         .SIZE  ( GROUP_NUM ),
         .dtype ( line_t    )
     ) mem_data (
