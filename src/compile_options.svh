@@ -8,6 +8,7 @@
 **/
 
 `define CPU_MMU_ENABLED      1
+`define BLOCK_VIRT_UART      0
 
 `define FETCH_NUM            2
 `define ISSUE_NUM            2

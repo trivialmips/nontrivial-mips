@@ -36,6 +36,7 @@ typedef enum logic [2:0] {
 	IDLE,
 	WAIT_AXI_READY,
 	RECEIVING,
+	REFILL,
 	FINISH,
 	FLUSH_WAIT_AXI_READY,
 	FLUSH_RECEIVING,
@@ -153,7 +154,7 @@ always_comb begin
 	// RAM requests
 	tag_we      = '0;
 	data_we     = '0;
-	if(state_d == FINISH && pipe_read) begin
+	if((state_d == REFILL || state_d == FINISH) && pipe_read) begin
 		ram_addr    = get_index(pipe_addr);
 	end else begin
 		ram_addr    = get_index(ibus.address);
@@ -217,10 +218,11 @@ always_comb begin
 				state_d = FLUSH_RECEIVING;
 		RECEIVING, FLUSH_RECEIVING:
 			if(axi_resp.rvalid & axi_resp.rlast) begin
-				state_d = FINISH;
+				state_d = REFILL;
 			end else if(ibus.flush_2) begin
 				state_d = FLUSH_RECEIVING;
 			end
+		REFILL: state_d = FINISH;
 		INVALIDATING:
 			if(&invalite_cnt) state_d = IDLE;
 	endcase
@@ -259,30 +261,42 @@ end
 
 // generate block RAMs
 for(genvar i = 0; i < SET_ASSOC; ++i) begin : gen_icache_mem
-	single_port_ram #(
+	dual_port_lutram #(
 		.SIZE  ( GROUP_NUM ),
 		.dtype ( tag_t     )
 	) mem_tag (
 		.clk,
 		.rst,
 
-		.we   ( tag_we[i]    ),
-		.addr ( ram_addr     ),
-		.din  ( tag_wdata    ),
-		.dout ( tag_rdata[i] )
+		.ena   ( 1'b1      ),
+		.wea   ( tag_we[i] ),
+		.addra ( ram_addr  ),
+		.dina  ( tag_wdata ),
+		.douta (           ),
+
+		.enb   ( 1'b1      ),
+		.addrb ( ram_addr  ),
+		.doutb ( tag_rdata[i] )
 	);
 
-	single_port_ram #(
+	dual_port_ram #(
 		.SIZE  ( GROUP_NUM ),
 		.dtype ( line_t    )
 	) mem_data (
 		.clk,
 		.rst,
 
-		.we   ( data_we[i]    ),
-		.addr ( ram_addr      ),
-		.din  ( data_wdata    ),
-		.dout ( data_rdata[i] )
+		.ena   ( 1'b1       ),
+		.wea   ( data_we[i] ),
+		.addra ( ram_addr   ),
+		.dina  ( data_wdata ),
+		.douta (            ),
+
+		.enb   ( 1'b1       ),
+		.web   ( 1'b0       ),
+		.addrb ( ram_addr   ),
+		.dinb  (            ),
+		.doutb ( data_rdata[i] )
 	);
 end
 

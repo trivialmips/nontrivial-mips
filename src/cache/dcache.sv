@@ -597,7 +597,7 @@ for(genvar i = 0; i < SET_ASSOC; ++i) begin : gen_dcache_mem
         // Port A, handles tag write, controlled by stage 2 & 3
         .ena   ( 1'b1      ),
         .wea   ( tag_we[i] ),
-        .addra ( ram_addr ),
+        .addra ( ram_addr  ),
         .dina  ( tag_wdata ),
         .douta ( delayed_tag_rdata[i] ),
 
@@ -609,7 +609,7 @@ for(genvar i = 0; i < SET_ASSOC; ++i) begin : gen_dcache_mem
         .doutb ( tag_rdata[i] )
     );
 
-    dual_port_lutram #(
+    dual_port_ram #(
         .SIZE  ( GROUP_NUM ),
         .dtype ( line_t    )
     ) mem_data (
@@ -617,7 +617,7 @@ for(genvar i = 0; i < SET_ASSOC; ++i) begin : gen_dcache_mem
         .rst,
 
         // Port A, handles data write
-        .ena   ( 1'b1      ),
+        .ena   ( 1'b1          ),
         .wea   ( data_we[i]    ),
         .addra ( ram_addr      ),
         .dina  ( data_wdata    ),
@@ -625,9 +625,9 @@ for(genvar i = 0; i < SET_ASSOC; ++i) begin : gen_dcache_mem
 
         // Port B, handles data
         .enb   ( ~dbus.stall   ),
-        // .web   ( 1'b0          ),
+        .web   ( 1'b0          ),
         .addrb ( read_addr     ),
-        // .dinb  ( '0            ),
+        .dinb  ( '0            ),
         .doutb ( data_rdata[i] )
     );
 end

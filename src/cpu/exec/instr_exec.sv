@@ -203,14 +203,18 @@ logic [3:0] mem_sel;
 assign extended_imm = { {16{instr[15]}}, instr[15:0] };
 assign mmu_vaddr = reg1 + extended_imm;
 
-assign result.memreq.read       = data.decoded.is_load;
-assign result.memreq.write      = data.decoded.is_store
-                                  & (llbit_value || (op != OP_SC));
-assign result.memreq.uncached   = mmu_result.uncached;
-assign result.memreq.vaddr      = mmu_vaddr;
-assign result.memreq.paddr      = mmu_result.phy_addr;
-assign result.memreq.wrdata     = mem_wrdata;
-assign result.memreq.byteenable = mem_sel;
+always_comb begin
+	result.memreq.read       = data.decoded.is_load;
+	result.memreq.write      = data.decoded.is_store
+							   & (llbit_value || (op != OP_SC));
+	result.memreq.uncached   = mmu_result.uncached;
+	result.memreq.vaddr      = mmu_vaddr;
+	result.memreq.paddr      = mmu_result.phy_addr;
+	result.memreq.wrdata     = mem_wrdata;
+	result.memreq.byteenable = mem_sel;
+	if(`BLOCK_VIRT_UART && mmu_vaddr == 32'hbfaf_fff0)
+		result.memreq = '0;
+end
 
 always_comb begin
 	unique case(op)
