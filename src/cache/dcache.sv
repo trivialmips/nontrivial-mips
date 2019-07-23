@@ -149,7 +149,8 @@ logic [BURST_LIMIT:0][31:0] wb_burst_lines;
 logic [LINE_BYTE_OFFSET-1:0] wb_burst_cnt, wb_burst_cnt_d;
 
 /* Reg + Outputs */
-// Stage 1 output: tag_rdata
+// Stage 1 output: tag_rdata, compute hit
+logic [SET_ASSOC-1:0] hit;
 
 // Stage 2 reg + output
 logic s2_vacant;
@@ -160,6 +161,7 @@ logic [DATA_WIDTH-1:0] pipe_2_wdata;
 logic pipe_2_write, pipe_2_read;
 logic pipe_2_fifo_found, pipe_2_fifo_written;
 line_t pipe_2_fifo_qdata;
+logic [SET_ASSOC-1:0] pipe_2_hit;
 
 line_t data_mux_line;
 logic [DATA_WIDTH-1:0] rdata;
@@ -168,7 +170,6 @@ logic wb_current;
 
 logic read_miss, write_miss;
 logic adjacent; // Same line with the previous request
-logic [SET_ASSOC-1:0] hit;
 
 line_t last_wm_data_wdata;
 
@@ -198,9 +199,9 @@ always_comb begin
     wm_data_we = '0;
 
     if(pipe_2_write && ~dbus.stall) begin
-        if(|hit) begin
-            wm_tag_we = hit;
-            wm_data_we = hit;
+        if(|pipe_2_hit) begin
+            wm_tag_we = pipe_2_hit;
+            wm_data_we = pipe_2_hit;
         end else if(adjacent) begin
             // The next request must be causing a refill
             wm_tag_we[assoc_waddr] = 1'b1;
@@ -287,15 +288,15 @@ assign fifo_write = ~dbus.stall && dbus.write;
 // refilling, so set the ram addr to stage 3 addr
 
 for(genvar i = 0; i < SET_ASSOC; ++i) begin
-    assign hit[i] = tag_rdata[i].valid & (get_tag(pipe_2_addr) == tag_rdata[i].tag);
+    assign hit[i] = tag_rdata[i].valid & (get_tag(dbus.address) == tag_rdata[i].tag);
 end
 
 assign wm_ram_addr = get_index(pipe_2_addr);
 
 assign wb_current = wb_state != WB_IDLE && wb_addr == pipe_2_addr; //get_offset(wb_addr) == get_offset(pipe_addr);
 assign adjacent = (~s3_vacant) && get_fifo_tag(pipe_2_addr) == get_fifo_tag(pipe_addr);
-assign read_miss = (~adjacent) && (~|hit) && (~pipe_2_fifo_found) && (~wb_current) && pipe_2_read;
-assign write_miss = (~adjacent) && (~|hit) && pipe_2_write;
+assign read_miss = (~adjacent) && (~|pipe_2_hit) && (~pipe_2_fifo_found) && (~wb_current) && pipe_2_read;
+assign write_miss = (~adjacent) && (~|pipe_2_hit) && pipe_2_write;
 
 assign request_refill = read_miss || write_miss && ~(pipe_2_write && wb_current);
 
@@ -307,7 +308,7 @@ always_comb begin
         data_mux_line = last_wm_data_wdata;
     end else begin
         for(int i = 0; i < SET_ASSOC; ++i)
-            data_mux_line |= {LINE_WIDTH{hit[i]}} & data_rdata[i];
+            data_mux_line |= {LINE_WIDTH{pipe_2_hit[i]}} & data_rdata[i];
     end
 
     rdata = data_mux_line[get_offset(pipe_2_addr)];
@@ -331,7 +332,7 @@ always_comb begin
     rf_ram_addr = get_index(pipe_addr);
 
     // FIFO push
-    victim_locked = get_index(pipe_2_addr) == get_index(pipe_addr) && hit[assoc_waddr];
+    victim_locked = get_index(pipe_2_addr) == get_index(pipe_addr) && pipe_2_hit[assoc_waddr];
     fifo_push = state == REFILL && ~victim_locked && delayed_tag_rdata[assoc_waddr].valid && delayed_tag_rdata[assoc_waddr].dirty;
     fifo_ptag = { delayed_tag_rdata[assoc_waddr].tag, get_index(pipe_addr) };
     fifo_pdata = delayed_data_rdata[assoc_waddr];
@@ -460,6 +461,7 @@ always_ff @(posedge clk) begin
         pipe_2_fifo_found <= 1'b0;
         pipe_2_fifo_written <= 1'b0;
         pipe_2_fifo_qdata <= '0;
+        pipe_2_hit <= '0;
 
         // Stage 2 -> 3
         pipe_read <= 1'b0;
@@ -485,6 +487,7 @@ always_ff @(posedge clk) begin
         pipe_2_fifo_found <= fifo_found;
         pipe_2_fifo_written <= fifo_written;
         pipe_2_fifo_qdata <= fifo_qdata;
+        pipe_2_hit <= hit;
 
         // Stage 2 -> 3
         pipe_read <= pipe_2_read;
@@ -589,7 +592,8 @@ for(genvar i = 0; i < SET_ASSOC; ++i) begin : gen_dcache_mem
     // We need dual-port for simutanious R/W
     dual_port_lutram #(
         .SIZE  ( GROUP_NUM ),
-        .dtype ( tag_t     )
+        .dtype ( tag_t     ),
+        .LATENCY ( 0 )
     ) mem_tag (
         .clk,
         .rst,
