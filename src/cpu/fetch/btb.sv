@@ -5,6 +5,7 @@ module btb #(
 ) (
 	input  logic         clk,
 	input  logic         rst,
+	output logic         btb_ready,
 
 	// lookup address, aligned in 8-bytes
 	input  virt_t        vaddr,
@@ -26,18 +27,41 @@ index_t waddr, raddr, addra;
 btb_predict_t wdata;
 btb_predict_t [1:0] rdata;
 
+// reset logic
+logic is_reseting;
+logic [$clog2(CHANNEL_SIZE)-1:0] reset_addr;
+assign btb_ready = ~is_reseting;
+
 // read request
 assign raddr   = get_index(vaddr);
 assign predict = rdata;
 
-// write request through read channel
-assign wea[0] = presolved_branch.mispredict & ~presolved_branch.pc[2];
-assign wea[1] = presolved_branch.mispredict & presolved_branch.pc[2];
 always_comb begin
+	// write request through read channel
+	wea[0] = presolved_branch.mispredict & ~presolved_branch.pc[2];
+	wea[1] = presolved_branch.mispredict & presolved_branch.pc[2];
 	if(presolved_branch.mispredict) begin
 		addra = get_index(presolved_branch.pc);
 	end else begin
 		addra = raddr;
+	end
+
+	// reset request
+	if(is_reseting) begin
+		wea   = 2'b11;
+		addra = reset_addr;
+	end
+end
+
+// reset control
+always_ff @(posedge clk) begin
+	if(rst) begin
+		is_reseting <= 1'b1;
+		reset_addr  <= '0;
+	end else if(&reset_addr) begin
+		is_reseting <= 1'b0;
+	end else begin
+		reset_addr  <= reset_addr + 1;
 	end
 end
 

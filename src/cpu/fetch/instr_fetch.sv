@@ -75,6 +75,7 @@ logic queue_full, queue_empty;
 logic [3:0] queue_valid;
 
 // control signals
+logic ready, bpu_ready;
 logic stall_s1, stall_s2;
 logic flush_s1, flush_s2, flush_s3;
 assign stall_s2 = icache_res.stall & ~flush_s2;
@@ -86,11 +87,13 @@ assign icache_req.flush_s1 = flush_s1;
 assign icache_req.flush_s2 = flush_s2;
 assign predict_delayed = pipe_s2.bp.valid
 	& pipe_s2.bp.taken & pipe_s2.bp.wait_delayslot;
+assign ready = icache_res.icache_ready & bpu_ready;
 
 /* ====== stage 1 (PCGen) ====== */
 pc_generator pc_gen(
 	.clk,
 	.rst,
+	.ready,
 	.hold_pc ( stall_s1 ),
 	.except_valid,
 	.except_vec,
@@ -111,11 +114,13 @@ branch_predictor #(
 ) bpu_inst (
 	.clk,
 	.rst,
+	.ready,
 	.stall          ( stall_s1   ),
 	.flush          ( flush_s1   ),
 	.pc_cur         ( pipe_s1.pc ),
 	.pc_prev        ( pipe_s2.pc ),
 	.skip           ( pipe_s2.delayslot ),
+	.bpu_ready,
 	.resolved_branch,
 	.presolved_branch,
 	.prediction     ( pipe_s2.bp ),

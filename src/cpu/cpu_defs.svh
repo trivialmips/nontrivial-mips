@@ -131,6 +131,7 @@ typedef struct packed {
 } instr_fetch_memreq_t;
 
 typedef struct packed {
+	logic icache_ready;
 	logic stall, valid, valid_extra;
 	uint64_t data, data_extra;
 	address_exception_t iaddr_ex;

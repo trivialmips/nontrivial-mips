@@ -85,6 +85,7 @@ assign icache_res.valid = ibus.valid;
 assign icache_res.stall = ibus.stall;
 assign icache_res.data_extra       = ibus.rddata_extra;
 assign icache_res.valid_extra      = ibus.extra_valid;
+assign icache_res.icache_ready     = ibus.ready;
 assign icache_res.iaddr_ex.miss    = mmu_inst_result.miss;
 assign icache_res.iaddr_ex.illegal = mmu_inst_result.illegal;
 assign icache_res.iaddr_ex.invalid = mmu_inst_result.invalid;

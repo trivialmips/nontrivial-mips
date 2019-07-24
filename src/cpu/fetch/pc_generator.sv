@@ -3,6 +3,7 @@
 module pc_generator(
 	input  logic   clk,
 	input  logic   rst,
+	input  logic   ready,
 	input  logic   hold_pc,
 
 	// exception
@@ -29,7 +30,6 @@ module pc_generator(
 );
 
 virt_t pc_now, npc;
-assign pc_en = ~rst;
 
 always_comb begin
 	// fetch address, i.e. current PC
@@ -61,8 +61,9 @@ always_comb begin
 	if(except_valid) npc = except_vec;
 end
 
+assign pc_en = ready;
 always_ff @(posedge clk) begin
-	if(rst) begin
+	if(rst || ~pc_en) begin
 		pc_now <= `BOOT_VEC;
 	end else begin
 		pc_now <= npc;

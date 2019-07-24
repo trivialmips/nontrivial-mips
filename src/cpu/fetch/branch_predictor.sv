@@ -6,9 +6,11 @@ module branch_predictor #(
 )(
 	input  logic   clk,
 	input  logic   rst,
+	input  logic   ready,
 	input  logic   stall,
 	input  logic   flush,
 	input  logic   skip,
+	output logic   bpu_ready,
 
 	// current program counter, aligned in 4-bytes
 	input  virt_t  pc_cur,
@@ -28,6 +30,10 @@ module branch_predictor #(
 );
 
 localparam int ICACHE_ADDR_WIDTH = $clog2(ICACHE_LINE_WIDTH / 8);
+
+// Ready control
+logic btb_ready;
+assign bpu_ready = btb_ready;
 
 // BHT information
 bht_update_t  bht_update;
@@ -85,7 +91,7 @@ always_comb begin
 	prediction_sel[bt_index] = 1'b1;
 
 	// set prediction result
-	prediction.valid   = ~skip & (btb_selected.cf != ControlFlow_None);
+	prediction.valid   = ~skip & (btb_selected.cf != ControlFlow_None) & ready;
 	prediction.target  = btb_selected.target;
 	prediction.cf      = btb_selected.cf;
 	prediction.counter = bht_selected;
@@ -128,6 +134,7 @@ btb #(
 ) btb_inst (
 	.clk,
 	.rst,
+	.btb_ready,
 	.presolved_branch,
 	.vaddr   ( pc_cur      ),
 	.update  ( btb_update  ),

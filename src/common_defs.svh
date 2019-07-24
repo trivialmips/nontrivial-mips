@@ -21,6 +21,7 @@ typedef uint32_t      phys_t;
 // interface of I$ and CPU
 // I$ is 2-stage pipelined
 interface cpu_ibus_if();
+	logic ready;
 	logic read;
 	logic stall;        // stall from cache
 	logic valid;        // is rddata valid?
@@ -37,14 +38,14 @@ interface cpu_ibus_if();
     modport master (
 		output read, address,
 		output flush_1, flush_2,
-		input  stall, rddata, valid,
+		input  stall, rddata, valid, ready,
 		input  rddata_extra, extra_valid
     );
 
     modport slave (
 		input  read, address,
 		input  flush_1, flush_2,
-		output stall, rddata, valid,
+		output stall, rddata, valid, ready,
 		output rddata_extra, extra_valid
     );
 

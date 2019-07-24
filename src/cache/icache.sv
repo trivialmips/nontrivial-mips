@@ -109,6 +109,7 @@ index_t invalite_cnt, invalite_cnt_d;
 
 // stall signals
 assign ibus.stall = (state_d != IDLE) && ~pipe_flush && pipe_read || state == INVALIDATING;
+assign ibus.ready = state != INVALIDATING;
 
 // send rddata next cycle
 logic [SET_ASSOC-1:0] pipe_hit;
