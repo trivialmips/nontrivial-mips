@@ -21,6 +21,7 @@ module cp0(
 	output cp0_regs_t    regs,
 	output logic [7:0]   asid,
 	output logic         user_mode,
+	output logic         kseg0_uncached,
 	output logic         timer_int
 );
 
@@ -28,6 +29,7 @@ cp0_regs_t regs_now, regs_nxt;
 assign regs = regs_now;
 assign asid = regs.entry_hi[7:0];
 assign user_mode = (regs.status[4:1] == 4'b1000);
+assign kseg0_uncached = (regs.config0[2:0] == 3'd2);
 
 assign tlbrw_wdata.vpn2 = regs.entry_hi[31:13];
 assign tlbrw_wdata.asid = regs.entry_hi[7:0];
@@ -51,6 +53,36 @@ begin
 	end
 end
 
+uint32_t config0_default, config1_default, prid_default;
+assign config0_default = {
+	1'b1,   // M, config1 not implemented
+	21'b0,
+	3'b1,   // MMU Type ( Standard TLB )
+	4'b0,
+	3'd3
+};
+
+localparam int IC_SET_PER_WAY = $clog2(`ICACHE_SIZE / `ICACHE_SET_ASSOC / `ICACHE_LINE_WIDTH / 64);
+localparam int IC_LINE_SIZE   = $clog2(`ICACHE_LINE_WIDTH / 32) + 1;
+localparam int IC_ASSOC       = `ICACHE_SET_ASSOC - 1;
+localparam int DC_SET_PER_WAY = $clog2(`DCACHE_SIZE / `DCACHE_SET_ASSOC / `DCACHE_LINE_WIDTH / 64);
+localparam int DC_LINE_SIZE   = $clog2(`DCACHE_LINE_WIDTH / 32) + 1;
+localparam int DC_ASSOC       = `DCACHE_SET_ASSOC - 1;
+
+assign config1_default = {
+	1'b0,
+	6'd15,
+	IC_SET_PER_WAY[2:0],
+	IC_LINE_SIZE[2:0],
+	IC_ASSOC[2:0],
+	DC_SET_PER_WAY[2:0],
+	DC_LINE_SIZE[2:0],
+	DC_ASSOC[2:0],
+	7'd0
+};
+
+assign prid_default = {8'b0, 8'b1, 16'h8000};
+
 always @(posedge clk)
 begin
 	if(rst)
@@ -71,6 +103,9 @@ begin
 		regs_now.epc       <= '0;
 		regs_now.error_epc <= '0;
 		regs_now.ebase     <= 32'h80000001;
+		regs_now.config0   <= config0_default;
+		regs_now.config1   <= config1_default;
+		regs_now.prid      <= prid_default;
 	end else begin
 		regs_now <= regs_nxt;
 	end

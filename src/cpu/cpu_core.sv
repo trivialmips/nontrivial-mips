@@ -65,6 +65,7 @@ uint32_t     tlbp_index;
 
 // CP0
 logic [7:0]  cp0_asid;
+logic        cp0_kseg0_uncached;
 cp0_regs_t   cp0_regs;
 reg_addr_t   cp0_raddr;
 logic [2:0]  cp0_rsel;
@@ -125,6 +126,7 @@ mmu mmu_inst(
 	.clk,
 	.rst,
 	.asid(cp0_asid),
+	.kseg0_uncached(cp0_kseg0_uncached),
 	.is_user_mode(cp0_user_mode),
 	.inst_vaddr(mmu_inst_vaddr),
 	.data_vaddr(mmu_data_vaddr),
@@ -293,6 +295,7 @@ cp0 cp0_inst(
 
 	.tlbrw_wdata,
 
+	.kseg0_uncached ( cp0_kseg0_uncached ),
 	.rdata     ( cp0_rdata     ),
 	.regs      ( cp0_regs      ),
 	.asid      ( cp0_asid      ),
