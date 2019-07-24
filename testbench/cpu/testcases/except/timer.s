@@ -13,7 +13,7 @@ _start:
 	or $1, $2, $1     # ans: skip
 	mtc0 $1, $13
 
-	ori $2, $0, 0x50 # ans: $2=0x00000050
+	ori $2, $0, 0x2000 # ans: $2=0x00002000
 	mtc0 $2, $11
 
 _wait_int:
