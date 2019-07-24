@@ -4,6 +4,7 @@ module mmu(
 	input  logic        clk,
 	input  logic        rst,
 	input  logic [7:0]  asid,
+	input  logic        kseg0_uncached,
 	input  logic        is_user_mode,
 	input  virt_t       inst_vaddr,
 	input  virt_t       [`ISSUE_NUM-1:0] data_vaddr,
@@ -32,7 +33,7 @@ endfunction
 function logic is_vaddr_uncached(
 	input virt_t vaddr
 ); 
-	return vaddr[31:29] == 3'b101;
+	return vaddr[31:29] == 3'b101 || kseg0_uncached && vaddr[31:29] == 3'b100;
 endfunction
 
 generate if(`CPU_MMU_ENABLED)
