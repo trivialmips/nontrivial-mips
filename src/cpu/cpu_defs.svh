@@ -139,6 +139,7 @@ typedef struct packed {
 
 // memory request for load and store
 typedef struct packed {
+	logic invalidate, invalidate_icache;
 	logic read, write, uncached;
 	logic [3:0] byteenable;
 	virt_t vaddr;

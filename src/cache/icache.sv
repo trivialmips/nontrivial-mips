@@ -10,6 +10,9 @@ module icache #(
 	// external logics
 	input  logic        clk,
 	input  logic        rst,
+	// invalidation requests
+	input  logic        invalidate_icache,
+	input  logic [31:0] invalidate_addr,
 	// CPU signals
 	cpu_ibus_if.slave   ibus,
 	// AXI request
@@ -64,6 +67,10 @@ function offset_t get_offset( input logic [31:0] addr );
 	return addr[LINE_BYTE_OFFSET - 1 : DATA_BYTE_OFFSET];
 endfunction
 
+// index invalidation signals
+logic pipe_inv;
+index_t pipe_inv_index;
+
 // RAM requests of tag
 tag_t [SET_ASSOC-1:0] tag_rdata;
 tag_t tag_wdata;
@@ -91,7 +98,7 @@ logic [$clog2(SET_ASSOC)-1:0] assoc_waddr;
 
 // setup write request
 assign assoc_waddr     = lfsr_val[$clog2(SET_ASSOC)-1:0];
-assign tag_wdata.valid = state != INVALIDATING;
+assign tag_wdata.valid = state != INVALIDATING && ~pipe_inv;
 assign tag_wdata.tag   = get_tag(pipe_addr);
 always_comb begin
 	data_wdata = line_recv;
@@ -180,7 +187,7 @@ always_comb begin
 			axi_req.araddr  = axi_raddr;
 		end
 		RECEIVING: begin
-			if(axi_resp.rvalid) begin
+			if(axi_resp.rvalid & ~pipe_inv) begin
 				axi_req.rready = 1'b1;
 				burst_cnt_d    = burst_cnt + 1;
 			end
@@ -200,6 +207,11 @@ always_comb begin
 			ram_waddr = invalite_cnt;
 		end
 	endcase
+
+	if(pipe_inv) begin
+		tag_we    = '1;
+		ram_waddr = pipe_inv_index;
+	end
 end
 
 // update state
@@ -260,8 +272,15 @@ always_ff @(posedge clk) begin
 		pipe_addr <= ibus.address;
 	end
 
-	if(rst) pipe_flush <= 1'b0;
-	else    pipe_flush <= ibus.flush_2;
+	if(rst) begin
+		pipe_flush <= 1'b0;
+		pipe_inv   <= 1'b0;
+		pipe_inv_index <= '0;
+	end else begin
+		pipe_flush <= ibus.flush_2;
+		pipe_inv   <= invalidate_icache;
+		pipe_inv_index <= get_index(invalidate_addr);
+	end
 end
 
 // generate block RAMs

@@ -15,6 +15,8 @@ localparam int ADDR_WIDTH = $clog2(SIZE) + 2;
 reg [DATA_WIDTH-1:0] mem[SIZE-1:0];
 reg [SIZE / $clog2(CACHE_LINE)-1:0] hit;
 
+assign ibus.ready = ~rst;
+
 logic pipe_read;
 virt_t pipe_addr;
 

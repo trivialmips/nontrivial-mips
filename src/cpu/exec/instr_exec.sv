@@ -197,6 +197,22 @@ always_comb begin
 	endcase
 end
 
+/* cache operation */
+logic dcache_invalidate;
+logic icache_invalidate;
+always_comb begin
+	dcache_invalidate = 1'b0;
+	icache_invalidate = 1'b0;
+	if(op == OP_CACHE) begin
+		case(instr[20:16])
+			5'b00000, 5'b10000:
+				icache_invalidate = 1'b1;
+			5'b00001, 5'b10101:
+				dcache_invalidate = 1'b1;
+		endcase
+	end
+end
+
 /* memory operation */
 uint32_t extended_imm, mem_wrdata;
 logic [3:0] mem_sel;
@@ -204,8 +220,10 @@ assign extended_imm = { {16{instr[15]}}, instr[15:0] };
 assign mmu_vaddr = reg1 + extended_imm;
 
 always_comb begin
+	result.memreq.invalidate_icache = icache_invalidate;
+	result.memreq.invalidate = dcache_invalidate;
 	result.memreq.read       = data.decoded.is_load;
-	result.memreq.write      = data.decoded.is_store
+	result.memreq.write      = data.decoded.is_store & (op != OP_CACHE)
 							   & (llbit_value || (op != OP_SC));
 	result.memreq.uncached   = mmu_result.uncached;
 	result.memreq.vaddr      = mmu_vaddr;

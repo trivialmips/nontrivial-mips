@@ -53,6 +53,8 @@ endinterface
 
 // interface of D$ and CPU
 interface cpu_dbus_if();
+	// signal for I$
+	logic invalidate_icache;
 	// signals for D$
 	logic read, write, stall, invalidate;
 	// only used for write
@@ -62,14 +64,16 @@ interface cpu_dbus_if();
 	uint32_t rddata, wrdata;
 
     modport master (
-		output read, write, invalidate,
+		output read, write,
+		output invalidate, invalidate_icache,
 		output wrdata, address, byteenable,
 		input  stall,
 		input  rddata
     );
 
     modport slave (
-		input  read, write, invalidate,
+		input  read, write,
+		input  invalidate, invalidate_icache,
 		input  wrdata, address, byteenable,
 		output stall,
 		output rddata
