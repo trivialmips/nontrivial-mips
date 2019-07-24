@@ -54,6 +54,7 @@ typedef enum logic [2:0] {
     RECEIVING,
     REFILL_WRITE,
     FINISH,
+    INVALIDATE,
     RST 
 } state_t;
 
@@ -139,7 +140,7 @@ logic [LINE_BYTE_OFFSET-1:0] burst_cnt, burst_cnt_d;
 // FIFO
 fifo_tag_t fifo_wqtag, fifo_rtag, fifo_ptag;
 line_t fifo_wdata, fifo_rdata, fifo_qdata, fifo_pdata;
-logic [DATA_PER_LINE-1:0][DATA_BYTE_OFFSET-1:0] fifo_wbe;
+logic [DATA_PER_LINE-1:0][DATA_WIDTH/8-1:0] fifo_wbe;
 logic fifo_found, fifo_full, fifo_empty, fifo_written;
 logic fifo_push, fifo_write, fifo_pop;
 
@@ -149,8 +150,11 @@ line_t wb_line, wb_line_d;
 logic [BURST_LIMIT:0][31:0] wb_burst_lines;
 logic [LINE_BYTE_OFFSET-1:0] wb_burst_cnt, wb_burst_cnt_d;
 
-// Invalidation
+// Rst
 index_t invalidate_cnt, invalidate_cnt_d;
+
+// Invalidate
+logic [$clog2(SET_ASSOC)-1:0] assoc_cnt, assoc_cnt_d;
 
 /* Reg + Outputs */
 // Stage 1 output: tag_rdata, compute hit
@@ -162,7 +166,7 @@ logic s2_vacant;
 logic [31:0] pipe_2_addr;
 logic [3:0] pipe_2_byteenable;
 logic [DATA_WIDTH-1:0] pipe_2_wdata;
-logic pipe_2_write, pipe_2_read;
+logic pipe_2_write, pipe_2_read, pipe_2_invalidate;
 logic pipe_2_fifo_found, pipe_2_fifo_written;
 line_t pipe_2_fifo_qdata;
 logic [SET_ASSOC-1:0] pipe_2_hit;
@@ -174,6 +178,7 @@ logic wb_current;
 
 logic read_miss, write_miss;
 logic adjacent; // Same line with the previous request
+logic invalidating; // Same index with the previous request, and the previous request is a invalidate request
 
 line_t last_wm_data_wdata;
 
@@ -182,6 +187,7 @@ logic s3_vacant;
 
 logic pipe_read;
 logic pipe_write;
+logic pipe_invalidate;
 logic pipe_request_refill;
 logic [3:0] pipe_byteenable;
 logic [31:0] pipe_addr;
@@ -202,12 +208,14 @@ always_comb begin
     wm_tag_we = '0;
     wm_data_we = '0;
 
-    if(pipe_2_write && ~dbus.stall) begin
+    // If we are being invalidated, writing into RAM wont work at all. Stage
+    // 3 will merge this write request into FIFO for us
+    if(pipe_2_write && ~invalidating && ~dbus.stall) begin
         if(|pipe_2_hit) begin
             wm_tag_we = pipe_2_hit;
             wm_data_we = pipe_2_hit;
-        end else if(adjacent) begin
-            // The next request must be causing a refill
+        end else if(adjacent && pipe_request_refill) begin
+            // The next request is causing a refill
             wm_tag_we[assoc_waddr] = 1'b1;
             wm_data_we[assoc_waddr] = 1'b1;
         end
@@ -225,16 +233,20 @@ end
 
 // Refill write requests
 assign assoc_waddr     = SET_ASSOC == 1 ? 1'b0 : lfsr_val[$clog2(SET_ASSOC)-1:0];
-assign rf_tag_wdata.valid = state != RST;
+assign rf_tag_wdata.valid = state != RST && state != INVALIDATE;
 assign rf_tag_wdata.tag   = get_tag(pipe_addr);
 assign rf_tag_wdata.dirty = pipe_write;
 always_comb begin
-    if(state == REFILL) begin
-        // If we are writing during REFILL stage, we must be fetching from the line being written-back
+    rf_data_wdata = line_recv;
+
+    // If we are refilling in REFILL stage, the line must be being
+    // written-back
+    if(state === REFILL) begin
         rf_data_wdata = wb_line;
-    end else begin
-        rf_data_wdata = line_recv;
     end
+    // We also set line_recv to wb_line if the write occured on
+    // REFILL -> REFILL_FINISH, because the following adjacent write request
+    // may rely on the refilled data
 
     // Only rewrite the last byte in RECEIVING state
     // Because we may need rf_data_wdata for stage 2 write hit
@@ -297,12 +309,13 @@ end
 
 assign wm_ram_addr = get_index(pipe_2_addr);
 
-assign wb_current = wb_state != WB_IDLE && wb_addr == pipe_2_addr; //get_offset(wb_addr) == get_offset(pipe_addr);
-assign adjacent = (~s3_vacant) && get_fifo_tag(pipe_2_addr) == get_fifo_tag(pipe_addr);
-assign read_miss = (~adjacent) && (~|pipe_2_hit) && (~pipe_2_fifo_found) && (~wb_current) && pipe_2_read;
-assign write_miss = (~adjacent) && (~|pipe_2_hit) && pipe_2_write;
+assign wb_current = wb_state != WB_IDLE && get_fifo_tag(wb_addr) == get_fifo_tag(pipe_2_addr); //get_offset(wb_addr) == get_offset(pipe_addr);
+assign invalidating = (~s3_vacant) && pipe_invalidate && get_index(pipe_2_addr) == get_index(pipe_addr);
+assign adjacent = (~s3_vacant) && get_fifo_tag(pipe_2_addr) == get_fifo_tag(pipe_addr) && ~invalidating;
+assign read_miss = (~(adjacent && pipe_request_refill)) && (~|pipe_2_hit) && (~pipe_2_fifo_found) && (~wb_current) && pipe_2_read;
+assign write_miss = (~(adjacent && pipe_request_refill)) && (~|pipe_2_hit) && ~pipe_2_fifo_written && pipe_2_write;
 
-assign request_refill = read_miss || write_miss && ~(pipe_2_write && wb_current);
+assign request_refill = read_miss || write_miss; // && ~(pipe_2_write && wb_current); TODO: why?
 
 always_comb begin
     data_mux_line = '0;
@@ -344,6 +357,9 @@ always_comb begin
     lfsr_update = 1'b0;
     burst_cnt_d = burst_cnt;
 
+    invalidate_cnt_d = invalidate_cnt;
+    assoc_cnt_d = assoc_cnt;
+
     // AXI defaults
     axi_req_arid = 1'b0;
 
@@ -362,6 +378,10 @@ always_comb begin
         IDLE: begin
             if(pipe_request_refill) begin
                 lfsr_update = 1'b1; // Shuffles at least once
+            end
+
+            if(pipe_invalidate) begin
+                assoc_cnt_d = '0;
             end
         end
         WAIT_AXI_READY: begin
@@ -397,6 +417,25 @@ always_comb begin
             rf_ram_addr = invalidate_cnt;
             invalidate_cnt_d = invalidate_cnt + 1;
         end
+
+        INVALIDATE: begin
+            fifo_push = delayed_tag_rdata[assoc_cnt].valid && delayed_tag_rdata[assoc_cnt].dirty;
+            fifo_ptag = { delayed_tag_rdata[assoc_cnt].tag, get_index(pipe_addr) };
+            fifo_pdata = delayed_data_rdata[assoc_cnt];
+
+            if(delayed_tag_rdata[assoc_cnt].valid && fifo_ptag == get_fifo_tag(pipe_2_addr) && pipe_2_write) begin
+                // Stage 2 is writing this one
+                fifo_pdata[get_offset(pipe_2_addr)] = pipe_2_wdata;
+                fifo_push = 1'b1;
+            end
+
+            // Invalidate tag
+            rf_tag_we[assoc_cnt] = 1'b1;
+
+            if(~(fifo_push && fifo_full)) begin
+                assoc_cnt_d = assoc_cnt + 1;
+            end
+        end
     endcase
 end
 
@@ -406,7 +445,7 @@ always_comb begin
     unique case(state)
         IDLE: begin
             if(pipe_request_refill) state_d = REFILL;
-            else state_d = IDLE;
+            if(pipe_invalidate) state_d = INVALIDATE;
         end
         REFILL: begin
             if(victim_locked) begin
@@ -438,12 +477,18 @@ always_comb begin
             end
         RST:
             if(&invalidate_cnt) state_d = IDLE;
+        INVALIDATE: begin
+            if(&assoc_cnt) state_d = REFILL_WRITE;
+        end
     endcase
 end
 
 always_ff @(posedge clk) begin
     if(rst) begin
         line_recv <= '0;
+    end else if(state == REFILL && state_d == REFILL_WRITE) begin
+        // Refill from wb_line
+        line_recv <= wb_line;
     end else if(state == RECEIVING && axi_resp.rvalid) begin
         line_recv[burst_cnt] <= axi_resp.rdata;
     end
@@ -452,10 +497,12 @@ always_ff @(posedge clk) begin
         state     <= RST;
         burst_cnt <= '0;
 		invalidate_cnt <= '0;
+        assoc_cnt <= '0;
     end else begin
         state     <= state_d;
         burst_cnt <= burst_cnt_d;
 		invalidate_cnt <= invalidate_cnt_d;
+        assoc_cnt <= assoc_cnt_d;
     end
 end
 
@@ -469,6 +516,7 @@ always_ff @(posedge clk) begin
         // Stage 1 -> 2
         pipe_2_read <= 1'b0;
         pipe_2_write <= 1'b0;
+        pipe_2_invalidate <= 1'b0;
         pipe_2_byteenable <= '0;
         pipe_2_addr <= '0;
         pipe_2_wdata <= '0;
@@ -480,6 +528,7 @@ always_ff @(posedge clk) begin
         // Stage 2 -> 3
         pipe_read <= 1'b0;
         pipe_write <= 1'b0;
+        pipe_invalidate <= 1'b0;
         pipe_addr <= '0;
         pipe_wdata <= '0;
         pipe_byteenable <= '0;
@@ -495,6 +544,7 @@ always_ff @(posedge clk) begin
         // Stage 1 -> 2
         pipe_2_read <= dbus.read;
         pipe_2_write <= dbus.write;
+        pipe_2_invalidate <= dbus.invalidate;
         pipe_2_byteenable <= dbus.byteenable;
         pipe_2_addr <= dbus.address;
         pipe_2_wdata <= dbus.wrdata;
@@ -506,6 +556,7 @@ always_ff @(posedge clk) begin
         // Stage 2 -> 3
         pipe_read <= pipe_2_read;
         pipe_write <= pipe_2_write;
+        pipe_invalidate <= pipe_2_invalidate;
         pipe_addr <= pipe_2_addr;
         pipe_wdata <= pipe_2_wdata;
         pipe_byteenable <= pipe_2_byteenable;
