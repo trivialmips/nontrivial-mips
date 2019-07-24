@@ -52,7 +52,6 @@ typedef enum logic [2:0] {
     REFILL,
     WAIT_AXI_READY,
     RECEIVING,
-    REFILL_WRITE,
     FINISH,
     INVALIDATE,
     RST 
@@ -457,7 +456,7 @@ always_comb begin
                 //
                 // Check for wb for matches
                 if(wb_state != WB_IDLE && get_fifo_tag(wb_addr) == get_fifo_tag(pipe_addr)) begin
-                    state_d = REFILL_WRITE;
+                    state_d = FINISH;
                 end else begin
                     state_d = WAIT_AXI_READY;
                 end
@@ -465,20 +464,18 @@ always_comb begin
         end
         FINISH:
             state_d = IDLE;
-        REFILL_WRITE:
-            state_d = FINISH;
         WAIT_AXI_READY:
             if(axi_resp.arready) begin
                 state_d = RECEIVING;
             end
         RECEIVING:
             if(axi_resp.rvalid & axi_resp.rlast) begin
-                state_d = REFILL_WRITE;
+                state_d = FINISH;
             end
         RST:
             if(&invalidate_cnt) state_d = IDLE;
         INVALIDATE: begin
-            if(&assoc_cnt) state_d = REFILL_WRITE;
+            if(&assoc_cnt) state_d = FINISH;
         end
     endcase
 end
@@ -486,7 +483,7 @@ end
 always_ff @(posedge clk) begin
     if(rst) begin
         line_recv <= '0;
-    end else if(state == REFILL && state_d == REFILL_WRITE) begin
+    end else if(state == REFILL && state_d == FINISH) begin
         // Refill from wb_line
         line_recv <= wb_line;
     end else if(state == RECEIVING && axi_resp.rvalid) begin
