@@ -107,7 +107,7 @@ task unittest_(
 	while(!$feof(fans))
 	begin @(negedge clk);
 		cycle = cycle + 1;
-		intr[0] = (40 <= cycle && cycle <= 45);
+		intr[0] = (4000 <= cycle && cycle <= 4005);
 
 		if(~post_stall & pipe_exec_d[0].valid & ~pipe_exec_d[0].ex.valid) begin
 			++instr_count;
