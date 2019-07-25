@@ -36,13 +36,10 @@ always_comb begin
 	decoded_instr.rs1        = '0;
 	decoded_instr.rs2        = '0;
 	decoded_instr.rd         = '0;
-	decoded_instr.op         = OP_SLL;
+	decoded_instr.op         = OP_INVALID;
+	decoded_instr.fu         = FU_INVALID;
 	decoded_instr.use_imm    = 1'b0;
 	decoded_instr.imm_signed = 1'b1;
-	decoded_instr.is_load    = 1'b0;
-	decoded_instr.is_store   = 1'b0;
-	decoded_instr.is_priv    = opcode == 6'b101111 || opcode == 6'b010000;
-	decoded_instr.is_nonrw_priv  = 1'b0;
 	decoded_instr.is_controlflow = is_branch | is_jump_i | is_jump_r;
 
 	unique casez(opcode)
@@ -50,6 +47,7 @@ always_comb begin
 			decoded_instr.rs1 = rs;
 			decoded_instr.rs2 = rt;
 			decoded_instr.rd  = rd;
+			decoded_instr.fu  = funct[5:2] == 4'b01?0 ? FU_MUL : FU_ALU;
 			unique case(funct)
 				/* shift */
 				6'b000000: decoded_instr.op = OP_SLL;

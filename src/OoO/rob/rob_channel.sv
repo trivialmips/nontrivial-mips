@@ -13,6 +13,7 @@ module rob_channel #(
 	input  logic  pop,
 	input  rob_entry_t  data_i,
 	output rob_entry_t  data_o,
+	output logic [$clog2(DEPTH)-1:0] write_pointer,
 
 	input  cdb_packet_t cdb_packet
 );
@@ -26,6 +27,8 @@ rob_entry_t [DEPTH-1:0] mem_n, mem_q;
 
 logic [`CDB_SIZE-1:0] cdb_hit;
 logic [`CDB_SIZE-1:0][DEPTH-1:0] rob_hit;
+
+assign write_pointer = write_pointer_q;
 
 // use CDB to update ROB
 always_comb begin

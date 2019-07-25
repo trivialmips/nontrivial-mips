@@ -182,20 +182,24 @@ typedef enum logic [6:0] {
 	OP_INVALID
 } oper_t;
 
+// functional unit
+typedef enum logic [2:0] {
+	FU_INVALID,
+	FU_ALU,
+	FU_MUL
+} funct_t;
+
 // decode instruction
 typedef struct packed {
 	reg_addr_t   rs1;
 	reg_addr_t   rs2;
 	reg_addr_t   rd;
 	oper_t       op;
+	funct_t      fu;
 	controlflow_t cf;       // controlflow type
 	logic  imm_signed;      // use sign-extened immediate
 	logic  use_imm;         // use immediate as reg2
 	logic  is_controlflow;  // controlflow maybe changed
-	logic  is_load;         // load data
-	logic  is_store;        // store data
-	logic  is_priv;         // privileged instructions
-	logic  is_nonrw_priv;   // privileged instructions other than MFC0 and MTC0
 } decoded_instr_t;
 
 // TLB requests
@@ -228,25 +232,18 @@ typedef struct packed {
 	logic invalid, miss, dirty, illegal;
 } mmu_result_t;
 
-// functional unit
-typedef enum logic [2:0] {
-	FU_ALU
-} funct_t;
-
 // ROB entry
 typedef struct packed {
+	logic      valid;
 	logic      busy;
+	virt_t     pc;
 	uint32_t   value;
 	uint32_t   addr;   // JR/SW
 	reg_addr_t dest;
 	funct_t    fu;
 } rob_entry_t;
 
-typedef struct packed {
-	uint32_t    [1:0] pc;
-	rob_entry_t [1:0] entry;
-} rob_packet_t;
-
+typedef rob_entry_t [1:0] rob_packet_t;
 typedef logic [$clog2(`ROB_SIZE)-1:0] rob_index_t;
 
 // CDB

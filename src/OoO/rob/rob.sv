@@ -14,9 +14,12 @@ module rob_channel(
 	output logic  full,
 	output logic  empty,
 
+	output rob_index_t [1:0] reorder,
+
 	input  cdb_packet_t cdb_packet
 );
 
+logic [$clog2(`ROB_SIZE / 2) - 1:0] rob_write_pointer;
 rob_packet_t packet;
 assign data_o = packet;
 
@@ -33,8 +36,11 @@ for(genvar i = 0; i < 2; ++i) begin : gen_rob_channel
 		.pop,
 		.data_i ( data_i.entry[i]  ),
 		.data_o ( packet.entry[i]  ),
+		.write_pointer ( rob_write_pointer[i] ),
 		.cdb_packet
 	);
+
+	assign reorder[i] = { rob_write_pointer[i], i[0] };
 end
 
 fifo_v3 #(
