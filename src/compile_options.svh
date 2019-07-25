@@ -7,7 +7,7 @@
 
 **/
 
-`define CPU_MMU_ENABLED      1
+`define CPU_MMU_ENABLED      0
 
 `define FETCH_NUM            2
 `define ISSUE_NUM            2
@@ -24,5 +24,8 @@
 `define DCACHE_LINE_WIDTH    256
 `define DCACHE_SET_ASSOC     4
 `define DCACHE_SIZE          16 * 1024 * 8
+
+`define ROB_SIZE             16
+`define CDB_SIZE             4
 
 `endif
