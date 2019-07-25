@@ -231,7 +231,7 @@ always_comb begin
 			if(axi_resp.arready) 
 				state_d = FLUSH_RECEIVING;
 		RECEIVING, FLUSH_RECEIVING:
-			if(axi_resp.rvalid & axi_resp.rlast & axi_req.rready) begin
+			if(axi_resp.rvalid & axi_resp.rlast & ~pipe_inv) begin
 				state_d = REFILL;
 			end else if(pipe_flush) begin
 				state_d = FLUSH_RECEIVING;
