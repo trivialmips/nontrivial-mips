@@ -19,6 +19,7 @@ module dispatcher(
 
 	// function unit status
 	input  logic             alu_ready,
+	input  rs_index_t        alu_index,
 	output logic             alu_taken,
 
 	// reserve station
@@ -37,17 +38,22 @@ for(genvar i = 0; i < 2; ++i) begin: gen_register_dispatcher
 end
 
 always_comb begin
-	rs.busy   = 1'b0;
-	alu_taken = 1'b0;
+	rs.busy    = 1'b0;
+	rs.decoded = decoded;
+	rs.instr   = fetch.instr;
+	rs.index   = '0;
+	alu_taken  = 1'b0;
 	unique case(decoded.fu)
 		FU_ALU: begin
 			alu_taken = alu_ready;
 			rs.busy   = alu_ready;
+			rs.index  = alu_index;
 		end
 		default: begin
 			// we put invalid instructions to ALU
 			alu_taken = alu_ready;
 			rs.busy   = alu_ready;
+			rs.index  = alu_index;
 		end
 	endcase
 

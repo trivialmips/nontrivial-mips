@@ -12,8 +12,9 @@ module instr_issue(
 	output rob_packet_t        rob_packet,
 
 	// dispatcher
-	input  logic [1:0]         alu_ready,
-	output logic [1:0]         alu_taken,
+	input  logic               [1:0] alu_ready,
+	input  rs_index_t          [1:0] alu_index,
+	output logic               [1:0] alu_taken,
 
 	// reserve station
 	output reserve_station_t   [1:0] rs,
@@ -22,6 +23,8 @@ module instr_issue(
 	output reg_addr_t          [3:0] reg_raddr,
 	input  uint32_t            [3:0] reg_rdata,
 	input  register_status_t   [3:0] reg_status
+
+	// TODO: update register status
 );
 
 // decoded instructions
@@ -51,12 +54,19 @@ dispatcher dispatcher_instr_1(
 	.reg_status  ( reg_status[1:0] ),
 	.alu_ready   ( alu_ready[0]    ),
 	.alu_taken   ( alu_taken[0]    ),
+	.alu_index   ( alu_index[0]    ),
 	.rs          ( rs[0]           ),
 	.rob         ( rob_packet[0]   )
 );
 
 // resolve data-related in a issue packet
 register_status_t [1:0] reg_status_2;
+logic alu_ready_2;
+rs_index_t alu_index_2;
+
+assign alu_ready_2 = alu_ready[1] | (alu_ready[0] & ~alu_taken[0]);
+assign alu_index_2 = alu_ready[1] ? alu_index[1] : alu_index[0];
+
 always_comb begin
 	reg_status_2 = reg_status[3:2];
 	if(decoded[0].rd != '0 && decoded[0].rd == decoded[1].rs1) begin
@@ -78,7 +88,8 @@ dispatcher dispatcher_instr_2(
 	.reorder     ( rob_reorder[1]  ),
 	.reg_rdata   ( reg_rdata[3:2]  ),
 	.reg_status  ( reg_status_2    ),
-	.alu_ready   ( alu_ready[1] | (alu_ready[0] & ~alu_taken[0]) ),
+	.alu_ready   ( alu_ready_2     ),
+	.alu_index   ( alu_index_2     ),
 	.alu_taken   ( alu_taken[1]    ),
 	.rs          ( rs[1]           ),
 	.rob         ( rob_packet[1]   )

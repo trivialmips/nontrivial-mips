@@ -256,12 +256,16 @@ typedef struct packed {
 typedef cdb_t [`CDB_SIZE-1:0] cdb_packet_t;
 
 // reserve station
+typedef logic [$clog2(`MAX_RS_SIZE)-1:0] rs_index_t;
 typedef struct packed {
 	logic       busy;
+	rs_index_t  index;
 	rob_index_t reorder;
+	uint32_t    instr;
 	uint32_t    [1:0] operand;
 	rob_index_t [1:0] operand_addr;
 	logic       [1:0] operand_ready;
+	decoded_instr_t decoded;
 } reserve_station_t;
 
 // register status

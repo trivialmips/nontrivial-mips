@@ -27,5 +27,8 @@
 
 `define ROB_SIZE             16
 `define CDB_SIZE             4
+`define MAX_RS_SIZE          8
+`define ALU_RS_SIZE          4
+`define ALU_FU_SIZE          4
 
 `endif
