@@ -2,10 +2,10 @@
 <Root MajorVersion="0" MinorVersion="36">
   <CompositeFile CompositeFileTopName="bd_soc" CanBeSetAsTop="false" CanDisplayChildGraph="true">
     <Description>Composite Fileset</Description>
-    <Generation Name="SYNTHESIS" State="GENERATED" Timestamp="1563715695"/>
-    <Generation Name="IMPLEMENTATION" State="GENERATED" Timestamp="1563715695"/>
-    <Generation Name="SIMULATION" State="GENERATED" Timestamp="1563715695"/>
-    <Generation Name="HW_HANDOFF" State="GENERATED" Timestamp="1563715695"/>
+    <Generation Name="SYNTHESIS" State="GENERATED" Timestamp="1563973470"/>
+    <Generation Name="IMPLEMENTATION" State="GENERATED" Timestamp="1563973470"/>
+    <Generation Name="SIMULATION" State="GENERATED" Timestamp="1563973470"/>
+    <Generation Name="HW_HANDOFF" State="GENERATED" Timestamp="1563973470"/>
     <FileCollection Name="SOURCES" Type="SOURCES">
       <File Name="ip/bd_soc_confreg_0_0/bd_soc_confreg_0_0.xci" Type="IP">
         <Instance HierarchyPath="loongson_confrreg"/>
@@ -252,6 +252,14 @@
       </File>
       <File Name="ip/bd_soc_mig_7series_0_1/bd_soc_mig_7series_0_1.xci" Type="IP">
         <Instance HierarchyPath="ddr_controller"/>
+        <Properties IsEditable="false" IsVisible="true" Timestamp="0" IsTrackable="true" IsStatusTracked="true"/>
+        <Library Name="xil_defaultlib"/>
+        <UsedIn Val="SYNTHESIS"/>
+        <UsedIn Val="IMPLEMENTATION"/>
+        <UsedIn Val="SIMULATION"/>
+      </File>
+      <File Name="ip/bd_soc_vio_0_0/bd_soc_vio_0_0.xci" Type="IP">
+        <Instance HierarchyPath="vio_reset"/>
         <Properties IsEditable="false" IsVisible="true" Timestamp="0" IsTrackable="true" IsStatusTracked="true"/>
         <Library Name="xil_defaultlib"/>
         <UsedIn Val="SYNTHESIS"/>
