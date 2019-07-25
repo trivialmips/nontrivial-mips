@@ -38,6 +38,7 @@ always_comb begin
 	dbus_uncached.read   = 1'b0;
 	dbus_uncached.write  = 1'b0;
 	dbus.invalidate_icache = 1'b0;
+	dbus.invalidate = 1'b0;
 	for(int i = 0; i < `ISSUE_NUM; ++i) begin
 		dbus.invalidate_icache |= inv_icache[i] & ~kill[i];
 		dbus.invalidate   |= inv[i] & ~kill[i];

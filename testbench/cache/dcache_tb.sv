@@ -2,7 +2,7 @@
 
 `define PATH_PREFIX "testbench/cache/cases/"
 
-`define CASE_NAME "sequential.data"
+`define CASE_NAME "random.2.data"
 
 module dcache_tb();
 
@@ -43,12 +43,12 @@ dcache cache (
 	.axi_resp_bid (4'b0000)
 );
 
-localparam int unsigned REQ_COUNT = 32768;
+localparam int unsigned REQ_COUNT = 50000;
 logic [$clog2(REQ_COUNT+3):0] req;
 logic [REQ_COUNT+3:0][31:0] address;
 logic [REQ_COUNT+3:0][31:0] data;
 typedef enum logic [1:0] {
-	READ, WRITE
+	READ, WRITE, INVALIDATE
 } req_type_t;
 req_type_t req_type [REQ_COUNT+3:0];
 req_type_t current_type;
@@ -58,7 +58,8 @@ assign dbus.wrdata = data[req];
 assign current_type = req_type[req];
 assign dbus.read           = current_type == READ;
 assign dbus.write          = current_type == WRITE;
-assign dbus.byteenable = 4'b1111;
+assign dbus.invalidate     = current_type == INVALIDATE;
+assign dbus.byteenable     = 4'b1111;
 
 always_ff @(posedge clk or posedge rst) begin
 	if(rst) begin
@@ -141,6 +142,7 @@ initial begin
         case(mode[i])
             "r": req_type[i] = READ;
             "w": req_type[i] = WRITE;
+            "i": req_type[i] = INVALIDATE;
         endcase
     end
 
