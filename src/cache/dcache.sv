@@ -18,7 +18,8 @@ module dcache #(
     parameter DATA_WIDTH = 32, 
     parameter LINE_WIDTH = 256, 
     parameter SET_ASSOC  = 4,
-    parameter CACHE_SIZE = 16 * 1024 * 8
+    parameter CACHE_SIZE = 16 * 1024 * 8,
+    parameter WB_FIFO_DEPTH = 8
 ) (
     // external logics
     input  logic            clk,
@@ -572,7 +573,7 @@ always_ff @(posedge clk) begin
         pipe_request_refill <= request_refill;
         pipe_rdata <= rdata;
 
-        last_wm_data_wdata = wm_data_wdata;
+        last_wm_data_wdata <= wm_data_wdata;
     end
 end
 
@@ -721,7 +722,8 @@ lfsr_8bits lfsr_inst(
 
 dcache_fifo #(
     .TAG_WIDTH (TAG_WIDTH + INDEX_WIDTH),
-    .DATA_WIDTH (LINE_WIDTH)
+    .DATA_WIDTH (LINE_WIDTH),
+    .DEPTH (WB_FIFO_DEPTH)
 ) fifo_inst (
     .clk,
     .rst,
