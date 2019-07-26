@@ -1,3 +1,4 @@
-# Binaries
-./sequential
-./random
+*
+!*.cpp
+Makefile
+
