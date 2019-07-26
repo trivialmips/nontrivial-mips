@@ -11,9 +11,10 @@ module alu_rs(
 	input  reserve_station_t [1:0] rs_i,
 
 	// result
-	output uint32_t  [`ALU_RS_SIZE-1:0] data,
-	output logic     [`ALU_RS_SIZE-1:0] data_ready,
-	input  logic     [`ALU_FU_SIZE-1:0] data_ack,
+	output uint32_t    [`ALU_RS_SIZE-1:0] data,
+	output logic       [`ALU_RS_SIZE-1:0] data_ready,
+	output rob_index_t [`ALU_RS_SIZE-1:0] data_reorder,
+	input  logic       [`ALU_FU_SIZE-1:0] data_ack,
 
 	// CDB
 	input  cdb_packet_t      cdb
@@ -29,7 +30,8 @@ assign rs_index = rs_index_q;
 assign rs_ready = rs_ready_q;
 
 for(genvar i = 0; i < `ALU_RS_SIZE; ++i) begin: gen_data_valid
-	assign data_ready[i] = &rs_q[i].operand_ready;
+	assign data_ready[i]   = &rs_q[i].operand_ready;
+	assign data_reorder[i] = rs_q[i].reorder;
 end
 
 // allocate ready RS
