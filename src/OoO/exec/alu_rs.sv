@@ -81,6 +81,7 @@ for(genvar i = 0; i < `ALU_RS_SIZE; ++i) begin: gen_alu
 		.reg1   ( rs_q[i].operand[0] ),
 		.reg2   ( rs_q[i].operand[1] ),
 		.result ( data[i]            )
+	);
 end
 
 always_ff @(posedge clk) begin

@@ -36,13 +36,13 @@ module dispatcher(
 assign rs.reorder = reorder;
 
 always_comb begin
-	for(var i = 0; i < 2; ++i) begin
+	for(int i = 0; i < 2; ++i) begin
 		rs.operand[i]       = reg_rdata[i];
-		rs.operand_ready{i] = ~reg_status[i].busy;
-		rs.operand_addr{i]  = reg_status[i].reorder;
+		rs.operand_ready[i] = ~reg_status[i].busy;
+		rs.operand_addr[i]  = reg_status[i].reorder;
 		if(reg_status[i].busy & rob_rdata_valid[i]) begin
 			rs.operand[i]       = rob_rdata[i];
-			rs.operand_ready{i] = 1'b1;
+			rs.operand_ready[i] = 1'b1;
 		end
 	end
 end

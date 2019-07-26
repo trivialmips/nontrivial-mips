@@ -27,8 +27,8 @@ logic [$clog2(`ROB_SIZE / 2) - 1:0] rob_write_pointer;
 rob_packet_t packet;
 assign data_o = packet;
 
-logic    [1:0][3:0] rob_channel_data_valid,
-uint32_t [1:0][3:0] rob_channel_data,
+logic    [1:0][3:0] rob_channel_data_valid;
+uint32_t [1:0][3:0] rob_channel_data;
 
 for(genvar i = 0; i < 4; ++i) begin: gen_rob_read
 	assign rob_rdata[i]       = rob_channel_data[rob_raddr[i][0]][i];
