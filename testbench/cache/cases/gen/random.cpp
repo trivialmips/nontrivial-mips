@@ -5,8 +5,9 @@
 
 using namespace std;
 
-const size_t ROWS = 256 * 5;
+const size_t ROWS = 50000;
 const long double W_RATIO = 0.4;
+const long double I_RATIO = 0.1;
 
 int main() {
   unordered_map<uint32_t, uint32_t> mem;
@@ -16,20 +17,26 @@ int main() {
 
   uniform_int_distribution<uint32_t> addr_dist(0, 255); // * 4
   uniform_int_distribution<uint32_t> data_dist(0, 0xfffffffful);
-  uniform_real_distribution<long double> write_dist(0, 1);
+  uniform_real_distribution<long double> mode_dist(0, 1);
 
   cout<<hex;
 
   for(size_t i = 0; i<ROWS; ++i) {
-    const bool is_write = write_dist(gen) < W_RATIO;
+    const auto mode = mode_dist(gen);
+    const bool is_write = mode < W_RATIO;
+    const bool is_invalidate = !is_write && mode < W_RATIO + I_RATIO;
+
     const auto addr = addr_dist(gen) * 4;
 
-    if(is_write) cout<<"w ";
+    if(is_invalidate) cout<<"i ";
+    else if(is_write) cout<<"w ";
     else cout<<"r ";
 
     cout<<addr<<" ";
 
-    if(is_write) {
+    if(is_invalidate) {
+      cout<<0<<endl;
+    } else if(is_write) {
       const auto data = data_dist(gen);
       mem[addr] = data;
 
