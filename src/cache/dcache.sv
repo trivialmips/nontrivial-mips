@@ -169,6 +169,7 @@ logic pipe_2_write, pipe_2_read, pipe_2_invalidate;
 logic pipe_2_fifo_found, pipe_2_fifo_written;
 line_t pipe_2_fifo_qdata;
 logic [SET_ASSOC-1:0] pipe_2_hit;
+logic found_in_ram;
 
 line_t data_mux_line;
 logic [DATA_WIDTH-1:0] rdata;
@@ -260,7 +261,8 @@ always_comb begin
     end
 end
 
-assign dbus.stall = state_d != IDLE || state == RST;
+assign dbus.stall = ~(state == FINISH || (state == IDLE && ~(pipe_invalidate || pipe_request_refill)));
+// assign dbus.stall = state_d != IDLE || state == RST;
 
 always_comb begin
     dbus.rddata = pipe_rdata;
@@ -318,25 +320,28 @@ assign request_refill = read_miss || write_miss; // && ~(pipe_2_write && wb_curr
 
 always_comb begin
     data_mux_line = '0;
+    found_in_ram = 1'b0;
     if(adjacent && pipe_request_refill) begin
         data_mux_line = rf_data_wdata;
-    end else if(adjacent && pipe_write) begin
-        data_mux_line = last_wm_data_wdata;
-    end else begin
+        found_in_ram = 1'b1;
+    end else if(|pipe_2_hit) begin
         for(int i = 0; i < SET_ASSOC; ++i)
             data_mux_line |= {LINE_WIDTH{pipe_2_hit[i]}} & data_rdata[i];
+        found_in_ram = 1'b1;
     end
 
-    rdata = data_mux_line[get_offset(pipe_2_addr)];
+    if(adjacent && pipe_write) begin
+        data_mux_line[get_offset(pipe_addr)] = pipe_wdata;
+    end
 
-    // Following two conditions may both be true, if the hit in FIFO is popped
-    // right now
-
-    if(pipe_2_fifo_found) begin
+    if(pipe_write && pipe_addr == pipe_2_addr)
+        rdata = pipe_wdata;
+    else if(found_in_ram)
+        rdata = data_mux_line[get_offset(pipe_2_addr)];
+    else if(pipe_2_fifo_found)
         rdata = pipe_2_fifo_qdata[get_offset(pipe_2_addr)];
-    end else if(wb_current) begin
+    else if(wb_current)
         rdata = wb_line[get_offset(pipe_2_addr)];
-    end
 end
 
 // Stage 3, Refill
@@ -399,6 +404,7 @@ always_comb begin
                 end
             end
         end
+
         RECEIVING: begin
             if(axi_resp.rvalid) begin
                 axi_req.rready = 1'b1;
@@ -473,7 +479,7 @@ always_comb begin
                 state_d = FINISH;
             end
         RST:
-            if(&invalidate_cnt) state_d = IDLE;
+            if(&invalidate_cnt) state_d = FINISH;
         INVALIDATE: begin
             if(&assoc_cnt) state_d = FINISH;
         end
@@ -655,7 +661,8 @@ for(genvar i = 0; i < SET_ASSOC; ++i) begin : gen_dcache_mem
     dual_port_lutram #(
         .SIZE  ( GROUP_NUM ),
         .dtype ( tag_t     ),
-        .LATENCY ( 0 )
+        .LATENCY_A ( 1 ),
+        .LATENCY_B ( 0 )
     ) mem_tag (
         .clk,
         .rst,

@@ -29,7 +29,9 @@ cpu_dbus_if dbus();
 // So we generated data in addr 0x00 ~ 0xFF should be enough to test all
 // scenarios
 
-dcache cache (
+dcache #(
+    .CACHE_SIZE (2048)
+) cache (
 	.clk (clk),
 	.rst (rst),
 	.axi_req (axi_req),
