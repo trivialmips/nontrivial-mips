@@ -181,8 +181,6 @@ logic read_miss, write_miss;
 logic adjacent; // Same line with the previous request
 logic invalidating; // Same index with the previous request, and the previous request is a invalidate request
 
-line_t last_wm_data_wdata;
-
 // Stage 3 reg
 logic s3_vacant;
 
@@ -333,9 +331,6 @@ always_comb begin
             data_mux_line[get_offset(pipe_addr)] = mux_byteenable(data_mux_line[get_offset(pipe_addr)], pipe_wdata, pipe_byteenable);
 
         found_in_ram = 1'b1;
-    end else if(adjacent && pipe_write) begin
-        // Line must be in FIFO or wb-line
-        data_mux_line = last_wm_data_wdata;
     end
 
     rdata = data_mux_line[get_offset(pipe_2_addr)];
@@ -545,8 +540,6 @@ always_ff @(posedge clk) begin
         pipe_byteenable <= '0;
         pipe_request_refill <= 1'b0;
         pipe_rdata <= '0;
-
-        last_wm_data_wdata = '0;
     end else if(~dbus.stall) begin
         s2_vacant <= 1'b0;
         s3_vacant <= s2_vacant;
@@ -572,8 +565,6 @@ always_ff @(posedge clk) begin
         pipe_byteenable <= pipe_2_byteenable;
         pipe_request_refill <= request_refill;
         pipe_rdata <= rdata;
-
-        last_wm_data_wdata <= wm_data_wdata;
     end
 end
 
