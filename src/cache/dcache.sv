@@ -123,7 +123,7 @@ line_t [SET_ASSOC-1:0] data_rdata;
 line_t data_wdata, rf_data_wdata, wm_data_wdata;
 we_t data_we, rf_data_we, wm_data_we;
 
-assign use_rf = state_d != IDLE;
+assign use_rf = state != FINISH && (state != IDLE || pipe_request_refill || pipe_invalidate); // state_d != IDLE
 assign ram_addr   = use_rf ? rf_ram_addr   : wm_ram_addr;
 assign tag_wdata  = use_rf ? rf_tag_wdata  : wm_tag_wdata;
 assign tag_we     = use_rf ? rf_tag_we     : wm_tag_we;
@@ -179,6 +179,8 @@ logic wb_current;
 logic read_miss, write_miss;
 logic adjacent; // Same line with the previous request
 logic invalidating; // Same index with the previous request, and the previous request is a invalidate request
+
+line_t last_wm_data_wdata;
 
 // Stage 3 reg
 logic s3_vacant;
@@ -325,20 +327,21 @@ always_comb begin
     end else if(|pipe_2_hit) begin
         for(int i = 0; i < SET_ASSOC; ++i)
             data_mux_line |= {LINE_WIDTH{pipe_2_hit[i]}} & data_rdata[i];
+
+        if(adjacent && pipe_write)
+            data_mux_line[get_offset(pipe_addr)] = mux_byteenable(data_mux_line[get_offset(pipe_addr)], pipe_wdata, pipe_byteenable);
+
         found_in_ram = 1'b1;
+    end else if(adjacent && pipe_write) begin
+        // Line must be in FIFO or wb-line
+        data_mux_line = last_wm_data_wdata;
     end
 
-    if(adjacent && pipe_write) begin
-        data_mux_line[get_offset(pipe_addr)] = mux_byteenable(data_mux_line, pipe_wdata, pipe_byteenable);
-    end
+    rdata = data_mux_line[get_offset(pipe_2_addr)];
 
-    if(pipe_write && pipe_addr == pipe_2_addr)
-        rdata = pipe_wdata;
-    else if(found_in_ram)
-        rdata = data_mux_line[get_offset(pipe_2_addr)];
-    else if(pipe_2_fifo_found)
+    if((~found_in_ram) && pipe_2_fifo_found)
         rdata = pipe_2_fifo_qdata[get_offset(pipe_2_addr)];
-    else if(wb_current)
+    else if((~found_in_ram) && wb_current)
         rdata = wb_line[get_offset(pipe_2_addr)];
 end
 
@@ -426,9 +429,12 @@ always_comb begin
             fifo_ptag = { delayed_tag_rdata[assoc_cnt].tag, get_index(pipe_addr) };
             fifo_pdata = delayed_data_rdata[assoc_cnt];
 
-            if(delayed_tag_rdata[assoc_cnt].valid && fifo_ptag == get_fifo_tag(pipe_2_addr) && pipe_2_write) begin
+            if(delayed_tag_rdata[assoc_cnt].valid
+                && { delayed_tag_rdata[assoc_cnt].tag, get_index(pipe_addr) }== get_fifo_tag(pipe_2_addr)
+                && pipe_2_write
+            ) begin
                 // Stage 2 is writing this one
-                fifo_pdata[get_offset(pipe_2_addr)] = pipe_2_wdata;
+                fifo_pdata[get_offset(pipe_2_addr)] = mux_byteenable(fifo_pdata[get_offset(pipe_2_addr)], pipe_2_wdata, pipe_2_byteenable);
                 fifo_push = 1'b1;
             end
 
@@ -487,7 +493,10 @@ end
 always_ff @(posedge clk) begin
     if(rst) begin
         line_recv <= '0;
-    end else if(state == REFILL && state_d == FINISH) begin
+    end else if(state == REFILL
+        && wb_state != WB_IDLE
+        && get_fifo_tag(wb_addr) == get_fifo_tag(pipe_addr)
+    ) begin
         // Refill from wb_line
         line_recv <= wb_line;
     end else if(state == RECEIVING && axi_resp.rvalid) begin
@@ -536,6 +545,7 @@ always_ff @(posedge clk) begin
         pipe_request_refill <= 1'b0;
         pipe_rdata <= '0;
 
+        last_wm_data_wdata = '0;
     end else if(~dbus.stall) begin
         s2_vacant <= 1'b0;
         s3_vacant <= s2_vacant;
@@ -561,6 +571,8 @@ always_ff @(posedge clk) begin
         pipe_byteenable <= pipe_2_byteenable;
         pipe_request_refill <= request_refill;
         pipe_rdata <= rdata;
+
+        last_wm_data_wdata = wm_data_wdata;
     end
 end
 
@@ -736,7 +748,6 @@ dcache_fifo #(
 // debug info
 logic debug_uncache_access, debug_cache_miss;
 assign debug_uncache_access = (pipe_read | pipe_write) & (state == IDLE);
-assign debug_cache_miss = state_d != IDLE && state == IDLE;
-
+assign debug_cache_miss = state == IDLE && (pipe_invalidate || pipe_request_refill);
 
 endmodule
