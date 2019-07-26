@@ -88,7 +88,8 @@ always_ff @(posedge clk) begin
 	if(rst || flush) begin
 		rs_q       <= '0;
 		rs_ready_q <= 2'b11;
-		rs_index_q <= { 0, 1 };
+		rs_index_q[0] <= 0;
+		rs_index_q[1] <= 1;
 	end else begin
 		rs_q       <= rs_n;
 		rs_ready_q <= rs_ready_n;

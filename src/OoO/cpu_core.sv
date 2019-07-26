@@ -98,7 +98,7 @@ regfile #(
 	.READ_PORTS  ( 4        ),
 	.ZERO_KEEP   ( 1        ),
 	.dtype       ( register_status_t )
-) regfile_inst (
+) regfile_status_inst (
 	.clk,
 	.rst,
 	.we    ( { reg_we, reg_status_we }               ),
@@ -122,7 +122,7 @@ rob rob_inst(
 	.reorder ( rob_reorder   ),
 	.rob_raddr,
 	.rob_rdata_valid,
-	.rob_raddr,
+	.rob_rdata,
 	.cdb
 );
 
@@ -158,7 +158,7 @@ instr_issue instr_issue_inst(
 	.alu_ready,
 	.alu_index,
 	.alu_taken,
-	.issue_rs,
+	.rs ( issue_rs ),
 	.reg_raddr,
 	.reg_rdata,
 	.reg_status ( reg_status_rdata )

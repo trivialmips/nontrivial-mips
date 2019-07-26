@@ -168,7 +168,6 @@ always_comb begin
 			decoded_instr.rs1     = rs;
 			decoded_instr.rs2     = (opcode[1:0] == 2'b10) ? rt : '0;
 			decoded_instr.rd      = rt;
-			decoded_instr.is_load = 1'b1;
 			unique case(opcode[2:0])
 				3'b000: decoded_instr.op = OP_LB;
 				3'b001: decoded_instr.op = OP_LH;
@@ -184,7 +183,6 @@ always_comb begin
 		6'b101???: begin // store (Reg-Imm)
 			decoded_instr.rs1      = rs;
 			decoded_instr.rs2      = rt;
-			decoded_instr.is_store = 1'b1;
 			unique case(opcode[2:0])
 				3'b000:  decoded_instr.op = OP_SB;
 				3'b001:  decoded_instr.op = OP_SH;
@@ -200,7 +198,6 @@ always_comb begin
 			decoded_instr.rs1     = rs;
 			decoded_instr.rd      = rt;
 			decoded_instr.op      = OP_LL;
-			decoded_instr.is_load = 1'b1;
 		end
 		
 		6'b111000: begin // store conditional word (Reg-Imm)
@@ -208,7 +205,6 @@ always_comb begin
 			decoded_instr.rs2      = rt;
 			decoded_instr.rd       = rt;
 			decoded_instr.op       = OP_SC;
-			decoded_instr.is_store = 1'b1;
 		end
 		
 		6'b00001?: begin // jump and link
@@ -227,7 +223,6 @@ always_comb begin
 					decoded_instr.rs1 = rt;
 				end
 				5'b10000: begin
-					decoded_instr.is_nonrw_priv = 1'b1;
 					unique case(instr[5:0])
 						6'b000001: decoded_instr.op = OP_TLBR;
 						6'b000010: decoded_instr.op = OP_TLBWI;

@@ -23,7 +23,7 @@ module rob(
 	input  cdb_packet_t cdb
 );
 
-logic [$clog2(`ROB_SIZE / 2) - 1:0] rob_write_pointer;
+logic [1:0][$clog2(`ROB_SIZE / 2) - 1:0] rob_write_pointer;
 rob_packet_t packet;
 assign data_o = packet;
 
@@ -46,8 +46,8 @@ for(genvar i = 0; i < 2; ++i) begin : gen_rob_channel
 		.flush,
 		.push,
 		.pop,
-		.data_i ( data_i.entry[i]  ),
-		.data_o ( packet.entry[i]  ),
+		.data_i ( data_i[i] ),
+		.data_o ( packet[i] ),
 		.rob_raddr       ( rob_raddr[$clog2(`ROB_SIZE)-1:1] ),
 		.rob_rdata_valid ( rob_channel_data_valid[i]        ),
 		.rob_rdata       ( rob_channel_data[i]              ),

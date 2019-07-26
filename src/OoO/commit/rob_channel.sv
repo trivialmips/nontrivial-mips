@@ -49,8 +49,8 @@ always_comb begin
 
 	for(int i = 0; i < `CDB_SIZE; ++i) begin
 		for(int j = 0; j < DEPTH; ++j) begin
-			mem_n[j].busy  &= ~cdb_hit[i][j];
-			mem_n[j].value |= {32{cdb_hit[i][j]}} & cdb[i].value;
+			mem_n[j].busy  &= ~rob_hit[i][j];
+			mem_n[j].value |= {32{rob_hit[i][j]}} & cdb[i].value;
 		end
 	end
 
@@ -70,13 +70,13 @@ always_comb begin
 	write_pointer_n = write_pointer_q;
 
 	if(push) begin
-		if(write_pointer_q == FIFO_DEPTH[ADDR_DEPTH-1:0] - 1)
+		if(write_pointer_q == DEPTH[ADDR_WIDTH-1:0] - 1)
 			write_pointer_n = '0;
 		else write_pointer_n = write_pointer_q + 1;
 	end
 
 	if(pop) begin
-		if(read_pointer_q == FIFO_DEPTH[ADDR_DEPTH-1:0] - 1)
+		if(read_pointer_q == DEPTH[ADDR_WIDTH-1:0] - 1)
 			read_pointer_n = '0;
 		else read_pointer_n = read_pointer_q + 1;
 	end

@@ -59,7 +59,8 @@ struct packed {
 } pipe_s2;
 
 // replay (queue full)
-virt_t replay_valid, replay_vaddr;
+logic replay_valid;
+uint32_t replay_vaddr;
 
 // presolved branch ( for non-controlflow )
 presolved_branch_t presolved_branch;

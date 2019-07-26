@@ -10,7 +10,7 @@ module instr_exec(
 	output rs_index_t        [1:0] alu_index,
 
 	// reserve station
-	output reserve_station_t [1:0] rs_i,
+	input  reserve_station_t [1:0] rs_i,
 
 	// CDB
 	output cdb_packet_t      cdb_o
