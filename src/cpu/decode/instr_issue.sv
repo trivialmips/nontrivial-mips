@@ -113,8 +113,8 @@ assign instr2_not_taken =
 
 assign stall_req = load_related[0]
 	| (load_related[1] & ~instr2_not_taken)
-	| (id_decoded[0].is_nonrw_priv && priv_executing)
-	| nonrw_priv_executing
+	| (id_decoded[0].is_nonrw_priv && priv_executing) & `CPU_MUTEX_PRIV
+	| nonrw_priv_executing & `CPU_MUTEX_PRIV
 	| delayslot_not_loaded
 	| (instr_valid == '0);
 
