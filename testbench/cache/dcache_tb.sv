@@ -2,7 +2,7 @@
 
 `define PATH_PREFIX "testbench/cache/cases/"
 
-`define CASE_NAME "random.2.data"
+`define CASE_NAME "random.be.data"
 
 module dcache_tb();
 
@@ -29,7 +29,9 @@ cpu_dbus_if dbus();
 // So we generated data in addr 0x00 ~ 0xFF should be enough to test all
 // scenarios
 
-dcache cache (
+dcache #(
+    .CACHE_SIZE (2048)
+) cache (
 	.clk (clk),
 	.rst (rst),
 	.axi_req (axi_req),
@@ -47,6 +49,7 @@ localparam int unsigned REQ_COUNT = 50000;
 logic [$clog2(REQ_COUNT+3):0] req;
 logic [REQ_COUNT+3:0][31:0] address;
 logic [REQ_COUNT+3:0][31:0] data;
+logic [REQ_COUNT+3:0][3:0] be;
 typedef enum logic [1:0] {
 	READ, WRITE, INVALIDATE
 } req_type_t;
@@ -59,7 +62,7 @@ assign current_type = req_type[req];
 assign dbus.read           = current_type == READ;
 assign dbus.write          = current_type == WRITE;
 assign dbus.invalidate     = current_type == INVALIDATE;
-assign dbus.byteenable     = 4'b1111;
+assign dbus.byteenable     = be[req];
 
 always_ff @(posedge clk or posedge rst) begin
 	if(rst) begin
@@ -137,7 +140,7 @@ initial begin
 
     fd = $fopen({ path, `CASE_NAME }, "r");
     for(int i = 0; i < REQ_COUNT; i++) begin
-        status = $fscanf(fd, "%c %h %h\n", mode[i], address[i], data[i]);
+        status = $fscanf(fd, "%c %h %h %h\n", mode[i], address[i], data[i], be[i]);
         $display("%d", status);
         case(mode[i])
             "r": req_type[i] = READ;

@@ -52,7 +52,7 @@
         <spirit:configurableElementValue spirit:referenceId="BUSIFPARAM_VALUE.SI_CLK.ASSOCIATED_BUSIF">S_AXI</spirit:configurableElementValue>
         <spirit:configurableElementValue spirit:referenceId="BUSIFPARAM_VALUE.SI_CLK.ASSOCIATED_RESET">S_AXI_ARESETN</spirit:configurableElementValue>
         <spirit:configurableElementValue spirit:referenceId="BUSIFPARAM_VALUE.SI_CLK.CLK_DOMAIN">/main_mmcm_clk_out1</spirit:configurableElementValue>
-        <spirit:configurableElementValue spirit:referenceId="BUSIFPARAM_VALUE.SI_CLK.FREQ_HZ">50000000</spirit:configurableElementValue>
+        <spirit:configurableElementValue spirit:referenceId="BUSIFPARAM_VALUE.SI_CLK.FREQ_HZ">80000000</spirit:configurableElementValue>
         <spirit:configurableElementValue spirit:referenceId="BUSIFPARAM_VALUE.SI_CLK.INSERT_VIP">0</spirit:configurableElementValue>
         <spirit:configurableElementValue spirit:referenceId="BUSIFPARAM_VALUE.SI_CLK.PHASE">0.0</spirit:configurableElementValue>
         <spirit:configurableElementValue spirit:referenceId="BUSIFPARAM_VALUE.SI_RST.INSERT_VIP">0</spirit:configurableElementValue>
@@ -64,7 +64,7 @@
         <spirit:configurableElementValue spirit:referenceId="BUSIFPARAM_VALUE.S_AXI.BUSER_WIDTH">0</spirit:configurableElementValue>
         <spirit:configurableElementValue spirit:referenceId="BUSIFPARAM_VALUE.S_AXI.CLK_DOMAIN">/main_mmcm_clk_out1</spirit:configurableElementValue>
         <spirit:configurableElementValue spirit:referenceId="BUSIFPARAM_VALUE.S_AXI.DATA_WIDTH">32</spirit:configurableElementValue>
-        <spirit:configurableElementValue spirit:referenceId="BUSIFPARAM_VALUE.S_AXI.FREQ_HZ">50000000</spirit:configurableElementValue>
+        <spirit:configurableElementValue spirit:referenceId="BUSIFPARAM_VALUE.S_AXI.FREQ_HZ">80000000</spirit:configurableElementValue>
         <spirit:configurableElementValue spirit:referenceId="BUSIFPARAM_VALUE.S_AXI.HAS_BRESP">1</spirit:configurableElementValue>
         <spirit:configurableElementValue spirit:referenceId="BUSIFPARAM_VALUE.S_AXI.HAS_BURST">1</spirit:configurableElementValue>
         <spirit:configurableElementValue spirit:referenceId="BUSIFPARAM_VALUE.S_AXI.HAS_CACHE">1</spirit:configurableElementValue>
@@ -90,7 +90,7 @@
         <spirit:configurableElementValue spirit:referenceId="BUSIFPARAM_VALUE.S_AXI.WUSER_BITS_PER_BYTE">0</spirit:configurableElementValue>
         <spirit:configurableElementValue spirit:referenceId="BUSIFPARAM_VALUE.S_AXI.WUSER_WIDTH">0</spirit:configurableElementValue>
         <spirit:configurableElementValue spirit:referenceId="MODELPARAM_VALUE.C_AXI_ADDR_WIDTH">32</spirit:configurableElementValue>
-        <spirit:configurableElementValue spirit:referenceId="MODELPARAM_VALUE.C_AXI_IS_ACLK_ASYNC">0</spirit:configurableElementValue>
+        <spirit:configurableElementValue spirit:referenceId="MODELPARAM_VALUE.C_AXI_IS_ACLK_ASYNC">1</spirit:configurableElementValue>
         <spirit:configurableElementValue spirit:referenceId="MODELPARAM_VALUE.C_AXI_PROTOCOL">0</spirit:configurableElementValue>
         <spirit:configurableElementValue spirit:referenceId="MODELPARAM_VALUE.C_AXI_SUPPORTS_READ">1</spirit:configurableElementValue>
         <spirit:configurableElementValue spirit:referenceId="MODELPARAM_VALUE.C_AXI_SUPPORTS_WRITE">1</spirit:configurableElementValue>
@@ -105,7 +105,7 @@
         <spirit:configurableElementValue spirit:referenceId="MODELPARAM_VALUE.C_S_AXI_ACLK_RATIO">1</spirit:configurableElementValue>
         <spirit:configurableElementValue spirit:referenceId="MODELPARAM_VALUE.C_S_AXI_DATA_WIDTH">32</spirit:configurableElementValue>
         <spirit:configurableElementValue spirit:referenceId="MODELPARAM_VALUE.C_S_AXI_ID_WIDTH">4</spirit:configurableElementValue>
-        <spirit:configurableElementValue spirit:referenceId="PARAM_VALUE.ACLK_ASYNC">0</spirit:configurableElementValue>
+        <spirit:configurableElementValue spirit:referenceId="PARAM_VALUE.ACLK_ASYNC">1</spirit:configurableElementValue>
         <spirit:configurableElementValue spirit:referenceId="PARAM_VALUE.ACLK_RATIO">1:2</spirit:configurableElementValue>
         <spirit:configurableElementValue spirit:referenceId="PARAM_VALUE.ADDR_WIDTH">32</spirit:configurableElementValue>
         <spirit:configurableElementValue spirit:referenceId="PARAM_VALUE.Component_Name">bd_soc_auto_us_cc_df_1</spirit:configurableElementValue>
@@ -208,7 +208,6 @@
             <xilinx:configElementInfo xilinx:referenceId="BUSIFPARAM_VALUE.S_AXI.SUPPORTS_NARROW_BURST" xilinx:valueSource="ip_propagated" xilinx:valuePermission="bd"/>
             <xilinx:configElementInfo xilinx:referenceId="BUSIFPARAM_VALUE.S_AXI.WUSER_WIDTH" xilinx:valueSource="constant" xilinx:valuePermission="bd"/>
             <xilinx:configElementInfo xilinx:referenceId="PARAM_VALUE.ACLK_ASYNC" xilinx:valueSource="propagated" xilinx:valuePermission="bd_and_user"/>
-            <xilinx:configElementInfo xilinx:referenceId="PARAM_VALUE.ACLK_RATIO" xilinx:valueSource="propagated" xilinx:valuePermission="bd_and_user"/>
             <xilinx:configElementInfo xilinx:referenceId="PARAM_VALUE.ADDR_WIDTH" xilinx:valueSource="propagated" xilinx:valuePermission="bd_and_user"/>
             <xilinx:configElementInfo xilinx:referenceId="PARAM_VALUE.FIFO_MODE" xilinx:valueSource="user"/>
             <xilinx:configElementInfo xilinx:referenceId="PARAM_VALUE.MI_DATA_WIDTH" xilinx:valueSource="user" xilinx:valuePermission="bd_and_user"/>

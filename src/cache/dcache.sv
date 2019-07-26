@@ -123,7 +123,7 @@ line_t [SET_ASSOC-1:0] data_rdata;
 line_t data_wdata, rf_data_wdata, wm_data_wdata;
 we_t data_we, rf_data_we, wm_data_we;
 
-assign use_rf = state_d != IDLE;
+assign use_rf = state != FINISH && (state != IDLE || pipe_request_refill || pipe_invalidate); // state_d != IDLE
 assign ram_addr   = use_rf ? rf_ram_addr   : wm_ram_addr;
 assign tag_wdata  = use_rf ? rf_tag_wdata  : wm_tag_wdata;
 assign tag_we     = use_rf ? rf_tag_we     : wm_tag_we;
@@ -169,6 +169,7 @@ logic pipe_2_write, pipe_2_read, pipe_2_invalidate;
 logic pipe_2_fifo_found, pipe_2_fifo_written;
 line_t pipe_2_fifo_qdata;
 logic [SET_ASSOC-1:0] pipe_2_hit;
+logic found_in_ram;
 
 line_t data_mux_line;
 logic [DATA_WIDTH-1:0] rdata;
@@ -260,7 +261,8 @@ always_comb begin
     end
 end
 
-assign dbus.stall = state_d != IDLE || state == RST;
+assign dbus.stall = ~(state == FINISH || (state == IDLE && ~(pipe_invalidate || pipe_request_refill)));
+// assign dbus.stall = state_d != IDLE || state == RST;
 
 always_comb begin
     dbus.rddata = pipe_rdata;
@@ -318,25 +320,29 @@ assign request_refill = read_miss || write_miss; // && ~(pipe_2_write && wb_curr
 
 always_comb begin
     data_mux_line = '0;
+    found_in_ram = 1'b0;
     if(adjacent && pipe_request_refill) begin
         data_mux_line = rf_data_wdata;
-    end else if(adjacent && pipe_write) begin
-        data_mux_line = last_wm_data_wdata;
-    end else begin
+        found_in_ram = 1'b1;
+    end else if(|pipe_2_hit) begin
         for(int i = 0; i < SET_ASSOC; ++i)
             data_mux_line |= {LINE_WIDTH{pipe_2_hit[i]}} & data_rdata[i];
+
+        if(adjacent && pipe_write)
+            data_mux_line[get_offset(pipe_addr)] = mux_byteenable(data_mux_line[get_offset(pipe_addr)], pipe_wdata, pipe_byteenable);
+
+        found_in_ram = 1'b1;
+    end else if(adjacent && pipe_write) begin
+        // Line must be in FIFO or wb-line
+        data_mux_line = last_wm_data_wdata;
     end
 
     rdata = data_mux_line[get_offset(pipe_2_addr)];
 
-    // Following two conditions may both be true, if the hit in FIFO is popped
-    // right now
-
-    if(pipe_2_fifo_found) begin
+    if((~found_in_ram) && pipe_2_fifo_found)
         rdata = pipe_2_fifo_qdata[get_offset(pipe_2_addr)];
-    end else if(wb_current) begin
+    else if((~found_in_ram) && wb_current)
         rdata = wb_line[get_offset(pipe_2_addr)];
-    end
 end
 
 // Stage 3, Refill
@@ -399,6 +405,7 @@ always_comb begin
                 end
             end
         end
+
         RECEIVING: begin
             if(axi_resp.rvalid) begin
                 axi_req.rready = 1'b1;
@@ -422,9 +429,12 @@ always_comb begin
             fifo_ptag = { delayed_tag_rdata[assoc_cnt].tag, get_index(pipe_addr) };
             fifo_pdata = delayed_data_rdata[assoc_cnt];
 
-            if(delayed_tag_rdata[assoc_cnt].valid && fifo_ptag == get_fifo_tag(pipe_2_addr) && pipe_2_write) begin
+            if(delayed_tag_rdata[assoc_cnt].valid
+                && { delayed_tag_rdata[assoc_cnt].tag, get_index(pipe_addr) }== get_fifo_tag(pipe_2_addr)
+                && pipe_2_write
+            ) begin
                 // Stage 2 is writing this one
-                fifo_pdata[get_offset(pipe_2_addr)] = pipe_2_wdata;
+                fifo_pdata[get_offset(pipe_2_addr)] = mux_byteenable(fifo_pdata[get_offset(pipe_2_addr)], pipe_2_wdata, pipe_2_byteenable);
                 fifo_push = 1'b1;
             end
 
@@ -473,7 +483,7 @@ always_comb begin
                 state_d = FINISH;
             end
         RST:
-            if(&invalidate_cnt) state_d = IDLE;
+            if(&invalidate_cnt) state_d = FINISH;
         INVALIDATE: begin
             if(&assoc_cnt) state_d = FINISH;
         end
@@ -483,7 +493,10 @@ end
 always_ff @(posedge clk) begin
     if(rst) begin
         line_recv <= '0;
-    end else if(state == REFILL && state_d == FINISH) begin
+    end else if(state == REFILL
+        && wb_state != WB_IDLE
+        && get_fifo_tag(wb_addr) == get_fifo_tag(pipe_addr)
+    ) begin
         // Refill from wb_line
         line_recv <= wb_line;
     end else if(state == RECEIVING && axi_resp.rvalid) begin
@@ -532,8 +545,7 @@ always_ff @(posedge clk) begin
         pipe_request_refill <= 1'b0;
         pipe_rdata <= '0;
 
-        last_wm_data_wdata <= '0;
-
+        last_wm_data_wdata = '0;
     end else if(~dbus.stall) begin
         s2_vacant <= 1'b0;
         s3_vacant <= s2_vacant;
@@ -560,7 +572,7 @@ always_ff @(posedge clk) begin
         pipe_request_refill <= request_refill;
         pipe_rdata <= rdata;
 
-        last_wm_data_wdata <= wm_data_wdata;
+        last_wm_data_wdata = wm_data_wdata;
     end
 end
 
@@ -655,7 +667,8 @@ for(genvar i = 0; i < SET_ASSOC; ++i) begin : gen_dcache_mem
     dual_port_lutram #(
         .SIZE  ( GROUP_NUM ),
         .dtype ( tag_t     ),
-        .LATENCY ( 0 )
+        .LATENCY_A ( 1 ),
+        .LATENCY_B ( 0 )
     ) mem_tag (
         .clk,
         .rst,
@@ -735,7 +748,6 @@ dcache_fifo #(
 // debug info
 logic debug_uncache_access, debug_cache_miss;
 assign debug_uncache_access = (pipe_read | pipe_write) & (state == IDLE);
-assign debug_cache_miss = state_d != IDLE && state == IDLE;
-
+assign debug_cache_miss = state == IDLE && (pipe_invalidate || pipe_request_refill);
 
 endmodule
