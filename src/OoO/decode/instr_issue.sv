@@ -2,14 +2,19 @@
 
 module instr_issue(
 	// fetched instructions
-	input  fetch_entry_t [1:0] fetch_entry,
+	input  fetch_entry_t       [1:0] fetch_entry,
 	output fetch_ack_t         fetch_ack,
 
 	// ROB packet
 	input  logic               rob_full,
-	input  rob_index_t [1:0]   rob_reorder,
+	input  rob_index_t         [1:0] rob_reorder,
 	output logic               rob_packet_valid,
 	output rob_packet_t        rob_packet,
+
+	// ROB data
+	output rob_index_t         [3:0] rob_raddr,
+	input  logic               [3:0] rob_rdata_valid,
+	input  uint32_t            [3:0] rob_rdata,
 
 	// dispatcher
 	input  logic               [1:0] alu_ready,
@@ -23,8 +28,6 @@ module instr_issue(
 	output reg_addr_t          [3:0] reg_raddr,
 	input  uint32_t            [3:0] reg_rdata,
 	input  register_status_t   [3:0] reg_status
-
-	// TODO: update register status
 );
 
 // decoded instructions
@@ -40,23 +43,30 @@ always_comb begin
 	if(rob_full) instr_valid = '0;
 end
 
+// read ROB
+for(genvar i = 0; i < 4; ++i) begin: gen_read_rob
+	assign rob_raddr[i] = reg_status[i].reorder;
+end
+
 // fetch ack
 assign fetch_ack        = rs[0].busy + rs[1].busy;
 assign rob_packet_valid = rs[0].busy;
 
 // dispatch the first instruction
 dispatcher dispatcher_instr_1(
-	.valid       ( instr_valid[0]  ),
-	.fetch       ( fetch_entry[0]  ),
-	.decoded     ( decoded[0]      ),
-	.reorder     ( rob_reorder[0]  ),
-	.reg_rdata   ( reg_rdata[1:0]  ),
-	.reg_status  ( reg_status[1:0] ),
-	.alu_ready   ( alu_ready[0]    ),
-	.alu_taken   ( alu_taken[0]    ),
-	.alu_index   ( alu_index[0]    ),
-	.rs          ( rs[0]           ),
-	.rob         ( rob_packet[0]   )
+	.valid           ( instr_valid[0]       ),
+	.fetch           ( fetch_entry[0]       ),
+	.decoded         ( decoded[0]           ),
+	.reorder         ( rob_reorder[0]       ),
+	.rob_rdata       ( rob_rdata[1:0]       ),
+	.rob_rdata_valid ( rob_rdata_valid[1:0] ),
+	.reg_rdata       ( reg_rdata[1:0]       ),
+	.reg_status      ( reg_status[1:0]      ),
+	.alu_ready       ( alu_ready[0]         ),
+	.alu_taken       ( alu_taken[0]         ),
+	.alu_index       ( alu_index[0]         ),
+	.rs              ( rs[0]                ),
+	.rob             ( rob_packet[0]        )
 );
 
 // resolve data-related in a issue packet
@@ -82,17 +92,19 @@ end
 
 // dispatch the second instruction
 dispatcher dispatcher_instr_2(
-	.valid       ( instr_valid[1]  ),
-	.fetch       ( fetch_entry[1]  ),
-	.decoded     ( decoded[1]      ),
-	.reorder     ( rob_reorder[1]  ),
-	.reg_rdata   ( reg_rdata[3:2]  ),
-	.reg_status  ( reg_status_2    ),
-	.alu_ready   ( alu_ready_2     ),
-	.alu_index   ( alu_index_2     ),
-	.alu_taken   ( alu_taken[1]    ),
-	.rs          ( rs[1]           ),
-	.rob         ( rob_packet[1]   )
+	.valid           ( instr_valid[1]       ),
+	.fetch           ( fetch_entry[1]       ),
+	.decoded         ( decoded[1]           ),
+	.reorder         ( rob_reorder[1]       ),
+	.rob_rdata       ( rob_rdata[3:2]       ),
+	.rob_rdata_valid ( rob_rdata_valid[3:2] ),
+	.reg_rdata       ( reg_rdata[3:2]       ),
+	.reg_status      ( reg_status_2         ),
+	.alu_ready       ( alu_ready_2          ),
+	.alu_index       ( alu_index_2          ),
+	.alu_taken       ( alu_taken[1]         ),
+	.rs              ( rs[1]                ),
+	.rob             ( rob_packet[1]        )
 );
 
 // generate decoders and read the register file

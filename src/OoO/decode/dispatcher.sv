@@ -13,6 +13,10 @@ module dispatcher(
 	// ROB reorder
 	input  rob_index_t       reorder,
 
+	// ROB data
+	input  logic             [1:0] rob_rdata_valid,
+	input  uint32_t          [1:0] rob_rdata,
+
 	// register status
 	input  uint32_t          [1:0] reg_rdata,
 	input  register_status_t [1:0] reg_status,
@@ -31,10 +35,16 @@ module dispatcher(
 
 assign rs.reorder = reorder;
 
-for(genvar i = 0; i < 2; ++i) begin: gen_register_dispatcher
-	assign rs.operand[i]       = reg_rdata[i];
-	assign rs.operand_ready{i] = ~reg_status[i].busy;
-	assign rs.operand_addr{i]  = reg_status[i].reorder;
+always_comb begin
+	for(var i = 0; i < 2; ++i) begin
+		rs.operand[i]       = reg_rdata[i];
+		rs.operand_ready{i] = ~reg_status[i].busy;
+		rs.operand_addr{i]  = reg_status[i].reorder;
+		if(reg_status[i].busy & rob_rdata_valid[i]) begin
+			rs.operand[i]       = rob_rdata[i];
+			rs.operand_ready{i] = 1'b1;
+		end
+	end
 end
 
 always_comb begin

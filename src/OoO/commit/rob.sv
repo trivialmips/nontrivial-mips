@@ -1,6 +1,6 @@
 `include "cpu_defs.svh"
 
-module rob_channel(
+module rob(
 	input  logic  clk,
 	input  logic  rst,
 	input  logic  flush,
@@ -16,12 +16,24 @@ module rob_channel(
 
 	output rob_index_t [1:0] reorder,
 
-	input  cdb_packet_t cdb_packet
+	input  rob_index_t [3:0] rob_raddr,
+	output logic       [3:0] rob_rdata_valid,
+	output uint32_t    [3:0] rob_rdata,
+
+	input  cdb_packet_t cdb
 );
 
 logic [$clog2(`ROB_SIZE / 2) - 1:0] rob_write_pointer;
 rob_packet_t packet;
 assign data_o = packet;
+
+logic    [1:0][3:0] rob_channel_data_valid,
+uint32_t [1:0][3:0] rob_channel_data,
+
+for(genvar i = 0; i < 4; ++i) begin: gen_rob_read
+	assign rob_rdata[i]       = rob_channel_data[rob_raddr[i][0]][i];
+	assign rob_rdata_valid[i] = rob_channel_data_valid[rob_raddr[i][0]][i];
+end
 
 for(genvar i = 0; i < 2; ++i) begin : gen_rob_channel
 	rob_channel #(
@@ -36,28 +48,14 @@ for(genvar i = 0; i < 2; ++i) begin : gen_rob_channel
 		.pop,
 		.data_i ( data_i.entry[i]  ),
 		.data_o ( packet.entry[i]  ),
-		.write_pointer ( rob_write_pointer[i] ),
-		.cdb_packet
+		.rob_raddr       ( rob_raddr[$clog2(`ROB_SIZE)-1:1] ),
+		.rob_rdata_valid ( rob_channel_data_valid[i]        ),
+		.rob_rdata       ( rob_channel_data[i]              ),
+		.write_pointer   ( rob_write_pointer[i]             ),
+		.cdb
 	);
 
 	assign reorder[i] = { rob_write_pointer[i], i[0] };
 end
-
-fifo_v3 #(
-	.DATA_WIDTH(32),
-	.DEPTH(`ROB_SIZE / 2)
-) pc_fifo_inst (
-	.clk_i      ( clk       ),
-	.rst_i      ( rst       ),
-	.flush_i    ( flush     ),
-	.testmode_i ( 1'b0      ),
-	.full_o     ( full      ),
-	.empty_o    ( empty     ),
-	.data_i     ( data_i.pc ),
-	.push_i     ( push      ),
-	.data_o     ( packet.pc ),
-	.pop_i      ( pop       )
-);
-
 
 endmodule

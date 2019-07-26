@@ -6,16 +6,20 @@ module rob_channel #(
 	parameter int DEPTH    = 8
 ) (
 	input  logic  clk,
-	input  logic  rst,
-	input  logic  flush,
+	input  logic        rst,
+	input  logic        flush,
 
-	input  logic  push,
-	input  logic  pop,
+	input  logic        push,
+	input  logic        pop,
 	input  rob_entry_t  data_i,
 	output rob_entry_t  data_o,
-	output logic [$clog2(DEPTH)-1:0] write_pointer,
+	output logic        [$clog2(DEPTH)-1:0] write_pointer,
 
-	input  cdb_packet_t cdb_packet
+	input  logic        [3:0][$clog2(DEPTH)-1:0] rob_raddr,
+	output logic        [3:0] rob_rdata_valid,
+	output uint32_t     [3:0] rob_rdata,
+
+	input  cdb_packet_t cdb
 );
 
 localparam int ADDR_WIDTH = $clog2(DEPTH);
@@ -35,19 +39,26 @@ always_comb begin
 	mem_n = mem_q;
 
 	for(int i = 0; i < `CDB_SIZE; ++i) begin
-		cdb_hit[i] = cdb_packet[i].valid
-			&& cdb_packet[i].reorder[ID_WIDTH-1:0] == ID;
+		cdb_hit[i] = cdb[i].valid
+			&& cdb[i].reorder[ID_WIDTH-1:0] == ID;
 		for(int j = 0; j < DEPTH; ++j) begin
 			rob_hit[i][j] = cdb_hit[i]
-				&& (cdb_packet[i].reorder[$clog2(`ROB_SIZE)-1:ID_WIDTH] == j);
+				&& (cdb[i].reorder[$clog2(`ROB_SIZE)-1:ID_WIDTH] == j);
 		end
 	end
 
 	for(int i = 0; i < `CDB_SIZE; ++i) begin
 		for(int j = 0; j < DEPTH; ++j) begin
 			mem_n[j].busy  &= ~cdb_hit[i][j];
-			mem_n[j].value |= {32{cdb_hit[i][j]}} & cdb_packet[i].value;
+			mem_n[j].value |= {32{cdb_hit[i][j]}} & cdb[i].value;
 		end
+	end
+
+	// read ROB
+	for(int i = 0; i < 4; ++i) begin
+		rob_rdata[i]       = mem_n[rob_raddr[i]].value;
+		rob_rdata_valid[i] = ~mem_n[rob_raddr[i]].busy
+			& ~mem_n[rob_raddr[i]].valid;
 	end
 
 	if(push) mem_n[write_pointer_q] = data_i;
