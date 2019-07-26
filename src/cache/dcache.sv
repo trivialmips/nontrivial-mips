@@ -240,7 +240,7 @@ always_comb begin
 
     // If we are refilling in REFILL stage, the line must be being
     // written-back
-    if(state === REFILL) begin
+    if(state == REFILL) begin
         rf_data_wdata = wb_line;
     end
     // We also set line_recv to wb_line if the write occured on

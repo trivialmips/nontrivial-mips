@@ -121,7 +121,7 @@ always_comb begin
     end
 end
 
-always_ff @(posedge clk or posedge rst) begin
+always_ff @(posedge clk) begin
     if(rst) begin
         head <= '0;
         tail <= '0;
@@ -135,7 +135,7 @@ always_ff @(posedge clk or posedge rst) begin
     end
 end
 
-always_ff @(posedge clk or posedge rst) begin
+always_ff @(posedge clk) begin
     if(rst) begin
         mem <= '0;
     end else if(written || pushed) begin
