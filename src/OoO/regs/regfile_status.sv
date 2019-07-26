@@ -1,11 +1,11 @@
-module regfile #(
+`include "cpu_defs.svh"
+
+module regfile_status #(
 	parameter int REG_NUM     = 32,
-	parameter int DATA_WIDTH  = 32,
 	parameter int WRITE_PORTS = 1,
 	parameter int READ_PORTS  = 2,
 	parameter int ZERO_KEEP   = 1,   // regs[0:ZERO_KEEP-1] = 0
-	parameter int WRITE_FIRST = 0,
-	parameter type dtype      = logic [DATA_WIDTH-1:0]
+	parameter type dtype = register_status_t
 )(
 	input  logic clk,
 	input  logic rst,
@@ -14,26 +14,35 @@ module regfile #(
 	input  dtype [WRITE_PORTS-1:0]                      wdata,
 	input  logic [WRITE_PORTS-1:0][$clog2(REG_NUM)-1:0] waddr,
 
+	input  logic [WRITE_PORTS-1:0]                      wrst,
+	input  rob_index_t [WRITE_PORTS-1:0]                wreorder,
+
 	input  logic [READ_PORTS-1:0][$clog2(REG_NUM)-1:0]  raddr,
 	output dtype [READ_PORTS-1:0]                       rdata
 );
 
-dtype [REG_NUM-1:0] regs, regs_new;
+dtype [REG_NUM-1:0] regs, regs_wrst, regs_new;
 
 // read data
 for(genvar i = 0; i < READ_PORTS; ++i) begin : gen_read
-	assign rdata[i] = WRITE_FIRST ? regs_new[raddr[i]] : regs[raddr[i]];
+	assign rdata[i] = regs_wrst[raddr[i]];
 end
 
 // write data
 always_comb begin
-	regs_new = regs;
-	for(int i = ZERO_KEEP; i < REG_NUM; ++i) begin
-		for(int j = 0; j < WRITE_PORTS; ++j) begin
+	regs_wrst = regs;
+	for(int i = ZERO_KEEP; i < REG_NUM; ++i)
+		for(int j = 0; j < WRITE_PORTS; ++j)
+			if(wrst[j] && wreorder[j] == regs[i].reorder)
+				regs_wrst[i] = '0;
+end
+
+always_comb begin
+	regs_new = regs_wrst;
+	for(int i = ZERO_KEEP; i < REG_NUM; ++i)
+		for(int j = 0; j < WRITE_PORTS; ++j)
 			if(we[j] && waddr[j] == i)
 				regs_new[i] = wdata[j];
-		end
-	end
 end
 
 always_ff @(posedge clk) begin

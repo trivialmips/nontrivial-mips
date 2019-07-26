@@ -56,7 +56,7 @@ end
 // reset control
 always_ff @(posedge clk) begin
 	if(rst) begin
-		is_reseting <= 1'b1;
+		is_reseting <= `RST_CLEAR_BTB;
 		reset_addr  <= '0;
 	end else if(&reset_addr) begin
 		is_reseting <= 1'b0;

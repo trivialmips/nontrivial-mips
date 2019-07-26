@@ -5,7 +5,7 @@ module rob_channel #(
 	parameter int ID_WIDTH = 1,
 	parameter int DEPTH    = 8
 ) (
-	input  logic  clk,
+	input  logic        clk,
 	input  logic        rst,
 	input  logic        flush,
 
@@ -14,6 +14,10 @@ module rob_channel #(
 	input  rob_entry_t  data_i,
 	output rob_entry_t  data_o,
 	output logic        [$clog2(DEPTH)-1:0] write_pointer,
+	output logic        [$clog2(DEPTH)-1:0] read_pointer,
+
+	output logic        full,
+	output logic        empty,
 
 	input  logic        [3:0][$clog2(DEPTH)-1:0] rob_raddr,
 	output logic        [3:0] rob_rdata_valid,
@@ -28,11 +32,22 @@ typedef logic [ADDR_WIDTH-1:0] addr_t;
 addr_t read_pointer_n, read_pointer_q;
 addr_t write_pointer_n, write_pointer_q;
 rob_entry_t [DEPTH-1:0] mem_n, mem_q;
+logic [ADDR_WIDTH:0] cnt_n, cnt_q;
 
 logic [`CDB_SIZE-1:0] cdb_hit;
 logic [`CDB_SIZE-1:0][DEPTH-1:0] rob_hit;
 
 assign write_pointer = write_pointer_q;
+assign read_pointer  = read_pointer_q;
+assign full   = (cnt_q == DEPTH[ADDR_WIDTH:0]);
+assign empty  = (cnt_q == 0);
+assign data_o = mem_q[read_pointer_q];
+
+// read ROB
+for(genvar i = 0; i < 4; ++i) begin: gen_read_rob
+	assign rob_rdata[i]       = mem_q[rob_raddr[i]].value;
+	assign rob_rdata_valid[i] = ~mem_q[rob_raddr[i]].busy & mem_q[rob_raddr[i]].valid;
+end
 
 // use CDB to update ROB
 always_comb begin
@@ -54,13 +69,7 @@ always_comb begin
 		end
 	end
 
-	// read ROB
-	for(int i = 0; i < 4; ++i) begin
-		rob_rdata[i]       = mem_n[rob_raddr[i]].value;
-		rob_rdata_valid[i] = ~mem_n[rob_raddr[i]].busy
-			& ~mem_n[rob_raddr[i]].valid;
-	end
-
+	if(pop)  mem_n[read_pointer_q]  = '0;
 	if(push) mem_n[write_pointer_q] = data_i;
 end
 
@@ -68,27 +77,34 @@ end
 always_comb begin
 	read_pointer_n  = read_pointer_q;
 	write_pointer_n = write_pointer_q;
+	cnt_n = cnt_q;
 
 	if(push) begin
 		if(write_pointer_q == DEPTH[ADDR_WIDTH-1:0] - 1)
 			write_pointer_n = '0;
 		else write_pointer_n = write_pointer_q + 1;
+		cnt_n += 1;
 	end
 
 	if(pop) begin
 		if(read_pointer_q == DEPTH[ADDR_WIDTH-1:0] - 1)
 			read_pointer_n = '0;
 		else read_pointer_n = read_pointer_q + 1;
+		cnt_n -= 1;
 	end
+
+	if(push & pop) cnt_n = cnt_q;
 end
 
 always_ff @(posedge clk) begin
 	if(rst || flush) begin
 		read_pointer_q  <= '0;
 		write_pointer_q <= '0;
+		cnt_q           <= '0;
 	end else begin
 		read_pointer_q  <= read_pointer_n;
 		write_pointer_q <= write_pointer_n;
+		cnt_q           <= cnt_n;
 	end
 end
 

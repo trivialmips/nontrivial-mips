@@ -11,11 +11,6 @@ module instr_issue(
 	output logic               rob_packet_valid,
 	output rob_packet_t        rob_packet,
 
-	// ROB data
-	output rob_index_t         [3:0] rob_raddr,
-	input  logic               [3:0] rob_rdata_valid,
-	input  uint32_t            [3:0] rob_rdata,
-
 	// dispatcher
 	input  logic               [1:0] alu_ready,
 	input  rs_index_t          [1:0] alu_index,
@@ -27,7 +22,12 @@ module instr_issue(
 	// registers
 	output reg_addr_t          [3:0] reg_raddr,
 	input  uint32_t            [3:0] reg_rdata,
-	input  register_status_t   [3:0] reg_status
+	input  register_status_t   [3:0] reg_status,
+
+	// register status
+	output logic               [1:0] reg_status_we,
+	output reg_addr_t          [1:0] reg_status_waddr,
+	output register_status_t   [1:0] reg_status_wdata
 );
 
 // decoded instructions
@@ -43,11 +43,6 @@ always_comb begin
 	if(rob_full) instr_valid = '0;
 end
 
-// read ROB
-for(genvar i = 0; i < 4; ++i) begin: gen_read_rob
-	assign rob_raddr[i] = reg_status[i].reorder;
-end
-
 // fetch ack
 assign fetch_ack        = rs[0].busy + rs[1].busy;
 assign rob_packet_valid = rs[0].busy;
@@ -58,8 +53,6 @@ dispatcher dispatcher_instr_1(
 	.fetch           ( fetch_entry[0]       ),
 	.decoded         ( decoded[0]           ),
 	.reorder         ( rob_reorder[0]       ),
-	.rob_rdata       ( rob_rdata[1:0]       ),
-	.rob_rdata_valid ( rob_rdata_valid[1:0] ),
 	.reg_rdata       ( reg_rdata[1:0]       ),
 	.reg_status      ( reg_status[1:0]      ),
 	.alu_ready       ( alu_ready[0]         ),
@@ -73,9 +66,11 @@ dispatcher dispatcher_instr_1(
 register_status_t [1:0] reg_status_2;
 logic alu_ready_2;
 rs_index_t alu_index_2;
+rob_index_t rob_reorder_2;
 
-assign alu_ready_2 = alu_ready[1] | (alu_ready[0] & ~alu_taken[0]);
-assign alu_index_2 = alu_ready[1] ? alu_index[1] : alu_index[0];
+assign alu_ready_2   = alu_ready[1] | (alu_ready[0] & ~alu_taken[0]);
+assign alu_index_2   = alu_ready[1] ? alu_index[1] : alu_index[0];
+assign rob_reorder_2 = rs[0].busy ? rob_reorder[1] : rob_reorder[0];
 
 always_comb begin
 	reg_status_2 = reg_status[3:2];
@@ -95,9 +90,7 @@ dispatcher dispatcher_instr_2(
 	.valid           ( instr_valid[1]       ),
 	.fetch           ( fetch_entry[1]       ),
 	.decoded         ( decoded[1]           ),
-	.reorder         ( rob_reorder[1]       ),
-	.rob_rdata       ( rob_rdata[3:2]       ),
-	.rob_rdata_valid ( rob_rdata_valid[3:2] ),
+	.reorder         ( rob_reorder_2        ),
 	.reg_rdata       ( reg_rdata[3:2]       ),
 	.reg_status      ( reg_status_2         ),
 	.alu_ready       ( alu_ready_2          ),
@@ -116,6 +109,14 @@ for(genvar i = 0; i < 2; ++i) begin: gen_decoder
 
 	assign reg_raddr[i * 2]     = decoded[i].rs1;
 	assign reg_raddr[i * 2 + 1] = decoded[i].rs2;
+end
+
+// write register status
+for(genvar i = 0; i < 2; ++i) begin: gen_write_reg_status
+	assign reg_status_we[i]    = rs[i].busy;
+	assign reg_status_waddr[i] = decoded[i].rd;
+	assign reg_status_wdata[i].busy    = 1'b1;
+	assign reg_status_wdata[i].reorder = rs[i].reorder;
 end
 
 endmodule

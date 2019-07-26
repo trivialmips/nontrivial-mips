@@ -152,6 +152,7 @@ always_comb begin
 			decoded_instr.rd  = rt;
 			decoded_instr.use_imm    = 1'b1;
 			decoded_instr.imm_signed = ~opcode[2];
+			decoded_instr.fu  = FU_ALU;
 			unique case(opcode[2:0])
 				3'b100: decoded_instr.op = OP_AND;
 				3'b101: decoded_instr.op = OP_OR;

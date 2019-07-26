@@ -13,6 +13,11 @@ module cpu_core(
 logic flush_if, stall_if;
 logic flush_rob;
 logic flush_ex;
+// TODO
+assign flush_if = 1'b0;
+assign stall_if = 1'b0;
+assign flush_rob = 1'b0;
+assign flush_ex = 1'b0;
 
 // register file
 logic      [1:0] reg_we;
@@ -26,7 +31,6 @@ logic             [1:0] reg_status_we;
 register_status_t [1:0] reg_status_wdata;
 reg_addr_t        [1:0] reg_status_waddr;
 register_status_t [3:0] reg_status_rdata;
-register_status_t [1:0] reg_status_commit;
 
 // CDB
 cdb_packet_t cdb;
@@ -34,7 +38,7 @@ cdb_packet_t cdb;
 // ROB
 logic rob_push, rob_pop, rob_full, rob_empty;
 rob_packet_t rob_push_data, rob_pop_data;
-rob_index_t [1:0] rob_reorder;
+rob_index_t [1:0] rob_reorder, rob_reorder_commit;
 rob_index_t [3:0] rob_raddr;
 logic [3:0] rob_rdata_valid;
 uint32_t [3:0] rob_rdata;
@@ -45,6 +49,8 @@ fetch_entry_t [1:0]  if_fetch_entry;
 instr_fetch_memres_t icache_res;
 instr_fetch_memreq_t icache_req;
 branch_resolved_t resolved_branch;
+// TODO:
+assign resolved_branch = '0;
 logic except_valid;
 virt_t except_vec;
 
@@ -77,36 +83,36 @@ assign icache_res.iaddr_ex.invalid = 1'b0;
 
 regfile #(
 	.REG_NUM     ( `REG_NUM ),
-	.DATA_WIDTH  ( 32       ),
-	.WRITE_PORTS ( 2        ),
-	.READ_PORTS  ( 4        ),
-	.ZERO_KEEP   ( 1        )
+	.DATA_WIDTH  ( 32 ),
+	.WRITE_PORTS ( 2  ),
+	.READ_PORTS  ( 4  ),
+	.ZERO_KEEP   ( 1  ),
+	.WRITE_FIRST ( 1  )
 ) regfile_inst (
 	.clk,
 	.rst,
 	.we    ( reg_we    ),
-	.wrst  ( '0        ),
 	.wdata ( reg_wdata ),
 	.waddr ( reg_waddr ),
 	.raddr ( reg_raddr ),
 	.rdata ( reg_rdata )
 );
 
-regfile #(
+regfile_status #(
 	.REG_NUM     ( `REG_NUM ),
-	.WRITE_PORTS ( 4        ),
-	.READ_PORTS  ( 4        ),
-	.ZERO_KEEP   ( 1        ),
-	.dtype       ( register_status_t )
+	.WRITE_PORTS ( 2 ),
+	.READ_PORTS  ( 4 ),
+	.ZERO_KEEP   ( 1 )
 ) regfile_status_inst (
 	.clk,
 	.rst,
-	.we    ( { reg_we, reg_status_we }               ),
-	.wrst  ( 4'b1100                                 ),
-	.wdata ( { reg_status_commit, reg_status_wdata } ),
-	.waddr ( { reg_waddr, reg_status_waddr }         ),
-	.raddr ( reg_raddr         ),
-	.rdata ( reg_status_rdata  )
+	.we       ( reg_status_we      ),
+	.wdata    ( reg_status_wdata   ),
+	.waddr    ( reg_status_waddr   ),
+	.wrst     ( {2{rob_pop}}       ),
+	.wreorder ( rob_reorder_commit ),
+	.raddr    ( reg_raddr          ),
+	.rdata    ( reg_status_rdata   )
 );
 
 rob rob_inst(
@@ -120,6 +126,7 @@ rob rob_inst(
 	.full    ( rob_full      ),
 	.empty   ( rob_empty     ),
 	.reorder ( rob_reorder   ),
+	.reorder_commit ( rob_reorder_commit ),
 	.rob_raddr,
 	.rob_rdata_valid,
 	.rob_rdata,
@@ -152,22 +159,25 @@ instr_issue instr_issue_inst(
 	.rob_reorder,
 	.rob_packet_valid ( rob_push      ),
 	.rob_packet       ( rob_push_data ),
-	.rob_raddr,
-	.rob_rdata_valid,
-	.rob_rdata,
 	.alu_ready,
 	.alu_index,
 	.alu_taken,
 	.rs ( issue_rs ),
 	.reg_raddr,
 	.reg_rdata,
-	.reg_status ( reg_status_rdata )
+	.reg_status ( reg_status_rdata ),
+	.reg_status_we,
+	.reg_status_waddr,
+	.reg_status_wdata
 );
 
 instr_exec instr_exec_inst(
 	.clk,
 	.rst,
 	.flush ( flush_ex ),
+	.rob_raddr,
+	.rob_rdata_valid,
+	.rob_rdata,
 	.alu_taken,
 	.alu_ready,
 	.alu_index,
@@ -176,12 +186,13 @@ instr_exec instr_exec_inst(
 );
 
 instr_commit instr_commit_inst(
-	.rob_packet ( rob_pop_data      ),
-	.rob_ack    ( rob_pop           ),
+	.rob_packet  ( rob_pop_data       ),
+	.rob_ack     ( rob_pop            ),
+	.rob_reorder ( rob_reorder_commit ),
+	.rob_empty,
 	.reg_we,
 	.reg_waddr,
 	.reg_wdata,
-	.reg_status ( reg_status_commit ),
 	.commit_flush,
 	.commit_flush_pc
 );

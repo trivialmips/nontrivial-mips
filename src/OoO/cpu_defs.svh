@@ -6,6 +6,8 @@
 	This header defines data structures and constants used in CPU internally
 **/
 
+`define RST_CLEAR_BTB     0
+
 /* cause register exc_code field */
 `define EXCCODE_INT   5'h00  // interrupt
 `define EXCCODE_MOD   5'h01  // TLB modification exception
@@ -266,6 +268,9 @@ typedef struct packed {
 	rob_index_t [1:0] operand_addr;
 	logic       [1:0] operand_ready;
 	decoded_instr_t decoded;
+
+	// debug
+	fetch_entry_t fetch;
 } reserve_station_t;
 
 // register status

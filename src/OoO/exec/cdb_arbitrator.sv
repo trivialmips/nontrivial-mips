@@ -16,7 +16,7 @@ always_comb begin
 		cdb[i].valid    = alu_data_ready[i];
 		cdb[i].reorder  = alu_data_reorder[i];
 		cdb[i].value    = alu_data[i];
-		alu_data_ack[i] = 1'b1;
+		alu_data_ack[i] = alu_data_ready[i];
 	end
 end
 

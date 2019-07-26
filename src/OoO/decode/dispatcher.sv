@@ -13,10 +13,6 @@ module dispatcher(
 	// ROB reorder
 	input  rob_index_t       reorder,
 
-	// ROB data
-	input  logic             [1:0] rob_rdata_valid,
-	input  uint32_t          [1:0] rob_rdata,
-
 	// register status
 	input  uint32_t          [1:0] reg_rdata,
 	input  register_status_t [1:0] reg_status,
@@ -33,6 +29,8 @@ module dispatcher(
 	output rob_entry_t       rob
 );
 
+uint32_t imm;
+assign imm = { {16{fetch.instr[15] & decoded.imm_signed}}, fetch.instr[15:0] };
 assign rs.reorder = reorder;
 
 always_comb begin
@@ -40,34 +38,29 @@ always_comb begin
 		rs.operand[i]       = reg_rdata[i];
 		rs.operand_ready[i] = ~reg_status[i].busy;
 		rs.operand_addr[i]  = reg_status[i].reorder;
-		if(reg_status[i].busy & rob_rdata_valid[i]) begin
-			rs.operand[i]       = rob_rdata[i];
-			rs.operand_ready[i] = 1'b1;
-		end
+	end
+
+	if(decoded.use_imm) begin
+		rs.operand[1]       = imm;
+		rs.operand_ready[1] = 1'b1;
 	end
 end
 
 always_comb begin
 	rs.busy    = 1'b0;
 	rs.decoded = decoded;
+	rs.fetch   = fetch;
 	rs.instr   = fetch.instr;
 	rs.index   = '0;
 	alu_taken  = 1'b0;
 	unique case(decoded.fu)
 		FU_ALU: begin
-			alu_taken = alu_ready;
-			rs.busy   = alu_ready;
+			alu_taken = alu_ready & valid;
+			rs.busy   = alu_ready & valid;
 			rs.index  = alu_index;
 		end
-		default: begin
-			// we put invalid instructions to ALU
-			alu_taken = alu_ready;
-			rs.busy   = alu_ready;
-			rs.index  = alu_index;
-		end
+		default:;
 	endcase
-
-	if(~valid) rs.busy = 1'b0;
 end
 
 always_comb begin

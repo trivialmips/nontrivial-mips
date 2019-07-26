@@ -36,6 +36,8 @@ end
 
 // allocate ready RS
 always_comb begin
+	rs_ready_n = '0;
+	rs_index_n = '0;
 	for(int i = 0; i < `ALU_RS_SIZE; ++i) begin
 		if(~rs_n[i].busy) begin
 			rs_ready_n[0] = 1'b1;
