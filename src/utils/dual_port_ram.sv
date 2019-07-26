@@ -5,8 +5,8 @@ module dual_port_ram #(
 	parameter int unsigned SIZE       = 1024,
 	parameter type dtype              = logic [DATA_WIDTH-1:0],
 	parameter int unsigned LATENCY    = 1,
-    parameter int unsigned LATENCY_A  = LATENCY,
-    parameter int unsigned LATENCY_B  = LATENCY
+	parameter int unsigned LATENCY_A  = LATENCY,
+	parameter int unsigned LATENCY_B  = LATENCY
 ) (
 	input  logic  clk,
 	input  logic  rst,
