@@ -26,5 +26,6 @@
 `define DCACHE_SET_ASSOC     4
 `define DCACHE_SIZE          16 * 1024 * 8
 `define DCACHE_WB_FIFO_DEPTH 8
+`define DBUS_TRANS_WIDTH     8
 
 `endif

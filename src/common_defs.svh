@@ -35,19 +35,19 @@ interface cpu_ibus_if();
 	// stall shall be '0' whenever flush_2 is '1'.
 	logic flush_1, flush_2;
 
-    modport master (
+	modport master (
 		output read, address,
 		output flush_1, flush_2,
 		input  stall, rddata, valid, ready,
 		input  rddata_extra, extra_valid
-    );
+	);
 
-    modport slave (
+	modport slave (
 		input  read, address,
 		input  flush_1, flush_2,
 		output stall, rddata, valid, ready,
 		output rddata_extra, extra_valid
-    );
+	);
 
 endinterface
 
@@ -63,21 +63,29 @@ interface cpu_dbus_if();
 	phys_t address;      // aligned in 4-bytes
 	uint32_t rddata, wrdata;
 
-    modport master (
+	logic [`DBUS_TRANS_WIDTH-1:0] trans_in, trans_out;
+
+	modport master (
 		output read, write,
 		output invalidate, invalidate_icache,
 		output wrdata, address, byteenable,
 		input  stall,
-		input  rddata
-    );
+		input  rddata,
 
-    modport slave (
+		output trans_in,
+		input trans_out
+	);
+
+	modport slave (
 		input  read, write,
 		input  invalidate, invalidate_icache,
 		input  wrdata, address, byteenable,
 		output stall,
-		output rddata
-    );
+		output rddata,
+
+		input trans_in,
+		output trans_out
+	);
 
 endinterface
 

@@ -19,7 +19,8 @@ module dcache #(
     parameter LINE_WIDTH = 256, 
     parameter SET_ASSOC  = 4,
     parameter CACHE_SIZE = 16 * 1024 * 8,
-    parameter WB_FIFO_DEPTH = 8
+    parameter WB_FIFO_DEPTH = 8,
+    parameter TRANS_WIDTH = `DBUS_TRANS_WIDTH
 ) (
     // external logics
     input  logic            clk,
@@ -75,6 +76,7 @@ typedef logic [DATA_PER_LINE-1:0][DATA_WIDTH-1:0] line_t;
 typedef logic [INDEX_WIDTH-1:0] index_t;
 typedef logic [LINE_BYTE_OFFSET-DATA_BYTE_OFFSET-1:0] offset_t;
 typedef logic [TAG_WIDTH+INDEX_WIDTH-1:0] fifo_tag_t;
+typedef logic [TRANS_WIDTH-1:0] trans_t;
 
 typedef logic [SET_ASSOC-1:0] we_t;
 
@@ -163,9 +165,9 @@ logic pipe_2_fifo_found, pipe_2_fifo_written;
 line_t pipe_2_fifo_qdata;
 logic [SET_ASSOC-1:0] pipe_2_hit, patched_hit; // patched_hit: hit data to pass into stage 3
 logic found_in_ram;
+trans_t pipe_2_trans;
 
 line_t data_mux_line;
-line_t wh_wdata;
 logic [DATA_WIDTH-1:0] rdata;
 logic request_refill;
 logic wb_current;
@@ -187,6 +189,7 @@ logic [3:0] pipe_byteenable;
 logic [31:0] pipe_addr;
 logic [DATA_WIDTH-1:0] pipe_wdata, pipe_rdata;
 line_t pipe_data_mux_line;
+trans_t pipe_trans;
 
 logic victim_locked; // Victim is hit in stage 2
 logic [BURST_LIMIT:0][31:0] line_recv;
@@ -204,6 +207,8 @@ logic exited_vacant;
 
 assign dbus.stall = ~(state == FINISH || (state == IDLE && ~(pipe_invalidate || pipe_request_refill)));
 // assign dbus.stall = state_d != IDLE || state == RST;
+
+assign dbus.trans_out = pipe_trans;
 
 always_comb begin
     dbus.rddata = pipe_rdata;
@@ -318,11 +323,11 @@ always_comb begin
         for(int i = 0; i < SET_ASSOC; ++i)
             data_mux_line |= {LINE_WIDTH{pipe_2_hit[i]}} & data_rdata[i];
 
-        if(adjacent && pipe_write)
-            data_mux_line[get_offset(pipe_addr)] = mux_byteenable(data_mux_line[get_offset(pipe_addr)], pipe_wdata, pipe_byteenable);
-
         if(adjacent_exited && exited_write)
             data_mux_line[get_offset(exited_addr)] = mux_byteenable(data_mux_line[get_offset(exited_addr)], exited_wdata, exited_byteenable);
+
+        if(adjacent && pipe_write)
+            data_mux_line[get_offset(pipe_addr)] = mux_byteenable(data_mux_line[get_offset(pipe_addr)], pipe_wdata, pipe_byteenable);
 
         found_in_ram = 1'b1;
     end
@@ -531,6 +536,7 @@ always_ff @(posedge clk) begin
         pipe_2_fifo_written <= 1'b0;
         pipe_2_fifo_qdata <= '0;
         pipe_2_hit <= '0;
+        pipe_2_trans <= '0;
 
         // Stage 2 -> 3
         pipe_read <= 1'b0;
@@ -543,6 +549,7 @@ always_ff @(posedge clk) begin
         pipe_rdata <= '0;
         pipe_data_mux_line <= '0;
         pipe_hit <= '0;
+        pipe_trans <= '0;
 
         // Stage 3 exits
         exited_invalidate <= 1'b0;
@@ -567,6 +574,7 @@ always_ff @(posedge clk) begin
         pipe_2_fifo_written <= fifo_written;
         pipe_2_fifo_qdata <= fifo_qdata;
         pipe_2_hit <= hit;
+        pipe_2_trans <= dbus.trans_in;
 
         // Stage 2 -> 3
         pipe_read <= pipe_2_read;
@@ -579,6 +587,7 @@ always_ff @(posedge clk) begin
         pipe_rdata <= rdata;
         pipe_data_mux_line <= data_mux_line;
         pipe_hit <= patched_hit;
+        pipe_trans <= pipe_2_trans;
 
         // Stage 3 exit
         exited_invalidate <= pipe_invalidate;
