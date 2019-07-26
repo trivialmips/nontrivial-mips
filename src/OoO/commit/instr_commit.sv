@@ -19,7 +19,7 @@ module instr_commit(
 
 // commit registers
 for(genvar i = 0; i < 2; ++i) begin: gen_reg_requests
-	assign reg_we[i]    = rob_ack;
+	assign reg_we[i]    = rob_ack & rob_packet[i].valid;
 	assign reg_waddr[i] = rob_packet[i].dest;
 	assign reg_wdata[i] = rob_packet[i].value;
 end
