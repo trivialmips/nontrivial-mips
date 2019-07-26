@@ -329,7 +329,7 @@ always_comb begin
     end
 
     if(adjacent && pipe_write) begin
-        wm_data_wdata[get_offset(pipe_addr)] = mux_byteenable(data_mux_line, pipe_wdata, pipe_byteenable);
+        data_mux_line[get_offset(pipe_addr)] = mux_byteenable(data_mux_line, pipe_wdata, pipe_byteenable);
     end
 
     if(pipe_write && pipe_addr == pipe_2_addr)
