@@ -113,54 +113,6 @@ typedef struct packed {
 
 typedef logic [1:0] bht_predict_t;
 
-// fetched instruction
-typedef struct packed {
-	logic            valid;
-	virt_t           vaddr;
-	uint32_t         instr;
-	branch_predict_t branch_predict;
-	address_exception_t iaddr_ex;
-} fetch_entry_t;
-typedef logic [$clog2(`FETCH_NUM+1)-1:0] fetch_ack_t;
-
-// memory request for instruction fetch
-typedef struct packed {
-	logic read;
-	virt_t vaddr;
-	logic flush_s1, flush_s2;
-} instr_fetch_memreq_t;
-
-typedef struct packed {
-	logic icache_ready;
-	logic stall, valid, valid_extra;
-	uint64_t data, data_extra;
-	address_exception_t iaddr_ex;
-} instr_fetch_memres_t;
-
-// memory request for load and store
-typedef struct packed {
-	logic invalidate, invalidate_icache;
-	logic read, write, uncached;
-	logic [3:0] byteenable;
-	virt_t vaddr;
-	phys_t paddr;
-	uint32_t wrdata;
-} data_memreq_t;
-
-// HILO register request
-typedef struct packed {
-	logic    we;
-	uint64_t wdata;
-} hilo_req_t;
-
-// CP0 requests
-typedef struct packed {
-	logic       we;
-	reg_addr_t  waddr;
-	logic [2:0] wsel;
-	uint32_t    wdata;
-} cp0_req_t;
-
 // operator
 typedef enum logic [6:0] {
 	/* shift */
@@ -221,6 +173,55 @@ typedef struct packed {
 	logic  is_priv;         // privileged instructions
 	logic  is_nonrw_priv;   // privileged instructions other than MFC0 and MTC0
 } decoded_instr_t;
+
+// fetched instruction
+typedef struct packed {
+	logic            valid;
+	virt_t           vaddr;
+	uint32_t         instr;
+	branch_predict_t branch_predict;
+	address_exception_t iaddr_ex;
+	decoded_instr_t  decoded;
+} fetch_entry_t;
+typedef logic [$clog2(`FETCH_NUM+1)-1:0] fetch_ack_t;
+
+// memory request for instruction fetch
+typedef struct packed {
+	logic read;
+	virt_t vaddr;
+	logic flush_s1, flush_s2;
+} instr_fetch_memreq_t;
+
+typedef struct packed {
+	logic icache_ready;
+	logic stall, valid, valid_extra;
+	uint64_t data, data_extra;
+	address_exception_t iaddr_ex;
+} instr_fetch_memres_t;
+
+// memory request for load and store
+typedef struct packed {
+	logic invalidate, invalidate_icache;
+	logic read, write, uncached;
+	logic [3:0] byteenable;
+	virt_t vaddr;
+	phys_t paddr;
+	uint32_t wrdata;
+} data_memreq_t;
+
+// HILO register request
+typedef struct packed {
+	logic    we;
+	uint64_t wdata;
+} hilo_req_t;
+
+// CP0 requests
+typedef struct packed {
+	logic       we;
+	reg_addr_t  waddr;
+	logic [2:0] wsel;
+	uint32_t    wdata;
+} cp0_req_t;
 
 // TLB requests
 typedef struct packed {

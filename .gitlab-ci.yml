@@ -136,6 +136,7 @@ perf_test_bitstream:
     variables:
       - $CI_COMMIT_MESSAGE =~ /\[bitstream\]/i
   script:
+    - sed -i "s/COMPILE_FULL 1/COMPILE_FULL 0/" src/compile_options.svh
     - ${VIVADO_PATH} -mode tcl -source scripts/generate_bitstream.tcl loongson/soc_axi_perf/run_vivado/mycpu_prj1/mycpu.xpr
   artifacts:
     paths:

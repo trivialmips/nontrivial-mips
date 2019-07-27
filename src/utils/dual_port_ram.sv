@@ -4,7 +4,9 @@ module dual_port_ram #(
 	// $bits(dtype) * SIZE = bits of the block RAM
 	parameter int unsigned SIZE       = 1024,
 	parameter type dtype              = logic [DATA_WIDTH-1:0],
-	parameter int unsigned LATENCY    = 1
+	parameter int unsigned LATENCY    = 1,
+	parameter int unsigned LATENCY_A  = LATENCY,
+	parameter int unsigned LATENCY_B  = LATENCY
 ) (
 	input  logic  clk,
 	input  logic  rst,
@@ -35,14 +37,14 @@ xpm_memory_tdpram #(
 	.WRITE_DATA_WIDTH_A($bits(dtype)),
 	.READ_DATA_WIDTH_A($bits(dtype)),
 	.READ_RESET_VALUE_A("0"),
-	.READ_LATENCY_A(LATENCY),
+	.READ_LATENCY_A(LATENCY_A),
 	.WRITE_MODE_A("write_first"),
 
 	// Port B module parameters
 	.WRITE_DATA_WIDTH_B($bits(dtype)),
 	.READ_DATA_WIDTH_B($bits(dtype)),
 	.READ_RESET_VALUE_B("0"),
-	.READ_LATENCY_B(LATENCY),
+	.READ_LATENCY_B(LATENCY_B),
 	.WRITE_MODE_B("write_first")
 ) xpm_mem (
 	// Common module ports
@@ -85,7 +87,9 @@ module dual_port_lutram #(
 	// $bits(dtype) * SIZE = bits of the block RAM
 	parameter int unsigned SIZE       = 1024,
 	parameter type dtype              = logic [DATA_WIDTH-1:0],
-	parameter int unsigned LATENCY    = 1
+	parameter int unsigned LATENCY    = 1,
+    parameter int unsigned LATENCY_A  = LATENCY,
+    parameter int unsigned LATENCY_B  = LATENCY
 ) (
 	input  logic  clk,
 	input  logic  rst,
@@ -112,12 +116,12 @@ xpm_memory_dpdistram #(
 	.WRITE_DATA_WIDTH_A($bits(dtype)),
 	.READ_DATA_WIDTH_A($bits(dtype)),
 	.READ_RESET_VALUE_A("0"),
-	.READ_LATENCY_A(LATENCY),
+	.READ_LATENCY_A(LATENCY_A),
 
 	// Port B module parameters
 	.READ_DATA_WIDTH_B($bits(dtype)),
 	.READ_RESET_VALUE_B("0"),
-	.READ_LATENCY_B(LATENCY)
+	.READ_LATENCY_B(LATENCY_B)
 ) xpm_mem (
 	// Port A module ports
 	.clka           ( clk   ),

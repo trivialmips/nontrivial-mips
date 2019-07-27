@@ -29,11 +29,12 @@ uint32_t   [`ISSUE_NUM * 2 - 1:0] reg_forward;
 
 for(genvar i = 0; i < `ISSUE_NUM; ++i) begin : gen_decoder
 	assign ex_decoded[i] = pipeline_exec[i].decoded;
+	assign decoded_instr[i] = fetch_entry[i].decoded;
 
-	decoder decoder_inst(
-		.instr         ( fetch_entry[i].instr ),
-		.decoded_instr ( decoded_instr[i] )
-	);
+//	decoder decoder_inst(
+//		.instr         ( fetch_entry[i].instr ),
+//		.decoded_instr ( decoded_instr[i] )
+//	);
 
 	assign reg_raddr[i * 2]     = decoded_instr[i].rs1;
 	assign reg_raddr[i * 2 + 1] = decoded_instr[i].rs2;

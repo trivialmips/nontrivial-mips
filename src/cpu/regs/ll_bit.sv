@@ -8,25 +8,30 @@ module ll_bit(
 	output logic           data
 ); 
 
-logic data_now, data_nxt;
-assign data = data_nxt;
+generate if(`CPU_LLSC_ENABLED) begin: enable_llsc
+	logic data_now, data_nxt;
+	assign data = data_nxt;
 
-logic [`ISSUE_NUM-1:0] is_ll;
-for(genvar i = 0; i < `ISSUE_NUM; ++i) begin : gen_isll
-	assign is_ll[i] = (pipe_mm[i].decoded.op == OP_LL);
-end
+	logic [`ISSUE_NUM-1:0] is_ll;
+	for(genvar i = 0; i < `ISSUE_NUM; ++i) begin : gen_isll
+		assign is_ll[i] = (pipe_mm[i].decoded.op == OP_LL);
+	end
 
-always_comb begin
-	if(rst || except_req.valid)
-		data_nxt = 1'b0;
-	else if(|is_ll)
-		data_nxt = 1'b1;
-	else data_nxt = data_now;
-end
+	always_comb begin
+		if(rst || except_req.valid)
+			data_nxt = 1'b0;
+		else if(|is_ll)
+			data_nxt = 1'b1;
+		else data_nxt = data_now;
+	end
 
-always_ff @(posedge clk) begin
-	if(rst) data_now <= 1'b0;
-	else data_now <= data_nxt;
+	always_ff @(posedge clk) begin
+		if(rst) data_now <= 1'b0;
+		else data_now <= data_nxt;
+	end
+end else begin: disable_llsc
+	assign data = 1'b1;
 end
+endgenerate
 
 endmodule
