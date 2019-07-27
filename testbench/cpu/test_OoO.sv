@@ -128,6 +128,7 @@ begin
 	unittest("instr/logical");
 	unittest("instr/shift");
 	unittest("instr/jump");
+	unittest("instr/trap");
 	$display(summary);
 	$display("[Done]\n");
 	$finish;

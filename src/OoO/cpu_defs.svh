@@ -189,7 +189,8 @@ typedef enum logic [2:0] {
 	FU_INVALID,
 	FU_ALU,
 	FU_BRANCH,
-	FU_MUL
+	FU_MUL,
+	FU_CP0
 } funct_t;
 
 // decode instruction
@@ -205,10 +206,57 @@ typedef struct packed {
 	logic  is_controlflow;  // controlflow maybe changed
 } decoded_instr_t;
 
-// TLB requests
+// CP0 requests
 typedef struct packed {
-	logic probe, read, tlbwr, tlbwi;
-} tlb_request_t;
+	logic       we;
+	reg_addr_t  waddr;
+	logic [2:0] wsel;
+	uint32_t    wdata;
+} cp0_req_t;
+
+// CP0 registers
+typedef struct packed {
+	logic cu3, cu2, cu1, cu0;
+	logic rp, fr, re, mx;
+	logic px, bev, ts, sr;
+	logic nmi, zero;
+	logic [1:0] impl;
+	logic [7:0] im;
+	logic kx, sx, ux, um;
+	logic r0, erl, exl, ie;
+} cp0_status_t;
+
+typedef struct packed {
+	logic bd, zero30;
+	logic [1:0] ce;
+	logic [3:0] zero27_24;
+	logic iv, wp;
+	logic [5:0] zero21_16;
+	logic [7:0] ip;
+	logic zero7;
+	logic [4:0] exc_code;
+	logic [1:0] zero1_0;
+} cp0_cause_t;
+
+typedef struct packed {
+	uint32_t ebase, config1;
+	/* The order of the following registers is important.
+	 * DO NOT change them. New registers must be added 
+	 * BEFORE this comment */
+	/* primary 32 registers (sel = 0) */
+	uint32_t 
+	 desave,    error_epc,  tag_hi,     tag_lo,    
+	 cache_err, err_ctl,    perf_cnt,   depc,      
+	 debug,     impl_lfsr32,  reserved21, reserved20,
+	 watch_hi,  watch_lo,   ll_addr,    config0,   
+	 prid,      epc;
+	cp0_cause_t  cause;
+	cp0_status_t status;
+	uint32_t
+	 compare,   entry_hi,   count,      bad_vaddr, 
+	 reserved7, wired,      page_mask,  context_,  
+	 entry_lo1, entry_lo0,  random,     index;
+} cp0_regs_t;
 
 // MMU/TLB
 typedef logic [$clog2(`TLB_ENTRIES_NUM)-1:0] tlb_index_t;
@@ -218,6 +266,11 @@ typedef struct packed {
 	logic miss, dirty, valid;
 	logic [2:0] cache_flag;
 } tlb_result_t;
+
+// TLB requests
+typedef struct packed {
+	logic probe, read, tlbwr, tlbwi;
+} tlb_request_t;
 
 typedef struct packed {
 	logic [2:0] c0, c1;
@@ -240,13 +293,16 @@ typedef struct packed {
 	phys_t mem_paddr;
 	branch_resolved_t resolved_branch;
 } cdb_union_data_t;
+
 typedef struct packed {
 	logic      valid;
 	logic      busy;
+	logic      delayslot;
 	virt_t     pc;
 	uint32_t   value;
 	reg_addr_t dest;
 	funct_t    fu;
+	exception_t ex;
 	cdb_union_data_t data;
 } rob_entry_t;
 
@@ -258,6 +314,7 @@ typedef struct packed {
 	logic       valid;
 	rob_index_t reorder;
 	uint32_t    value;
+	exception_t ex;
 	cdb_union_data_t data;
 } cdb_t;
 

@@ -11,6 +11,7 @@ module alu_rs(
 	input  reserve_station_t [1:0] rs_i,
 
 	// result
+	output exception_t [`ALU_RS_SIZE-1:0] ex,
 	output uint32_t    [`ALU_RS_SIZE-1:0] data,
 	output logic       [`ALU_RS_SIZE-1:0] data_ready,
 	output rob_index_t [`ALU_RS_SIZE-1:0] data_reorder,
@@ -83,7 +84,8 @@ for(genvar i = 0; i < `ALU_RS_SIZE; ++i) begin: gen_alu
 		.instr  ( rs_q[i].instr       ),
 		.reg1   ( rs_q[i].operand[0]  ),
 		.reg2   ( rs_q[i].operand[1]  ),
-		.result ( data[i]             )
+		.result ( data[i]             ),
+		.ex     ( ex[i]               )
 	);
 end
 

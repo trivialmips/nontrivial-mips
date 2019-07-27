@@ -6,7 +6,8 @@ module alu(
 	input  uint32_t    instr,
 	input  uint32_t    reg1,
 	input  uint32_t    reg2,
-	output uint32_t    result
+	output uint32_t    result,
+	output exception_t ex
 );
 
 // unsigned register arithmetic
@@ -68,6 +69,41 @@ always_comb begin
 		OP_SLTU: result = { 30'b0, unsigned_lt };
 		OP_SLT:  result = { 30'b0, signed_lt   };
 		default: result = '0;
+	endcase
+end
+
+// exception
+logic trap_valid;
+always_comb begin
+	unique case(op)
+		OP_TEQ:  trap_valid = (reg1 == reg2);
+		OP_TNE:  trap_valid = (reg1 != reg2);
+		OP_TGE:  trap_valid = ~signed_lt;
+		OP_TLT:  trap_valid = signed_lt;
+		OP_TGEU: trap_valid = ~unsigned_lt;
+		OP_TLTU: trap_valid = unsigned_lt;
+		default: trap_valid = 1'b0;
+	endcase
+end
+
+// ( trap, break, syscall, overflow, privilege )
+logic [3:0] ex_ex;
+assign ex_ex = {
+	trap_valid,
+	op == OP_BREAK,
+	op == OP_SYSCALL,
+	((op == OP_ADD) & ov_add) | ((op == OP_SUB) & ov_sub)
+};
+
+always_comb begin
+	ex = '0;
+	ex.valid = |ex_ex;
+	unique case(ex_ex)
+		4'b1000: ex.exc_code = `EXCCODE_TR;
+		4'b0100: ex.exc_code = `EXCCODE_BP;
+		4'b0010: ex.exc_code = `EXCCODE_SYS;
+		4'b0001: ex.exc_code = `EXCCODE_OV;
+		default: ex.exc_code = '0;
 	endcase
 end
 

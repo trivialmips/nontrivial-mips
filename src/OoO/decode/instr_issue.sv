@@ -20,6 +20,9 @@ module instr_issue(
 	input  rs_index_t          [1:0] branch_index,
 	output logic               [1:0] branch_taken,
 
+	input  logic               cp0_ready,
+	output logic               cp0_taken,
+
 	// reserve station
 	output reserve_station_t   [1:0] rs_o,
 	
@@ -42,17 +45,21 @@ logic stall;
 assign stall = rob_full
 	| decoded[0].is_controlflow & ~rs[1].busy;
 
-assign rs_o             = stall ? '0 : rs;
+assign rs_o = stall ? '0 : rs;
 assign fetch_ack        = rs_o[0].busy + rs_o[1].busy;
 assign rob_packet_valid = rs_o[0].busy;
 
 assign instr_valid[0] = fetch_entry[0].valid;
-assign instr_valid[1] = fetch_entry[1].valid & rs[0].busy
-	& ~decoded[1].is_controlflow;
+assign instr_valid[1] = fetch_entry[1].valid
+	&& rs[0].busy
+	&& ~decoded[1].is_controlflow
+	&& decoded[0].fu != FU_CP0
+	&& decoded[1].fu != FU_CP0;
 
 // dispatch the first instruction
 dispatcher dispatcher_instr_1(
 	.stall,
+	.delayslot       ( 1'b0                 ),
 	.valid           ( instr_valid[0]       ),
 	.fetch           ( fetch_entry[0]       ),
 	.decoded         ( decoded[0]           ),
@@ -65,6 +72,8 @@ dispatcher dispatcher_instr_1(
 	.branch_ready    ( branch_ready[0]      ),
 	.branch_taken    ( branch_taken[0]      ),
 	.branch_index    ( branch_index[0]      ),
+	.cp0_ready,
+	.cp0_taken,
 	.rs              ( rs[0]                ),
 	.rob             ( rob_packet[0]        )
 );
@@ -95,6 +104,7 @@ end
 // dispatch the second instruction
 dispatcher dispatcher_instr_2(
 	.stall,
+	.delayslot       ( decoded[0].is_controlflow ),
 	.valid           ( instr_valid[1]       ),
 	.fetch           ( fetch_entry[1]       ),
 	.decoded         ( decoded[1]           ),
@@ -107,6 +117,8 @@ dispatcher dispatcher_instr_2(
 	.branch_ready    ( 1'b0                 ),
 	.branch_taken    ( /* empty */          ),
 	.branch_index    ( '0                   ),
+	.cp0_ready       ( 1'b0                 ),
+	.cp0_taken       ( /* empty */          ),
 	.rs              ( rs[1]                ),
 	.rob             ( rob_packet[1]        )
 );

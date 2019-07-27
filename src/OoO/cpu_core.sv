@@ -13,6 +13,7 @@ module cpu_core(
 logic flush_if;
 logic flush_rob;
 logic flush_ex;
+logic flush_cp0;
 logic flush_regstat;
 
 // register file
@@ -45,14 +46,39 @@ fetch_entry_t [1:0]  if_fetch_entry;
 instr_fetch_memres_t icache_res;
 instr_fetch_memreq_t icache_req;
 branch_resolved_t resolved_branch;
-logic except_valid;
-virt_t except_vec;
 
 // instruction issue/exec
 logic       [1:0] alu_ready, branch_ready;
 rs_index_t  [1:0] alu_index, branch_index;
 logic       [1:0] alu_taken, branch_taken;
 reserve_station_t [1:0] issue_rs;
+
+// MMU
+virt_t       mmu_inst_vaddr;
+virt_t       [`ISSUE_NUM-1:0] mmu_data_vaddr;
+mmu_result_t mmu_inst_result;
+mmu_result_t [`ISSUE_NUM-1:0] mmu_data_result;
+logic        tlbrw_we;
+tlb_index_t  tlbrw_index;
+tlb_entry_t  tlbrw_wdata;
+tlb_entry_t  tlbrw_rdata;
+uint32_t     tlbp_index;
+tlb_request_t tlbreq;
+
+// CP0
+logic [7:0]  cp0_asid;
+logic        cp0_kseg0_uncached;
+cp0_regs_t   cp0_regs;
+reg_addr_t   cp0_raddr;
+logic [2:0]  cp0_rsel;
+cp0_req_t    cp0_reg_wr;
+uint32_t     cp0_rdata;
+logic        cp0_user_mode;
+logic        cp0_timer_int;
+logic        cp0_lock, cp0_locked, cp0_commit;
+logic        cp0_lock_eret, cp0_locked_eret;
+except_req_t except_req;
+assign cp0_lock_eret = (issue_rs[0].decoded.op == OP_ERET);
 
 // instruction commit
 // TODO:
@@ -141,8 +167,8 @@ instr_fetch #(
 	.rst,
 	.flush_pc     ( flush_if              ),
 	.stall_pop    ( 1'b0                  ),
-	.except_valid ( except_valid          ),
-	.except_vec   ( except_vec            ),
+	.except_valid ( except_req.valid      ),
+	.except_vec   ( except_req.except_vec ),
 	.resolved_branch_i ( resolved_branch  ),
 	.hold_resolved_branch  ( 1'b0 ),
 	.icache_res,
@@ -164,6 +190,8 @@ instr_issue instr_issue_inst(
 	.branch_taken,
 	.branch_ready,
 	.branch_index,
+	.cp0_ready ( ~cp0_locked ),
+	.cp0_taken ( cp0_lock    ),
 	.rs_o ( issue_rs ),
 	.reg_raddr,
 	.reg_rdata,
@@ -186,6 +214,12 @@ instr_exec instr_exec_inst(
 	.branch_taken,
 	.branch_ready,
 	.branch_index,
+	.cp0_taken  ( cp0_lock   ),
+	.cp0_req    ( cp0_reg_wr ),
+	.cp0_tlbreq ( tlbreq     ),
+	.cp0_rdata,
+	.cp0_raddr,
+	.cp0_rsel,
 	.rs_i  ( issue_rs ),
 	.cdb_o ( cdb      )
 );
@@ -199,8 +233,66 @@ instr_commit instr_commit_inst(
 	.reg_waddr,
 	.reg_wdata,
 	.resolved_branch,
+	.except_req,
+	.cp0_regs,
+	.locked_eret ( cp0_locked_eret ),
+	.interrupt_flag ( '0 ),
+	.commit_cp0 ( cp0_commit ),
 	.commit_flush,
 	.commit_flush_pc
 );
+
+// CP0
+cp0 cp0_inst(
+	.clk,
+	.rst,
+	.flush     ( flush_cp0     ),
+	.raddr     ( cp0_raddr     ),
+	.rsel      ( cp0_rsel      ),
+	.wreq      ( cp0_reg_wr    ),
+	.except_req,
+
+	.lock        ( cp0_lock        ),
+	.lock_eret   ( cp0_lock_eret   ),
+	.locked_eret ( cp0_locked_eret ),
+	.locked      ( cp0_locked      ),
+	.commit      ( cp0_commit      ),
+
+	.tlbp_res  ( tlbp_index    ),
+	.tlbr_res  ( tlbrw_rdata   ),
+	.tlbp_req  ( tlbreq.probe  ),
+	.tlbr_req  ( tlbreq.read   ),
+	.tlbwr_req ( tlbreq.tlbwr  ),
+
+	.tlbrw_wdata,
+
+	.kseg0_uncached ( cp0_kseg0_uncached ),
+	.rdata     ( cp0_rdata     ),
+	.regs      ( cp0_regs      ),
+	.asid      ( cp0_asid      ),
+	.user_mode ( cp0_user_mode ),
+	.timer_int ( cp0_timer_int )
+);
+
+mmu mmu_inst(
+	.clk,
+	.rst,
+	.asid(cp0_asid),
+	.kseg0_uncached(cp0_kseg0_uncached),
+	.is_user_mode(cp0_user_mode),
+	.inst_vaddr(mmu_inst_vaddr),
+	.data_vaddr(mmu_data_vaddr),
+	.inst_result(mmu_inst_result),
+	.data_result(mmu_data_result),
+
+	.tlbrw_index,
+	.tlbrw_we,
+	.tlbrw_wdata,
+	.tlbrw_rdata,
+
+	.tlbp_entry_hi(cp0_regs.entry_hi),
+	.tlbp_index
+);
+
 
 endmodule

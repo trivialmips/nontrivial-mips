@@ -3,6 +3,8 @@
 module dispatcher(
 	input  logic             stall,
 
+	input  logic             delayslot,
+
 	// instruction valid
 	input  logic             valid,
 
@@ -27,6 +29,9 @@ module dispatcher(
 	input  logic             branch_ready,
 	input  rs_index_t        branch_index,
 	output logic             branch_taken,
+
+	input  logic             cp0_ready,
+	output logic             cp0_taken,
 
 	// reserve station
 	output reserve_station_t rs,
@@ -58,8 +63,9 @@ always_comb begin
 	rs.fetch   = fetch;
 	rs.instr   = fetch.instr;
 	rs.index   = '0;
-	alu_taken  = 1'b0;
+	alu_taken    = 1'b0;
 	branch_taken = 1'b0;
+	cp0_taken    = 1'b0;
 	unique case(decoded.fu)
 		FU_ALU: begin
 			alu_taken = alu_ready & valid & ~stall;
@@ -71,17 +77,23 @@ always_comb begin
 			rs.busy      = branch_ready & valid;
 			rs.index     = branch_index;
 		end
+		FU_CP0: begin
+			cp0_taken    = cp0_ready & valid & ~stall;
+			rs.busy      = cp0_ready & valid;
+			rs.index     = '0;
+		end
 		default:;
 	endcase
 end
 
 always_comb begin
-	rob       = '0;
-	rob.valid = rs.busy;
-	rob.busy  = rs.busy;
-	rob.pc    = fetch.vaddr;
-	rob.dest  = decoded.rd;
-	rob.fu    = decoded.fu;
+	rob           = '0;
+	rob.delayslot = delayslot;
+	rob.valid     = rs.busy;
+	rob.busy      = rs.busy;
+	rob.pc        = fetch.vaddr;
+	rob.dest      = decoded.rd;
+	rob.fu        = decoded.fu;
 end
 
 endmodule

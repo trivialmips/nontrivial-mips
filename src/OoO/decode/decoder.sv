@@ -222,6 +222,7 @@ always_comb begin
 		end
 
 		6'b010000: begin // COP0
+			decoded_instr.fu = FU_CP0;
 			unique case(instr[25:21])
 				5'b00000: begin
 					decoded_instr.op = OP_MFC0;
