@@ -1,6 +1,8 @@
 `include "cpu_defs.svh"
 
 module dispatcher(
+	input  logic             stall,
+
 	// instruction valid
 	input  logic             valid,
 
@@ -21,6 +23,10 @@ module dispatcher(
 	input  logic             alu_ready,
 	input  rs_index_t        alu_index,
 	output logic             alu_taken,
+
+	input  logic             branch_ready,
+	input  rs_index_t        branch_index,
+	output logic             branch_taken,
 
 	// reserve station
 	output reserve_station_t rs,
@@ -53,11 +59,17 @@ always_comb begin
 	rs.instr   = fetch.instr;
 	rs.index   = '0;
 	alu_taken  = 1'b0;
+	branch_taken = 1'b0;
 	unique case(decoded.fu)
 		FU_ALU: begin
-			alu_taken = alu_ready & valid;
+			alu_taken = alu_ready & valid & ~stall;
 			rs.busy   = alu_ready & valid;
 			rs.index  = alu_index;
+		end
+		FU_BRANCH: begin
+			branch_taken = branch_ready & valid & ~stall;
+			rs.busy      = branch_ready & valid;
+			rs.index     = branch_index;
 		end
 		default:;
 	endcase

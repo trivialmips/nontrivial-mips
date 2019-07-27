@@ -2,6 +2,7 @@
 
 module alu(
 	input  oper_t      op,
+	input  virt_t      pc,
 	input  uint32_t    instr,
 	input  uint32_t    reg1,
 	input  uint32_t    reg2,

@@ -10,14 +10,10 @@ module cpu_core(
 );
 
 // flush and stall signals
-logic flush_if, stall_if;
+logic flush_if;
 logic flush_rob;
 logic flush_ex;
-// TODO
-assign flush_if = 1'b0;
-assign stall_if = 1'b0;
-assign flush_rob = 1'b0;
-assign flush_ex = 1'b0;
+logic flush_regstat;
 
 // register file
 logic      [1:0] reg_we;
@@ -49,15 +45,13 @@ fetch_entry_t [1:0]  if_fetch_entry;
 instr_fetch_memres_t icache_res;
 instr_fetch_memreq_t icache_req;
 branch_resolved_t resolved_branch;
-// TODO:
-assign resolved_branch = '0;
 logic except_valid;
 virt_t except_vec;
 
 // instruction issue/exec
-logic       [1:0] alu_ready;
-rs_index_t  [1:0] alu_index;
-logic       [1:0] alu_taken;
+logic       [1:0] alu_ready, branch_ready;
+rs_index_t  [1:0] alu_index, branch_index;
+logic       [1:0] alu_taken, branch_taken;
 reserve_station_t [1:0] issue_rs;
 
 // instruction commit
@@ -80,6 +74,10 @@ assign icache_res.icache_ready     = ibus.ready;
 assign icache_res.iaddr_ex.miss    = 1'b0;
 assign icache_res.iaddr_ex.illegal = 1'b0;
 assign icache_res.iaddr_ex.invalid = 1'b0;
+
+ctrl ctrl_inst(
+	.*
+);
 
 regfile #(
 	.REG_NUM     ( `REG_NUM ),
@@ -106,6 +104,7 @@ regfile_status #(
 ) regfile_status_inst (
 	.clk,
 	.rst,
+	.flush    ( flush_regstat      ),
 	.we       ( reg_status_we      ),
 	.wdata    ( reg_status_wdata   ),
 	.waddr    ( reg_status_waddr   ),
@@ -141,7 +140,7 @@ instr_fetch #(
 	.clk,
 	.rst,
 	.flush_pc     ( flush_if              ),
-	.stall_pop    ( stall_if              ),
+	.stall_pop    ( 1'b0                  ),
 	.except_valid ( except_valid          ),
 	.except_vec   ( except_vec            ),
 	.resolved_branch_i ( resolved_branch  ),
@@ -162,7 +161,10 @@ instr_issue instr_issue_inst(
 	.alu_ready,
 	.alu_index,
 	.alu_taken,
-	.rs ( issue_rs ),
+	.branch_taken,
+	.branch_ready,
+	.branch_index,
+	.rs_o ( issue_rs ),
 	.reg_raddr,
 	.reg_rdata,
 	.reg_status ( reg_status_rdata ),
@@ -181,6 +183,9 @@ instr_exec instr_exec_inst(
 	.alu_taken,
 	.alu_ready,
 	.alu_index,
+	.branch_taken,
+	.branch_ready,
+	.branch_index,
 	.rs_i  ( issue_rs ),
 	.cdb_o ( cdb      )
 );
@@ -193,6 +198,7 @@ instr_commit instr_commit_inst(
 	.reg_we,
 	.reg_waddr,
 	.reg_wdata,
+	.resolved_branch,
 	.commit_flush,
 	.commit_flush_pc
 );

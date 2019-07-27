@@ -9,6 +9,7 @@ module regfile_status #(
 )(
 	input  logic clk,
 	input  logic rst,
+	input  logic flush,
 
 	input  logic [WRITE_PORTS-1:0]                      we,
 	input  dtype [WRITE_PORTS-1:0]                      wdata,
@@ -46,7 +47,7 @@ always_comb begin
 end
 
 always_ff @(posedge clk) begin
-	if(rst) begin
+	if(rst || flush) begin
 		regs <= '0;
 	end else begin
 		regs <= regs_new;

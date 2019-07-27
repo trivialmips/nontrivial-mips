@@ -47,7 +47,12 @@ always_comb begin
 			decoded_instr.rs1 = rs;
 			decoded_instr.rs2 = rt;
 			decoded_instr.rd  = rd;
-			decoded_instr.fu  = funct[5:2] == 4'b01?0 ? FU_MUL : FU_ALU;
+
+			unique casez(funct)
+				6'b00100?: decoded_instr.fu = FU_BRANCH;
+				default:   decoded_instr.fu = FU_ALU;
+			endcase
+
 			unique case(funct)
 				/* shift */
 				6'b000000: decoded_instr.op = OP_SLL;
@@ -119,6 +124,7 @@ always_comb begin
 			decoded_instr.rs1 = rs;
 			decoded_instr.rd  = (instr[20:17] == 4'b1000) ? 5'd31 : 5'd0;
 			decoded_instr.use_imm = 1'b1;
+			decoded_instr.fu  = instr[19:17] == 3'b000 ? FU_BRANCH : FU_ALU;
 			unique case(instr[20:16])
 				/* trap */
 				5'b01000: decoded_instr.op = OP_TGE;
@@ -139,6 +145,7 @@ always_comb begin
 		6'b0001??: begin // branch (Reg-Imm)
 			decoded_instr.rs1 = rs;
 			decoded_instr.rs2 = rt;
+			decoded_instr.fu  = FU_BRANCH;
 			unique case(opcode[1:0])
 				2'b00: decoded_instr.op = OP_BEQ;
 				2'b01: decoded_instr.op = OP_BNE;
@@ -210,6 +217,7 @@ always_comb begin
 		
 		6'b00001?: begin // jump and link
 			decoded_instr.rd  = {$bits(reg_addr_t){opcode[0]}};
+			decoded_instr.fu  = FU_BRANCH;
 			decoded_instr.op  = OP_JAL;
 		end
 

@@ -66,6 +66,7 @@ always_comb begin
 		for(int j = 0; j < DEPTH; ++j) begin
 			mem_n[j].busy  &= ~rob_hit[i][j];
 			mem_n[j].value |= {32{rob_hit[i][j]}} & cdb[i].value;
+			mem_n[j].data  |= {$bits(cdb_union_data_t){rob_hit[i][j]}} & cdb[i].data;
 		end
 	end
 

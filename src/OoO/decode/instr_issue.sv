@@ -16,8 +16,12 @@ module instr_issue(
 	input  rs_index_t          [1:0] alu_index,
 	output logic               [1:0] alu_taken,
 
+	input  logic               [1:0] branch_ready,
+	input  rs_index_t          [1:0] branch_index,
+	output logic               [1:0] branch_taken,
+
 	// reserve station
-	output reserve_station_t   [1:0] rs,
+	output reserve_station_t   [1:0] rs_o,
 	
 	// registers
 	output reg_addr_t          [3:0] reg_raddr,
@@ -30,25 +34,25 @@ module instr_issue(
 	output register_status_t   [1:0] reg_status_wdata
 );
 
-// decoded instructions
-decoded_instr_t decoded[1:0];
-
-// instruction valid
 logic [1:0] instr_valid;
+decoded_instr_t [1:0] decoded;
+reserve_station_t [1:0] rs;
 
-always_comb begin
-	instr_valid[0] = fetch_entry[0].valid;
-	instr_valid[1] = fetch_entry[1].valid & rs[0].busy;
+logic stall;
+assign stall = rob_full
+	| decoded[0].is_controlflow & ~rs[1].busy;
 
-	if(rob_full) instr_valid = '0;
-end
+assign rs_o             = stall ? '0 : rs;
+assign fetch_ack        = rs_o[0].busy + rs_o[1].busy;
+assign rob_packet_valid = rs_o[0].busy;
 
-// fetch ack
-assign fetch_ack        = rs[0].busy + rs[1].busy;
-assign rob_packet_valid = rs[0].busy;
+assign instr_valid[0] = fetch_entry[0].valid;
+assign instr_valid[1] = fetch_entry[1].valid & rs[0].busy
+	& ~decoded[1].is_controlflow;
 
 // dispatch the first instruction
 dispatcher dispatcher_instr_1(
+	.stall,
 	.valid           ( instr_valid[0]       ),
 	.fetch           ( fetch_entry[0]       ),
 	.decoded         ( decoded[0]           ),
@@ -58,6 +62,9 @@ dispatcher dispatcher_instr_1(
 	.alu_ready       ( alu_ready[0]         ),
 	.alu_taken       ( alu_taken[0]         ),
 	.alu_index       ( alu_index[0]         ),
+	.branch_ready    ( branch_ready[0]      ),
+	.branch_taken    ( branch_taken[0]      ),
+	.branch_index    ( branch_index[0]      ),
 	.rs              ( rs[0]                ),
 	.rob             ( rob_packet[0]        )
 );
@@ -87,6 +94,7 @@ end
 
 // dispatch the second instruction
 dispatcher dispatcher_instr_2(
+	.stall,
 	.valid           ( instr_valid[1]       ),
 	.fetch           ( fetch_entry[1]       ),
 	.decoded         ( decoded[1]           ),
@@ -96,9 +104,14 @@ dispatcher dispatcher_instr_2(
 	.alu_ready       ( alu_ready_2          ),
 	.alu_index       ( alu_index_2          ),
 	.alu_taken       ( alu_taken[1]         ),
+	.branch_ready    ( 1'b0                 ),
+	.branch_taken    ( /* empty */          ),
+	.branch_index    ( '0                   ),
 	.rs              ( rs[1]                ),
 	.rob             ( rob_packet[1]        )
 );
+
+assign branch_taken[1] = 1'b0;
 
 // generate decoders and read the register file
 for(genvar i = 0; i < 2; ++i) begin: gen_decoder

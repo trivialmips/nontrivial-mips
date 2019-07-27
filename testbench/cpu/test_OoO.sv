@@ -127,6 +127,7 @@ begin
 	unittest("instr/ori");
 	unittest("instr/logical");
 	unittest("instr/shift");
+	unittest("instr/jump");
 	$display(summary);
 	$display("[Done]\n");
 	$finish;

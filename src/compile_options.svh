@@ -7,7 +7,7 @@
 
 **/
 
-`define CPU_MMU_ENABLED      0
+`define CPU_MMU_ENABLED      1
 
 `define FETCH_NUM            2
 `define ISSUE_NUM            2
@@ -30,5 +30,6 @@
 `define MAX_RS_SIZE          8
 `define ALU_RS_SIZE          4
 `define ALU_FU_SIZE          4
+`define BRANCH_RS_SIZE       2
 
 `endif

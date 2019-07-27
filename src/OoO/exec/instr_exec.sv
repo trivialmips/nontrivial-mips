@@ -15,6 +15,11 @@ module instr_exec(
 	output logic             [1:0] alu_ready,
 	output rs_index_t        [1:0] alu_index,
 
+	// branch
+	input  logic             [1:0] branch_taken,
+	output logic             [1:0] branch_ready,
+	output rs_index_t        [1:0] branch_index,
+
 	// reserve station
 	input  reserve_station_t [1:0] rs_i,
 
@@ -31,6 +36,13 @@ uint32_t    [`ALU_RS_SIZE-1:0] alu_data;
 logic       [`ALU_RS_SIZE-1:0] alu_data_ready;
 logic       [`ALU_RS_SIZE-1:0] alu_data_ack;
 rob_index_t [`ALU_RS_SIZE-1:0] alu_data_reorder;
+
+// branch information
+uint32_t    [`BRANCH_RS_SIZE-1:0] branch_data;
+logic       [`BRANCH_RS_SIZE-1:0] branch_data_ready;
+logic       [`BRANCH_RS_SIZE-1:0] branch_data_ack;
+rob_index_t [`BRANCH_RS_SIZE-1:0] branch_data_reorder;
+branch_resolved_t [`BRANCH_RS_SIZE-1:0] branch_resolved;
 
 // read ROB
 for(genvar i = 0; i < 2; ++i) begin: gen_read_rob
@@ -71,6 +83,22 @@ alu_rs alu_rs_inst(
 	.data_ready   ( alu_data_ready   ),
 	.data_reorder ( alu_data_reorder ),
 	.data_ack     ( alu_data_ack     ),
+	.cdb
+);
+
+branch_rs branch_rs_inst(
+	.clk,
+	.rst,
+	.flush,
+	.rs_taken ( branch_taken ),
+	.rs_ready ( branch_ready ),
+	.rs_index ( branch_index ),
+	.rs_i     ( rs_ro        ),
+	.data         ( branch_data         ),
+	.data_ready   ( branch_data_ready   ),
+	.data_reorder ( branch_data_reorder ),
+	.data_ack     ( branch_data_ack     ),
+	.resolved     ( branch_resolved     ),
 	.cdb
 );
 

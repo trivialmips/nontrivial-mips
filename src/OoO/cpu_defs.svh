@@ -188,6 +188,7 @@ typedef enum logic [6:0] {
 typedef enum logic [2:0] {
 	FU_INVALID,
 	FU_ALU,
+	FU_BRANCH,
 	FU_MUL
 } funct_t;
 
@@ -236,13 +237,17 @@ typedef struct packed {
 
 // ROB entry
 typedef struct packed {
+	phys_t mem_paddr;
+	branch_resolved_t resolved_branch;
+} cdb_union_data_t;
+typedef struct packed {
 	logic      valid;
 	logic      busy;
 	virt_t     pc;
 	uint32_t   value;
-	uint32_t   addr;   // JR/SW
 	reg_addr_t dest;
 	funct_t    fu;
+	cdb_union_data_t data;
 } rob_entry_t;
 
 typedef rob_entry_t [1:0] rob_packet_t;
@@ -253,6 +258,7 @@ typedef struct packed {
 	logic       valid;
 	rob_index_t reorder;
 	uint32_t    value;
+	cdb_union_data_t data;
 } cdb_t;
 
 typedef cdb_t [`CDB_SIZE-1:0] cdb_packet_t;
@@ -268,9 +274,7 @@ typedef struct packed {
 	rob_index_t [1:0] operand_addr;
 	logic       [1:0] operand_ready;
 	decoded_instr_t decoded;
-
-	// debug
-	fetch_entry_t fetch;
+	fetch_entry_t   fetch;
 } reserve_station_t;
 
 // register status
