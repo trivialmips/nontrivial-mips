@@ -12,8 +12,6 @@ module cp0(
 
 	input  logic         commit,
 	input  logic         lock,
-	input  logic         lock_eret,
-	output logic         locked_eret,
 	output logic         locked,
 
 	input  logic         tlbr_req,
@@ -122,10 +120,8 @@ end
 always_ff @(posedge clk) begin
 	if(rst || flush || commit) begin
 		locked      <= 1'b0;
-		locked_eret <= 1'b0;
 	end else if(lock) begin
 		locked      <= 1'b1;
-		locked_eret <= lock_eret;
 	end
 
 	if(rst || flush || commit) begin

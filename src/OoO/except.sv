@@ -2,7 +2,6 @@
 
 module except(
 	input  logic            rst,
-	input  logic            locked_eret,
 	input  rob_packet_t     rob_packet,
 	input  cp0_regs_t       cp0_regs,
 	input  logic [7:0]      interrupt_flag,
@@ -18,7 +17,9 @@ assign interrupt_occur = (
 	&& (rob_packet[0].valid || rob_packet[1].valid)
 );
 
-assign except_req.eret = locked_eret;
+assign except_req.eret =
+	rob_packet[0].ex.valid & rob_packet[0].ex.eret;
+
 always_comb begin
 	if(interrupt_occur) begin
 		except_req.valid = 1'b1;

@@ -58,6 +58,7 @@ uint32_t    cp0_data;
 logic       cp0_data_ready;
 logic       cp0_data_ack;
 rob_index_t cp0_data_reorder;
+exception_t cp0_ex;
 assign cp0_data = cp0_rdata;
 
 // read ROB
@@ -128,6 +129,7 @@ cp0_rs cp0_rs_inst(
 	.data_ready   ( cp0_data_ready   ),
 	.data_reorder ( cp0_data_reorder ),
 	.data_ack     ( cp0_data_ack     ),
+	.cp0_ex,
 	.cp0_req,
 	.cp0_tlbreq,
 	.cp0_rdata,

@@ -76,7 +76,6 @@ uint32_t     cp0_rdata;
 logic        cp0_user_mode;
 logic        cp0_timer_int;
 logic        cp0_lock, cp0_locked, cp0_commit;
-logic        cp0_lock_eret, cp0_locked_eret;
 except_req_t except_req;
 assign cp0_lock_eret = (issue_rs[0].decoded.op == OP_ERET);
 
@@ -235,7 +234,6 @@ instr_commit instr_commit_inst(
 	.resolved_branch,
 	.except_req,
 	.cp0_regs,
-	.locked_eret ( cp0_locked_eret ),
 	.interrupt_flag ( '0 ),
 	.commit_cp0 ( cp0_commit ),
 	.commit_flush,
@@ -253,8 +251,6 @@ cp0 cp0_inst(
 	.except_req,
 
 	.lock        ( cp0_lock        ),
-	.lock_eret   ( cp0_lock_eret   ),
-	.locked_eret ( cp0_locked_eret ),
 	.locked      ( cp0_locked      ),
 	.commit      ( cp0_commit      ),
 

@@ -18,7 +18,6 @@ module instr_commit(
 	// exception
 	output except_req_t  except_req,
 	input  cp0_regs_t    cp0_regs,
-	input  logic         locked_eret,
 	input  logic [7:0]   interrupt_flag,
 
 	// commit CP0
@@ -47,7 +46,6 @@ assign commit_flush_pc = '0;
 
 except except_inst(
 	.rst ( ~rob_ack ),
-	.locked_eret,
 	.rob_packet,
 	.cp0_regs,
 	.interrupt_flag ( '0 ),

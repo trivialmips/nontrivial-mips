@@ -19,6 +19,7 @@ module cp0_rs(
 	input  uint32_t          cp0_rdata,
 	output reg_addr_t        cp0_raddr,
 	output logic [2:0]       cp0_rsel,
+	output exception_t       cp0_ex,
 
 	// CDB
 	input  cdb_packet_t      cdb
@@ -39,6 +40,14 @@ assign cp0_req.waddr = rs_q.fetch.instr[15:11];
 assign cp0_req.wsel  = rs_q.fetch.instr[2:0];
 // TODO: TLB
 assign cp0_tlbreq    = '0;
+
+always_comb begin
+	cp0_ex = '0;
+	if(rs_q.decoded.op == OP_ERET) begin
+		cp0_ex.valid = 1'b1;
+		cp0_ex.eret  = 1'b1;
+	end
+end
 
 uint32_t cp0_wmask, cp0_rdata;
 cp0_write_mask cp0_write_mask_inst(

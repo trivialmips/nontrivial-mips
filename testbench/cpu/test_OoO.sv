@@ -129,6 +129,8 @@ begin
 	unittest("instr/shift");
 	unittest("instr/jump");
 	unittest("instr/trap");
+
+	unittest("except/delayslot");
 	$display(summary);
 	$display("[Done]\n");
 	$finish;
