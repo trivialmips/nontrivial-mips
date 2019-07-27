@@ -229,6 +229,24 @@ assign presolved_branch.target = { entry_s2_d[0].vaddr[31:3] + 1, 1'b0, entry_s2
 // free channel for possible delayslot. We do not replay it.
 assign replay_valid = queue_full && (avail_instr_s2_d != '0) && ~delayslot_s3;
 
+// decode 
+decoded_instr_t [2:0] decoded;
+
+decoder decoder_inst1(
+	.instr         ( icache_res.data[31:0] ),
+	.decoded_instr ( decoded[0]            )
+);
+
+decoder decoder_inst2(
+	.instr         ( icache_res.data[63:32] ),
+	.decoded_instr ( decoded[1]             )
+);
+
+decoder decoder_inst3(
+	.instr         ( icache_res.data_extra[31:0] ),
+	.decoded_instr ( decoded[2]                  )
+);
+
 // setup fetch entries
 always_comb begin
 	entry_s3 = entry_s2_d;
@@ -236,6 +254,10 @@ always_comb begin
 	entry_s3[0].instr = icache_res.data[31:0];
 	entry_s3[1].instr = icache_res.data[63:32];
 	entry_s3[2].instr = icache_res.data_extra[31:0];
+
+	entry_s3[0].decoded = decoded[0];
+	entry_s3[1].decoded = decoded[1];
+	entry_s3[2].decoded = decoded[2];
 
 	entry_s3[1].branch_predict.valid &= ~presolved_branch.mispredict;
 	entry_s3[0].branch_predict.valid &= ~presolved_branch.mispredict;
