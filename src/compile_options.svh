@@ -8,6 +8,7 @@
 **/
 
 `define CPU_MMU_ENABLED      1
+`define CPU_LLSC_ENABLED     1
 `define CPU_MUTEX_PRIV       1
 
 `define FETCH_NUM            2
