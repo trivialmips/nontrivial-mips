@@ -70,7 +70,8 @@ module cache_controller #(
         .DATA_WIDTH(32),
         .LINE_WIDTH(`DCACHE_LINE_WIDTH), // max burst size is 16, so LINE_WIDTH should <= 8*32 = 256
         .SET_ASSOC (`DCACHE_SET_ASSOC),
-        .CACHE_SIZE(`DCACHE_SIZE)  // in bit
+        .CACHE_SIZE(`DCACHE_SIZE),  // in bit
+        .WB_FIFO_DEPTH(`DCACHE_WB_FIFO_DEPTH)
     ) dcache_inst(
         .clk,
         .rst,
