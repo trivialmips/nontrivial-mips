@@ -13,6 +13,13 @@ module cdb_arbitrator(
 	input  logic             [`BRANCH_RS_SIZE-1:0] branch_data_ready,
 	output logic             [`BRANCH_RS_SIZE-1:0] branch_data_ack,
 
+	input  exception_t       [`LSU_RS_SIZE-1:0] lsu_ex,
+	input  data_memreq_t     [`LSU_RS_SIZE-1:0] lsu_memreq;
+	input  uint32_t          [`LSU_RS_SIZE-1:0] lsu_data,
+	input  logic             [`LSU_RS_SIZE-1:0] lsu_data_ready,
+	input  rob_index_t       [`LSU_RS_SIZE-1:0] lsu_data_reorder,
+	output logic             [`LSU_RS_SIZE-1:0] lsu_data_ack,
+
 	input  exception_t       cp0_ex,
 	input  uint32_t          cp0_data,
 	input  logic             cp0_data_ready,
@@ -29,6 +36,7 @@ always_comb begin
 	alu_data_ack    = '0;
 	branch_data_ack = '0;
 	cp0_data_ack    = '0;
+	lsu_data_ack    = '0;
 	for(int i = 0; i < `ALU_RS_SIZE; ++i) begin
 		alu_data_ack[i] = alu_data_ready[i];
 
@@ -59,6 +67,22 @@ always_comb begin
 		cdb[CP0_CDB].valid    = 1'b1;
 		cdb[CP0_CDB].reorder  = cp0_data_reorder;
 		cdb[CP0_CDB].value    = cp0_data;
+	end
+
+	for(int i = 0; i < `ALU_RS_SIZE; ++i) begin
+		if(lsu_data_ready[i]) begin
+			if(i < `ALU_RS_SIZE)    alu_data_ack[i] = 1'b0;
+			if(i < `BRANCH_RS_SIZE) branch_data_ack[i] = 1'b0;
+			if(i == CP0_CDB)        cp0_data_ack = 1'b0;
+			lsu_data_ack[i] = 1'b1;
+
+			cdb[i]          = '0;
+			cdb[i].ex       = lsu_ex[i];
+			cdb[i].valid    = lsu_data_ready[i];
+			cdb[i].reorder  = lsu_data_reorder[i];
+			cdb[i].value    = lsu_data[i];
+			cdb[i].data.memreq = lsu_memreq[i];
+		end
 	end
 end
 
