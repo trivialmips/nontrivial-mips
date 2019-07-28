@@ -26,9 +26,11 @@ fake_dbus dbus_inst(.rst(sync_rst), .*);
 
 cpu_core core_inst(.rst(sync_rst), .*);
 
+data_memreq_t memreq;
 logic [1:0] reg_we;
 uint32_t [1:0] reg_wdata;
 reg_addr_t [1:0] reg_waddr;
+assign memreq = core_inst.lsu_store_memreq;
 assign reg_we = core_inst.reg_we;
 assign reg_wdata = core_inst.reg_wdata;
 assign reg_waddr = core_inst.reg_waddr;
@@ -101,11 +103,20 @@ task unittest_(
 			judge(fans, cycle, out);
 		end 
 
+		if(cpu_core.lsu_store_push && cpu_core.instr_commit_inst.is_store[0]) begin
+			$sformat(out, "[0x%x]=0x%x", memreq.paddr[15:0], memreq.wrdata);
+			judge(fans, cycle, out);
+		end
+
 		if(reg_we[1] && reg_waddr[1] != '0) begin
 			$sformat(out, "$%0d=0x%x", reg_waddr[1], reg_wdata[1]);
 			judge(fans, cycle, out);
 		end 
 
+		if(cpu_core.lsu_store_push && cpu_core.instr_commit_inst.is_store[1]) begin
+			$sformat(out, "[0x%x]=0x%x", memreq.paddr[15:0], memreq.wrdata);
+			judge(fans, cycle, out);
+		end
 	end
 
 	$display("[OK] %0s\n", name);
@@ -124,6 +135,8 @@ initial
 begin
 	wait(rst == 1'b0);
 	summary = "";
+	unittest("instr/mem_aligned");
+	unittest("instr/mem_unaligned");
 	unittest("instr/ori");
 	unittest("instr/logical");
 	unittest("instr/shift");

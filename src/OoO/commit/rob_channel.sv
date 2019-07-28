@@ -103,16 +103,13 @@ always_ff @(posedge clk) begin
 		read_pointer_q  <= '0;
 		write_pointer_q <= '0;
 		cnt_q           <= '0;
+		mem_q           <= '0;
 	end else begin
 		read_pointer_q  <= read_pointer_n;
 		write_pointer_q <= write_pointer_n;
 		cnt_q           <= cnt_n;
+		mem_q           <= mem_n;
 	end
-end
-
-always_ff @(posedge clk) begin
-	if(rst) mem_q <= '0;
-	else    mem_q <= mem_n;
 end
 
 endmodule

@@ -32,13 +32,13 @@ _start:
 j0:
 	lui $1, 0xccdd      # ans: $1=0xccdd0000
 	ori $1, $1, 0xffaa  # ans: $1=0xccddffaa
-	sb  $1, 0x4($s0)    # ans: [0x1004]=0x0000ffaa
+	sb  $1, 0x4($s0)    # ans: skip
 	srl $1, $1, 8       # ans: skip
-	sb  $1, 0x6($s0)    # ans: [0x1004]=0x00ffffaa
+	sb  $1, 0x6($s0)    # ans: skip
 	srl $1, $1, 8       # ans: skip
-	sb  $1, 0x7($s0)    # ans: [0x1004]=0xddffffaa
+	sb  $1, 0x7($s0)    # ans: skip
 	srl $1, $1, 8       # ans: skip
-	sb  $1, 0x5($s0)    # ans: [0x1004]=0xddffccaa
+	sb  $1, 0x5($s0)    # ans: skip
 
 	lw  $9, 0x4($s0)    # ans: $9=0xddffccaa
 
@@ -46,11 +46,13 @@ j0:
 	lb  $1, 0x6($s0)    # ans: $1=0xffffffff
 
 	ori $3, $0, 0x8122  # ans: skip
-	sh  $3, 0x4($s0)    # ans: [0x1004]=0xddff8122
+	sh  $3, 0x4($s0)    # ans: skip
 	lh  $3, 0x4($s0)    # ans: $3=0xffff8122
 	lhu $3, 0x4($s0)    # ans: $3=0x00008122
+	lw  $10, 0x4($s0)   # ans: $10=0xddff8122
 
 	ori $3, $0, 0xfb57  # ans: skip
-	sh  $3, 0x6($s0)    # ans: [0x1004]=0xfb578122
+	sh  $3, 0x6($s0)    # ans: skip
 	lhu $3, 0x6($s0)    # ans: $3=0x0000fb57
 	lh  $3, 0x6($s0)    # ans: $3=0xfffffb57
+	lw  $10, 0x4($s0)   # ans: $10=0xfb578122

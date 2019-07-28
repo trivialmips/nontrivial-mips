@@ -17,6 +17,7 @@ assign dbus_uncached.wrdata = '0;
 
 // flush and stall signals
 logic flush_if;
+logic flush_is;
 logic flush_rob;
 logic flush_ex;
 logic flush_cp0;
@@ -57,7 +58,7 @@ branch_resolved_t resolved_branch;
 logic       [1:0] alu_ready, branch_ready, lsu_ready;
 rs_index_t  [1:0] alu_index, branch_index, lsu_index;
 logic       [1:0] alu_taken, branch_taken, lsu_taken;
-logic       lsu_store_push, lsu_store_full;
+logic       lsu_store_push, lsu_store_full, lsu_locked;
 data_memreq_t lsu_store_memreq;
 reserve_station_t [1:0] issue_rs;
 
@@ -194,6 +195,7 @@ instr_issue instr_issue_inst(
 	.alu_ready,
 	.alu_index,
 	.alu_taken,
+	.lsu_locked,
 	.lsu_ready,
 	.lsu_index,
 	.lsu_taken,
@@ -209,6 +211,15 @@ instr_issue instr_issue_inst(
 	.reg_status_we,
 	.reg_status_waddr,
 	.reg_status_wdata
+);
+
+lsu_status lsu_status_inst(
+	.clk,
+	.rst,
+	.flush        ( flush_is       ),
+	.rs           ( issue_rs       ),
+	.commit_store ( lsu_store_push ),
+	.locked       ( lsu_locked     )
 );
 
 instr_exec instr_exec_inst(

@@ -16,6 +16,7 @@ module instr_issue(
 	input  rs_index_t          [1:0] alu_index,
 	output logic               [1:0] alu_taken,
 
+	input  logic               lsu_locked,
 	input  logic               [1:0] lsu_ready,
 	input  rs_index_t          [1:0] lsu_index,
 	output logic               [1:0] lsu_taken,
@@ -49,17 +50,19 @@ logic stall;
 assign stall = rob_full
 	| decoded[0].is_controlflow & ~rs[1].busy;
 
-assign rs_o = stall ? '0 : rs;
 assign fetch_ack        = rs_o[0].busy + rs_o[1].busy;
 assign rob_packet_valid = rs_o[0].busy;
 
-assign instr_valid[0] = fetch_entry[0].valid;
+assign instr_valid[0] = fetch_entry[0].valid
+	&& ~(decoded[0].fu == FU_LOAD && lsu_locked);
 assign instr_valid[1] = fetch_entry[1].valid
 	&& rs[0].busy
 	&& ~decoded[1].is_controlflow
 	&& decoded[0].fu != FU_CP0
 	&& decoded[1].fu != FU_CP0
-	&& ~(decoded[0].fu == FU_STORE && decoded[1].fu == FU_STORE);
+	&& ~(decoded[1].fu == FU_LOAD && lsu_locked)
+	&& ~(decoded[0].fu == FU_STORE && decoded[1].fu == FU_STORE)
+	&& ~(decoded[0].fu == FU_STORE && decoded[1].fu == FU_LOAD);
 
 // dispatch the first instruction
 dispatcher dispatcher_instr_1(
@@ -87,7 +90,6 @@ dispatcher dispatcher_instr_1(
 );
 
 // resolve data-related in a issue packet
-register_status_t [1:0] reg_status_2;
 logic alu_ready_2, lsu_ready_2;
 rs_index_t alu_index_2, lsu_index_2;
 rob_index_t rob_reorder_2;
@@ -98,19 +100,6 @@ assign lsu_ready_2   = lsu_ready[1] | (lsu_ready[0] & ~lsu_taken[0]);
 assign lsu_index_2   = lsu_ready[1] ? lsu_index[1] : lsu_index[0];
 assign rob_reorder_2 = rs[0].busy ? rob_reorder[1] : rob_reorder[0];
 
-always_comb begin
-	reg_status_2 = reg_status[3:2];
-	if(decoded[0].rd != '0 && decoded[0].rd == decoded[1].rs1) begin
-		reg_status_2[0].busy    = 1'b1;
-		reg_status_2[0].reorder = rs[0].reorder;
-	end
-
-	if(decoded[0].rd != '0 && decoded[0].rd == decoded[1].rs2) begin
-		reg_status_2[1].busy    = 1'b1;
-		reg_status_2[1].reorder = rs[0].reorder;
-	end
-end
-
 // dispatch the second instruction
 dispatcher dispatcher_instr_2(
 	.stall,
@@ -120,7 +109,7 @@ dispatcher dispatcher_instr_2(
 	.decoded         ( decoded[1]           ),
 	.reorder         ( rob_reorder_2        ),
 	.reg_rdata       ( reg_rdata[3:2]       ),
-	.reg_status      ( reg_status_2         ),
+	.reg_status      ( reg_status[3:2]      ),
 	.alu_ready       ( alu_ready_2          ),
 	.alu_index       ( alu_index_2          ),
 	.alu_taken       ( alu_taken[1]         ),
@@ -137,6 +126,20 @@ dispatcher dispatcher_instr_2(
 );
 
 assign branch_taken[1] = 1'b0;
+
+always_comb begin
+	rs_o = rs;
+	if(decoded[0].rd != '0 && decoded[0].rd == decoded[1].rs1) begin
+		rs_o[1].operand_ready[0] = 1'b0;
+		rs_o[1].operand_addr[0]  = rs[0].reorder;
+	end
+
+	if(decoded[0].rd != '0 && decoded[0].rd == decoded[1].rs2) begin
+		rs_o[1].operand_ready[1] = 1'b0;
+		rs_o[1].operand_addr[1]  = rs[0].reorder;
+	end
+	if(stall) rs_o = '0;
+end
 
 // generate decoders and read the register file
 for(genvar i = 0; i < 2; ++i) begin: gen_decoder

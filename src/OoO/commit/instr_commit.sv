@@ -41,11 +41,15 @@ for(genvar i = 0; i < 2; ++i) begin: gen_reg_requests
 	assign reg_wdata[i] = rob_packet[i].value;
 end
 
+logic  [1:0] is_store;
 logic  store_request, packet_ready;
 assign packet_ready    = ~rob_packet[0].busy & ~rob_packet[1].busy & ~rob_empty;
 
-assign store_request    = rob_packet[0].fu == FU_STORE || rob_packet[1].fu == FU_STORE;
-assign lsu_store_memreq = rob_packet[1].fu == FU_STORE ? rob_packet[1].data.memreq : rob_packet[0].data.memreq;
+assign is_store[0] = rob_packet[0].valid && rob_packet[0].fu == FU_STORE;
+assign is_store[1] = rob_packet[1].valid && rob_packet[1].fu == FU_STORE;
+
+assign store_request    = |is_store;
+assign lsu_store_memreq = is_store[1] ? rob_packet[1].data.memreq : rob_packet[0].data.memreq;
 assign lsu_store_push   = packet_ready & store_request & ~lsu_store_full;
 
 assign commit_cp0      = rob_ack && rob_packet[0].fu == FU_CP0 && ~except_req.valid;

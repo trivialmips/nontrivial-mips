@@ -37,16 +37,12 @@ module lsu_rs(
 // *_q:  current status
 // *_n:  next status
 // *_ro: after reading operands
-logic [`LSU_RS_SIZE-1:0] rs_valid, fu_busy;
+logic [`LSU_RS_SIZE-1:0] fu_busy;
 reserve_station_t [`LSU_RS_SIZE-1:0] rs_n, rs_ro, rs_q;
 logic      [1:0] rs_ready_n, rs_ready_q;
 rs_index_t [1:0] rs_index_n, rs_index_q;
 assign rs_index = rs_index_q;
 assign rs_ready = rs_ready_q;
-
-for(genvar i = 0; i < `LSU_RS_SIZE; ++i) begin: gen_rs_valid
-	assign rs_valid[i] = rs_n[i].busy & &rs_n[i].operand_ready;
-end
 
 // allocate ready RS
 always_comb begin
@@ -148,7 +144,6 @@ for(genvar i = 0; i < `LSU_RS_SIZE; ++i) begin: gen_lsu
 		.rst,
 		.flush,
 		.rs           ( rs_q[i]          ),
-		.rs_valid     ( rs_valid[i]      ),
 		.fu_busy      ( fu_busy[i]       ),
 		.dbus_req     ( fu_dbus[i]       ),
 		.dbus_res     ( dbus_res         ),

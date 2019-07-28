@@ -7,7 +7,6 @@ module lsu(
 
 	// reserve statsion
 	input  reserve_station_t rs,
-	input  logic             rs_valid,
 	output logic             fu_busy,
 
 	// dbus request
@@ -32,6 +31,7 @@ module lsu(
 enum logic [2:0] {
 	IDLE,
 	WAIT_MMU,
+	WAIT_OP,
 	WAIT_DBUS,
 	WAIT_DATA,
 	WRITE,
@@ -255,8 +255,8 @@ end
 always_comb begin
 	state_d = state;
 	case(state)
-		IDLE: if(rs_valid)
-			state_d = WAIT_MMU;
+		IDLE, WAIT_OP: if(rs.busy)
+			state_d = (&rs.operand_ready) ? WAIT_MMU : WAIT_OP;
 		WAIT_MMU: if(mmu_ready) begin
 			if(|pipe_ex_mm)
 				state_d = EXCEPTION;
