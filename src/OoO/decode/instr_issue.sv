@@ -89,7 +89,7 @@ dispatcher dispatcher_instr_1(
 // resolve data-related in a issue packet
 register_status_t [1:0] reg_status_2;
 logic alu_ready_2, lsu_ready_2;
-rs_index_t alu_index_2, alu_index_2;
+rs_index_t alu_index_2, lsu_index_2;
 rob_index_t rob_reorder_2;
 
 assign alu_ready_2   = alu_ready[1] | (alu_ready[0] & ~alu_taken[0]);

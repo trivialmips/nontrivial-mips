@@ -49,7 +49,7 @@ always_comb begin
 	end
 end
 
-uint32_t cp0_wmask, cp0_rdata;
+uint32_t cp0_wmask;
 cp0_write_mask cp0_write_mask_inst(
 	.rst,
 	.sel  ( cp0_rsel  ),

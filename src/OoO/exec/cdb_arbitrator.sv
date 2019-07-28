@@ -14,7 +14,7 @@ module cdb_arbitrator(
 	output logic             [`BRANCH_RS_SIZE-1:0] branch_data_ack,
 
 	input  exception_t       [`LSU_RS_SIZE-1:0] lsu_ex,
-	input  data_memreq_t     [`LSU_RS_SIZE-1:0] lsu_memreq;
+	input  data_memreq_t     [`LSU_RS_SIZE-1:0] lsu_memreq,
 	input  uint32_t          [`LSU_RS_SIZE-1:0] lsu_data,
 	input  logic             [`LSU_RS_SIZE-1:0] lsu_data_ready,
 	input  rob_index_t       [`LSU_RS_SIZE-1:0] lsu_data_reorder,

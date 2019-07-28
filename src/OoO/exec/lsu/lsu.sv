@@ -11,7 +11,8 @@ module lsu(
 	output logic             fu_busy,
 
 	// dbus request
-	cpu_dbus_if.master       dbus,
+	output data_memreq_t     dbus_req,
+	input  data_memres_t     dbus_res,
 	output logic             dbus_request,
 	input  logic             dbus_ready,
 
@@ -28,11 +29,12 @@ module lsu(
 	output logic             data_ready
 );
 
-enum {
+enum logic [2:0] {
 	IDLE,
 	WAIT_MMU,
 	WAIT_DBUS,
 	WAIT_DATA,
+	WRITE,
 	EXCEPTION
 } state, state_d;
 
@@ -49,19 +51,19 @@ data_memreq_t memreq, pipe_memreq;
 
 assign req             = pipe_memreq;
 assign dbus_request    = (state == WAIT_DBUS);
-assign dbus.read       = pipe_memreq.read;
-assign dbus.write      = 1'b0;
-assign dbus.wrdata     = '0;
-assign dbus.address    = pipe_memreq.paddr;
-assign dbus.byteenable = pipe_memreq.byteenable;
-assign dbus.invalidate = 1'b0;
-assign dbus.invalidate_icache = 1'b0;
+assign dbus_req.read       = pipe_memreq.read;
+assign dbus_req.write      = 1'b0;
+assign dbus_req.wrdata     = '0;
+assign dbus_req.paddr      = pipe_memreq.paddr;
+assign dbus_req.byteenable = pipe_memreq.byteenable;
+assign dbus_req.invalidate = 1'b0;
+assign dbus_req.invalidate_icache = 1'b0;
 
 always_comb begin
 	memreq.invalidate_icache = '0;
 	memreq.invalidate = '0;
-	memreq.read       = rs.fu == FU_LOAD;
-	memreq.write      = rs.fu == FU_STORE;
+	memreq.read       = rs.decoded.fu == FU_LOAD;
+	memreq.write      = rs.decoded.fu == FU_STORE;
 	memreq.uncached   = mmu_result.uncached;
 	memreq.vaddr      = mmu_vaddr;
 	memreq.paddr      = mmu_result.phy_addr;
@@ -74,7 +76,7 @@ always_comb begin
 end
 
 always_comb begin
-	unique case(op)
+	unique case(rs.decoded.op)
 		OP_LW, OP_LL, OP_SW, OP_SC: begin
 			mem_wrdata = rs.operand[1];
 			mem_sel = 4'b1111;
@@ -135,7 +137,7 @@ end
 // exception
 logic daddr_unaligned;
 always_comb begin
-	unique case(op)
+	unique case(rs.decoded.op)
 		OP_LW, OP_LL, OP_SW, OP_SC:
 			daddr_unaligned = mmu_vaddr[0] | mmu_vaddr[1];
 		OP_LH, OP_LHU, OP_SH:
@@ -173,9 +175,9 @@ end
 
 // data
 uint32_t data_rd;
-assign data_ready = (state_d == IDLE);
+assign data_ready = rs.busy & (state_d == IDLE);
 assign fu_busy    = (state_d != IDLE);
-assign data_rd    = dbus.rddata;
+assign data_rd    = dbus_res.rddata;
 
 logic [1:0] addr_offset;
 uint32_t aligned_data_rd, unaligned_data_rd, ext_sel;
@@ -198,7 +200,7 @@ assign zero_ext_half_word = { 16'b0, aligned_data_rd[15:0] };
 assign unaligned_word = (pipe_memreq.wrdata & ~ext_sel) | (unaligned_data_rd & ext_sel);
 always_comb
 begin
-	if(op == OP_LWL) begin
+	if(rs.decoded.op == OP_LWL) begin
 		unaligned_data_rd = data_rd << ((3 - addr_offset) * 8);
 	end else begin
 		unaligned_data_rd = data_rd >> (addr_offset * 8);
@@ -222,9 +224,9 @@ logic [`DCACHE_PIPE_DEPTH-2:0] counter_n, counter_q;
 always_comb begin
 	counter_n = counter_q;
 
-	if(~dbus.stall) counter_n >>= 1;
+	if(~dbus_res.stall) counter_n >>= 1;
 
-	if(state = WAIT_DBUS) begin
+	if(state == WAIT_DBUS) begin
 		counter_n = '0;
 		counter_n[`DCACHE_PIPE_DEPTH-2] = 1'b1;
 	end
@@ -233,10 +235,10 @@ end
 always_ff @(posedge clk) begin
 	if(rst || flush) begin
 		counter_q <= '0;
-		state_d   <= IDLE;
+		state     <= IDLE;
 	end else begin
 		counter_q <= counter_n;
-		state_d   <= state;
+		state     <= state_d;
 	end
 end
 
@@ -258,13 +260,13 @@ always_comb begin
 		WAIT_MMU: if(mmu_ready) begin
 			if(|pipe_ex_mm)
 				state_d = EXCEPTION;
-			else state_d = rs.fu == FU_LOAD ? WAIT_DBUS : IDLE;
+			else state_d = rs.decoded.fu == FU_LOAD ? WAIT_DBUS : WRITE;
 		end
 		WAIT_DBUS: if(dbus_ready)
 			state_d = WAIT_DATA;
-		WAIT_DATA: if(counter_q[0] && ~dbus.stall)
+		WAIT_DATA: if(counter_q[0] && ~dbus_res.stall)
 			state_d = IDLE;
-		EXCEPTION:
+		EXCEPTION, WRITE:
 			state_d = IDLE;
 	endcase
 end

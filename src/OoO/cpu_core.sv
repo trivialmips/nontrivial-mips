@@ -9,6 +9,12 @@ module cpu_core(
 	cpu_dbus_if.master     dbus_uncached
 );
 
+assign dbus_uncached.read = '0;
+assign dbus_uncached.write = '0;
+assign dbus_uncached.address = '0;
+assign dbus_uncached.byteenable = '0;
+assign dbus_uncached.wrdata = '0;
+
 // flush and stall signals
 logic flush_if;
 logic flush_rob;
@@ -51,6 +57,8 @@ branch_resolved_t resolved_branch;
 logic       [1:0] alu_ready, branch_ready, lsu_ready;
 rs_index_t  [1:0] alu_index, branch_index, lsu_index;
 logic       [1:0] alu_taken, branch_taken, lsu_taken;
+logic       lsu_store_push, lsu_store_full;
+data_memreq_t lsu_store_memreq;
 reserve_station_t [1:0] issue_rs;
 
 // MMU

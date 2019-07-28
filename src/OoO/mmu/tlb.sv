@@ -5,9 +5,9 @@ module tlb(
 	input  logic        rst,
 	input  logic [7:0]  asid,
 	input  virt_t       inst_vaddr,
-	input  virt_t       [`ISSUE_NUM-1:0] data_vaddr,
+	input  virt_t       data_vaddr,
 	output tlb_result_t inst_result,
-	output tlb_result_t [`ISSUE_NUM-1:0] data_result,
+	output tlb_result_t data_result,
 
 	// for TLBR/TLBWI/TLBWR
 	input  tlb_index_t  tlbrw_index,
@@ -45,14 +45,12 @@ tlb_lookup inst_lookup(
 	.result(inst_result)
 );
 
-for(genvar i = 0; i < `ISSUE_NUM; ++i) begin : gen_data_lookup
-	tlb_lookup data_lookup(
-		.entries,
-		.virt_addr(data_vaddr[i]),
-		.asid,
-		.result(data_result[i])
-	);
-end
+tlb_lookup data_lookup(
+	.entries,
+	.virt_addr(data_vaddr),
+	.asid,
+	.result(data_result)
+);
 
 tlb_result_t tlbp_result;
 tlb_lookup tlbp_lookup(

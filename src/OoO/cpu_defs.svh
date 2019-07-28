@@ -290,6 +290,21 @@ typedef struct packed {
 	logic invalid, miss, dirty, illegal;
 } mmu_result_t;
 
+// memory request for load and store
+typedef struct packed {
+	logic invalidate, invalidate_icache;
+	logic read, write, uncached;
+	logic [3:0] byteenable;
+	virt_t vaddr;
+	phys_t paddr;
+	uint32_t wrdata;
+} data_memreq_t;
+
+typedef struct packed {
+	logic    stall;
+	uint32_t rddata;
+} data_memres_t;
+
 // ROB entry
 typedef struct packed {
 	data_memreq_t     memreq;

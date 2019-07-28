@@ -164,7 +164,7 @@ lsu_rs lsu_rs_inst(
 	.store_full   ( lsu_store_full   ),
 	.mmu_vaddr,
 	.mmu_result,
-	.dbus
+	.dbus,
 	.cdb
 );
 

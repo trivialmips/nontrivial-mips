@@ -8,10 +8,11 @@ module lsu_rs(
 	input  logic             [1:0] rs_taken,
 	output logic             [1:0] rs_ready,
 	output rs_index_t        [1:0] rs_index,
+	input  reserve_station_t [1:0] rs_i,
 
 	// result
 	output exception_t       [`LSU_RS_SIZE-1:0] ex,
-	output data_memreq_t     [`LSU_RS_SIZE-1:0] memreq;
+	output data_memreq_t     [`LSU_RS_SIZE-1:0] memreq,
 	output uint32_t          [`LSU_RS_SIZE-1:0] data,
 	output logic             [`LSU_RS_SIZE-1:0] data_ready,
 	output rob_index_t       [`LSU_RS_SIZE-1:0] data_reorder,
@@ -36,25 +37,30 @@ module lsu_rs(
 // *_q:  current status
 // *_n:  next status
 // *_ro: after reading operands
+logic [`LSU_RS_SIZE-1:0] rs_valid, fu_busy;
 reserve_station_t [`LSU_RS_SIZE-1:0] rs_n, rs_ro, rs_q;
 logic      [1:0] rs_ready_n, rs_ready_q;
 rs_index_t [1:0] rs_index_n, rs_index_q;
 assign rs_index = rs_index_q;
 assign rs_ready = rs_ready_q;
 
+for(genvar i = 0; i < `LSU_RS_SIZE; ++i) begin: gen_rs_valid
+	assign rs_valid[i] = rs_n[i].busy & &rs_n[i].operand_ready;
+end
+
 // allocate ready RS
 always_comb begin
 	rs_ready_n = '0;
 	rs_index_n = '0;
 	for(int i = 0; i < `LSU_RS_SIZE; ++i) begin
-		if(~rs_n[i].busy) begin
+		if(~rs_n[i].busy & ~fu_busy[i]) begin
 			rs_ready_n[0] = 1'b1;
 			rs_index_n[0] = i;
 		end
 	end
 
 	for(int i = 0; i < `LSU_RS_SIZE; ++i) begin
-		if(~rs_n[i].busy && rs_index_n[0] != i) begin
+		if(~rs_n[i].busy && ~fu_busy[i] && rs_index_n[0] != i) begin
 			rs_ready_n[1] = 1'b1;
 			rs_index_n[1] = i;
 		end
@@ -83,19 +89,22 @@ for(genvar i = 0; i < `LSU_RS_SIZE; ++i) begin: gen_rs
 	);
 end
 
-cpu_dbus_if store_dbus();
+data_memreq_t store_dbus;
+data_memreq_t [`LSU_RS_SIZE-1:0] fu_dbus;
+data_memres_t dbus_res;
 logic store_dbus_req, store_dbus_ready, store_empty;
-cpu_dbus_if [`LSU_RS_SIZE-1:0] fu_dbus();
-logic [`LSU_RS_SIZE-1:0] rs_valid, fu_busy;
 logic [`LSU_RS_SIZE-1:0] fu_dbus_req, fu_dbus_ready;
 logic [`LSU_RS_SIZE-1:0] fu_mmu_req, fu_mmu_ready;
 virt_t [`LSU_RS_SIZE-1:0] fu_mmu_vaddr;
+
+assign dbus_res.stall  = dbus.stall;
+assign dbus_res.rddata = dbus.rddata;
 
 // store unit
 store_unit store_unit_inst(
 	.clk,
 	.rst,
-	.dbus         ( store_dbus       ),
+	.dbus_req     ( store_dbus       ),
 	.dbus_request ( store_dbus_req   ),
 	.dbus_ready   ( store_dbus_ready ),
 	.push         ( store_push       ),
@@ -141,7 +150,8 @@ for(genvar i = 0; i < `LSU_RS_SIZE; ++i) begin: gen_lsu
 		.rs           ( rs_q[i]          ),
 		.rs_valid     ( rs_valid[i]      ),
 		.fu_busy      ( fu_busy[i]       ),
-		.dbus         ( fu_dbus[i]       ),
+		.dbus_req     ( fu_dbus[i]       ),
+		.dbus_res     ( dbus_res         ),
 		.dbus_request ( fu_dbus_req[i]   ),
 		.dbus_ready   ( fu_dbus_ready[i] ),
 		.mmu_vaddr    ( fu_mmu_vaddr[i]  ),
