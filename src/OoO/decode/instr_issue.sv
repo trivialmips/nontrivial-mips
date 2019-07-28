@@ -16,6 +16,10 @@ module instr_issue(
 	input  rs_index_t          [1:0] alu_index,
 	output logic               [1:0] alu_taken,
 
+	input  logic               [1:0] lsu_ready,
+	input  rs_index_t          [1:0] lsu_index,
+	output logic               [1:0] lsu_taken,
+
 	input  logic               [1:0] branch_ready,
 	input  rs_index_t          [1:0] branch_index,
 	output logic               [1:0] branch_taken,
@@ -54,7 +58,8 @@ assign instr_valid[1] = fetch_entry[1].valid
 	&& rs[0].busy
 	&& ~decoded[1].is_controlflow
 	&& decoded[0].fu != FU_CP0
-	&& decoded[1].fu != FU_CP0;
+	&& decoded[1].fu != FU_CP0
+	&& ~(decoded[0].fu == FU_STORE && decoded[1].fu == FU_STORE);
 
 // dispatch the first instruction
 dispatcher dispatcher_instr_1(
@@ -69,6 +74,9 @@ dispatcher dispatcher_instr_1(
 	.alu_ready       ( alu_ready[0]         ),
 	.alu_taken       ( alu_taken[0]         ),
 	.alu_index       ( alu_index[0]         ),
+	.lsu_ready       ( lsu_ready[0]         ),
+	.lsu_taken       ( lsu_taken[0]         ),
+	.lsu_index       ( lsu_index[0]         ),
 	.branch_ready    ( branch_ready[0]      ),
 	.branch_taken    ( branch_taken[0]      ),
 	.branch_index    ( branch_index[0]      ),
@@ -80,12 +88,14 @@ dispatcher dispatcher_instr_1(
 
 // resolve data-related in a issue packet
 register_status_t [1:0] reg_status_2;
-logic alu_ready_2;
-rs_index_t alu_index_2;
+logic alu_ready_2, lsu_ready_2;
+rs_index_t alu_index_2, alu_index_2;
 rob_index_t rob_reorder_2;
 
 assign alu_ready_2   = alu_ready[1] | (alu_ready[0] & ~alu_taken[0]);
 assign alu_index_2   = alu_ready[1] ? alu_index[1] : alu_index[0];
+assign lsu_ready_2   = lsu_ready[1] | (lsu_ready[0] & ~lsu_taken[0]);
+assign lsu_index_2   = lsu_ready[1] ? lsu_index[1] : lsu_index[0];
 assign rob_reorder_2 = rs[0].busy ? rob_reorder[1] : rob_reorder[0];
 
 always_comb begin
@@ -114,6 +124,9 @@ dispatcher dispatcher_instr_2(
 	.alu_ready       ( alu_ready_2          ),
 	.alu_index       ( alu_index_2          ),
 	.alu_taken       ( alu_taken[1]         ),
+	.lsu_ready       ( lsu_ready_2          ),
+	.lsu_index       ( lsu_index_2          ),
+	.lsu_taken       ( lsu_taken[1]         ),
 	.branch_ready    ( 1'b0                 ),
 	.branch_taken    ( /* empty */          ),
 	.branch_index    ( '0                   ),

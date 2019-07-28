@@ -15,7 +15,7 @@ module alu_rs(
 	output uint32_t    [`ALU_RS_SIZE-1:0] data,
 	output logic       [`ALU_RS_SIZE-1:0] data_ready,
 	output rob_index_t [`ALU_RS_SIZE-1:0] data_reorder,
-	input  logic       [`ALU_FU_SIZE-1:0] data_ack,
+	input  logic       [`ALU_RS_SIZE-1:0] data_ack,
 
 	// CDB
 	input  cdb_packet_t      cdb

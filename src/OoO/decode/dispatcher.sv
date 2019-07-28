@@ -26,6 +26,10 @@ module dispatcher(
 	input  rs_index_t        alu_index,
 	output logic             alu_taken,
 
+	input  logic             lsu_ready,
+	input  rs_index_t        lsu_index,
+	output logic             lsu_taken,
+
 	input  logic             branch_ready,
 	input  rs_index_t        branch_index,
 	output logic             branch_taken,
@@ -66,6 +70,7 @@ always_comb begin
 	alu_taken    = 1'b0;
 	branch_taken = 1'b0;
 	cp0_taken    = 1'b0;
+	lsu_taken    = 1'b0;
 	unique case(decoded.fu)
 		FU_ALU: begin
 			alu_taken = alu_ready & valid & ~stall;
@@ -76,6 +81,11 @@ always_comb begin
 			branch_taken = branch_ready & valid & ~stall;
 			rs.busy      = branch_ready & valid;
 			rs.index     = branch_index;
+		end
+		FU_LOAD, FU_STORE: begin
+			lsu_taken = lsu_ready & valid & ~stall;
+			rs.busy   = lsu_ready & valid;
+			rs.index  = lsu_index;
 		end
 		FU_CP0: begin
 			cp0_taken    = cp0_ready & valid & ~stall;

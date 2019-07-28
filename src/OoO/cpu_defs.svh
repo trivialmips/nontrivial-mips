@@ -190,6 +190,8 @@ typedef enum logic [2:0] {
 	FU_ALU,
 	FU_BRANCH,
 	FU_MUL,
+	FU_LOAD,
+	FU_STORE,
 	FU_CP0
 } funct_t;
 
@@ -290,7 +292,7 @@ typedef struct packed {
 
 // ROB entry
 typedef struct packed {
-	phys_t mem_paddr;
+	data_memreq_t     memreq;
 	branch_resolved_t resolved_branch;
 } cdb_union_data_t;
 

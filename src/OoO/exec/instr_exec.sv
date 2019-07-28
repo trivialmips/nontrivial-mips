@@ -15,6 +15,11 @@ module instr_exec(
 	output logic             [1:0] alu_ready,
 	output rs_index_t        [1:0] alu_index,
 
+	// LSUs
+	input  logic             [1:0] lsu_taken,
+	output logic             [1:0] lsu_ready,
+	output rs_index_t        [1:0] lsu_index,
+
 	// branch
 	input  logic             [1:0] branch_taken,
 	output logic             [1:0] branch_ready,
@@ -28,8 +33,20 @@ module instr_exec(
 	output reg_addr_t        cp0_raddr,
 	output logic [2:0]       cp0_rsel,
 
+	// LSU store
+	input  data_memreq_t     lsu_store_memreq,
+	input  logic             lsu_store_push,
+	output logic             lsu_store_full,
+
 	// reserve station
 	input  reserve_station_t [1:0] rs_i,
+
+	// MMU
+	input  mmu_result_t      mmu_result,
+	output virt_t            mmu_vaddr,
+
+	// DBus
+	cpu_dbus_if.master       dbus,
 
 	// CDB
 	output cdb_packet_t      cdb_o
@@ -52,6 +69,14 @@ logic       [`BRANCH_RS_SIZE-1:0] branch_data_ready;
 logic       [`BRANCH_RS_SIZE-1:0] branch_data_ack;
 rob_index_t [`BRANCH_RS_SIZE-1:0] branch_data_reorder;
 branch_resolved_t [`BRANCH_RS_SIZE-1:0] branch_resolved;
+
+// LSU information
+uint32_t      [`LSU_RS_SIZE-1:0] lsu_data;
+logic         [`LSU_RS_SIZE-1:0] lsu_data_ready;
+logic         [`LSU_RS_SIZE-1:0] lsu_data_ack;
+rob_index_t   [`LSU_RS_SIZE-1:0] lsu_data_reorder;
+data_memreq_t [`LSU_RS_SIZE-1:0] lsu_memreq;
+exception_t   [`LSU_RS_SIZE-1:0] lsu_ex;
 
 // CP0 information
 uint32_t    cp0_data;
@@ -117,6 +142,29 @@ branch_rs branch_rs_inst(
 	.data_reorder ( branch_data_reorder ),
 	.data_ack     ( branch_data_ack     ),
 	.resolved     ( branch_resolved     ),
+	.cdb
+);
+
+lsu_rs lsu_rs_inst(
+	.clk,
+	.rst,
+	.flush,
+	.rs_taken ( lsu_taken ),
+	.rs_ready ( lsu_ready ),
+	.rs_index ( lsu_index ),
+	.rs_i     ( rs_ro     ),
+	.ex           ( lsu_ex           ),
+	.memreq       ( lsu_memreq       ),
+	.data         ( lsu_data         ),
+	.data_ready   ( lsu_data_ready   ),
+	.data_reorder ( lsu_data_reorder ),
+	.data_ack     ( lsu_data_ack     ),
+	.store_push   ( lsu_store_push   ),
+	.store_memreq ( lsu_store_memreq ),
+	.store_full   ( lsu_store_full   ),
+	.mmu_vaddr,
+	.mmu_result,
+	.dbus
 	.cdb
 );
 

@@ -48,16 +48,16 @@ instr_fetch_memreq_t icache_req;
 branch_resolved_t resolved_branch;
 
 // instruction issue/exec
-logic       [1:0] alu_ready, branch_ready;
-rs_index_t  [1:0] alu_index, branch_index;
-logic       [1:0] alu_taken, branch_taken;
+logic       [1:0] alu_ready, branch_ready, lsu_ready;
+rs_index_t  [1:0] alu_index, branch_index, lsu_index;
+logic       [1:0] alu_taken, branch_taken, lsu_taken;
 reserve_station_t [1:0] issue_rs;
 
 // MMU
 virt_t       mmu_inst_vaddr;
-virt_t       [`ISSUE_NUM-1:0] mmu_data_vaddr;
+virt_t       mmu_data_vaddr;
 mmu_result_t mmu_inst_result;
-mmu_result_t [`ISSUE_NUM-1:0] mmu_data_result;
+mmu_result_t mmu_data_result;
 logic        tlbrw_we;
 tlb_index_t  tlbrw_index;
 tlb_entry_t  tlbrw_wdata;
@@ -186,6 +186,9 @@ instr_issue instr_issue_inst(
 	.alu_ready,
 	.alu_index,
 	.alu_taken,
+	.lsu_ready,
+	.lsu_index,
+	.lsu_taken,
 	.branch_taken,
 	.branch_ready,
 	.branch_index,
@@ -210,6 +213,9 @@ instr_exec instr_exec_inst(
 	.alu_taken,
 	.alu_ready,
 	.alu_index,
+	.lsu_taken,
+	.lsu_ready,
+	.lsu_index,
 	.branch_taken,
 	.branch_ready,
 	.branch_index,
@@ -219,8 +225,14 @@ instr_exec instr_exec_inst(
 	.cp0_rdata,
 	.cp0_raddr,
 	.cp0_rsel,
-	.rs_i  ( issue_rs ),
-	.cdb_o ( cdb      )
+	.lsu_store_memreq,
+	.lsu_store_push,
+	.lsu_store_full,
+	.rs_i       ( issue_rs        ),
+	.mmu_result ( mmu_data_result ),
+	.mmu_vaddr  ( mmu_data_vaddr  ),
+	.dbus       ( dbus            ),
+	.cdb_o      ( cdb             )
 );
 
 instr_commit instr_commit_inst(
@@ -228,6 +240,9 @@ instr_commit instr_commit_inst(
 	.rob_ack     ( rob_pop            ),
 	.rob_reorder ( rob_reorder_commit ),
 	.rob_empty,
+	.lsu_store_memreq,
+	.lsu_store_push,
+	.lsu_store_full,
 	.reg_we,
 	.reg_waddr,
 	.reg_wdata,
