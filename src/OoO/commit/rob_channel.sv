@@ -44,9 +44,11 @@ assign empty  = (cnt_q == 0);
 assign data_o = mem_q[read_pointer_q];
 
 // read ROB
-for(genvar i = 0; i < 4; ++i) begin: gen_read_rob
-	assign rob_rdata[i]       = mem_q[rob_raddr[i]].value;
-	assign rob_rdata_valid[i] = ~mem_q[rob_raddr[i]].busy & mem_q[rob_raddr[i]].valid;
+always_comb begin
+	for(int i = 0; i < 4; ++i) begin
+		rob_rdata[i]       = mem_q[rob_raddr[i]].value;
+		rob_rdata_valid[i] = ~mem_q[rob_raddr[i]].busy & mem_q[rob_raddr[i]].valid;
+	end
 end
 
 // use CDB to update ROB
