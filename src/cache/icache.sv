@@ -119,17 +119,22 @@ assign ibus.stall = (state_d != IDLE) && ~pipe_flush && pipe_read || state == IN
 assign ibus.ready = state != INVALIDATING;
 
 // send rddata next cycle
-logic [SET_ASSOC-1:0] pipe_hit;
-logic [SET_ASSOC-1:0][DATA_WIDTH-1:0] pipe_rdata, pipe_rdata_extra;
 logic pipe_rddata_valid, pipe_rddata_extra_valid;
+uint64_t rddata_n, rddata_extra_n;
+uint64_t rddata_q, rddata_extra_q;
 always_comb begin
 	ibus.valid        = pipe_rddata_valid;
 	ibus.extra_valid  = pipe_rddata_extra_valid;
-	ibus.rddata       = '0;
-	ibus.rddata_extra = '0;
+	ibus.rddata       = rddata_q;
+	ibus.rddata_extra = rddata_extra_q;
+end
+
+always_comb begin
+	rddata_n = '0;
+	rddata_extra_n = '0;
 	for(int i = 0; i < SET_ASSOC; ++i) begin
-		ibus.rddata |= {DATA_WIDTH{pipe_hit[i]}} & pipe_rdata[i];
-		ibus.rddata_extra |= {DATA_WIDTH{pipe_hit[i]}} & pipe_rdata_extra[i];
+		rddata_n |= {DATA_WIDTH{hit[i]}} & data_rdata[i][get_offset(pipe_addr)];
+		rddata_extra_n |= {DATA_WIDTH{hit[i]}} & data_rdata[i][next_offset];
 	end
 end
 
@@ -137,19 +142,15 @@ offset_t next_offset;
 assign next_offset = get_offset(pipe_addr) + 1;
 always_ff @(posedge clk) begin
 	if(rst) begin
-		pipe_hit <= '0;
-		pipe_rdata <= '0;
-		pipe_rdata_extra <= '0;
-		pipe_rddata_valid <= 1'b0;
-		pipe_rddata_extra_valid <= 1'b0;
+		pipe_rddata_valid <= '0;
+		pipe_rddata_extra_valid <= '0;
+		rddata_q <= '0;
+		rddata_extra_q <= '0;
 	end else begin
-		pipe_hit <= hit;
 		pipe_rddata_valid <= pipe_read & ~ibus.stall & ~ibus.flush_2;
 		pipe_rddata_extra_valid <= ~&get_offset(pipe_addr);
-		for(int i = 0; i < SET_ASSOC; ++i) begin
-			pipe_rdata[i]       <= data_rdata[i][get_offset(pipe_addr)];
-			pipe_rdata_extra[i] <= data_rdata[i][next_offset];
-		end
+		rddata_q <= rddata_n;
+		rddata_extra_q <= rddata_extra_n;
 	end
 end
 
