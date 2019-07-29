@@ -28,7 +28,7 @@ dtype [REG_NUM-1:0] regs, regs_wrst, regs_new;
 
 // read data
 for(genvar i = 0; i < READ_PORTS; ++i) begin : gen_read
-	assign rdata[i] = regs_wrst[raddr[i]];
+	assign rdata[i] = regs[raddr[i]];
 end
 
 // write data

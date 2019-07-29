@@ -153,7 +153,8 @@ always_comb begin
 		rs_o[1].operand_ready[1] = 1'b0;
 		rs_o[1].operand_addr[1]  = rs[0].reorder;
 	end
-	if(stall) rs_o = '0;
+	rs_o[0].busy &= ~stall;
+	rs_o[1].busy &= ~stall;
 end
 
 // generate decoders and read the register file
