@@ -55,8 +55,8 @@ assign stall = rob_full
 
 always_comb begin
 	if(rob_packet[0].ex.valid) begin
-		fetch_ack        = 1'b1;
-		rob_packet_valid = 1'b0;
+		fetch_ack        = 1;
+		rob_packet_valid = 1'b1;
 	end else begin
 		fetch_ack        = rs_o[0].busy + rs_o[1].busy;
 		rob_packet_valid = rs_o[0].busy;
