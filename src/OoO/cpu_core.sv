@@ -276,6 +276,21 @@ instr_exec instr_exec_inst(
 	.cdb_o       ( cdb                )
 );
 
+// resolve interrupt requests
+logic [7:0] pipe_interrupt, interrupt_flag;
+assign interrupt_flag = cp0_regs.status.im & {
+	cp0_timer_int,
+	intr[4:0],
+	cp0_regs.cause.ip[1:0]
+};
+
+always_ff @(posedge clk) begin
+	if(rst || except_req.valid)
+		pipe_interrupt <= '0;
+	else if(pipe_interrupt == '0)
+		pipe_interrupt <= interrupt_flag;
+end
+
 instr_commit instr_commit_inst(
 	.rob_packet  ( rob_pop_data       ),
 	.rob_ack     ( rob_pop            ),
@@ -290,7 +305,7 @@ instr_commit instr_commit_inst(
 	.resolved_branch,
 	.except_req,
 	.cp0_regs,
-	.interrupt_flag ( '0 ),
+	.interrupt_flag ( pipe_interrupt  ),
 	.commit_cp0 ( cp0_commit  ),
 	.commit_mul ( hilo_commit ),
 	.commit_flush,
