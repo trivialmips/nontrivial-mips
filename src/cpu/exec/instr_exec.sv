@@ -236,22 +236,44 @@ always_comb begin
 `endif
 end
 
+uint32_t sw_reg2;
+assign sw_reg2 = reg2;
+/* 
+assign reg_raddr = data.decoded.rs2;
+always_comb begin
+	sw_reg2 = reg_rdata;
+	for(int j = 0; j < `ISSUE_NUM; ++j)
+		if(pipeline_wb[j].rd == data.decoded.rs2)
+			sw_reg2 = pipeline_wb[j].wdata;
+	for(int j = 0; j < `ISSUE_NUM; ++j)
+		if(pipeline_mem[j].rd == data.decoded.rs2)
+			sw_reg2 = pipeline_mem[j].wdata;
+	for(int j = 0; j < `ISSUE_NUM; ++j)
+		if(pipeline_dcache[1][j].decoded.rd == data.decoded.rs2)
+			sw_reg2 = pipeline_dcache[1][j].result;
+	for(int j = 0; j < `ISSUE_NUM; ++j)
+		if(pipeline_dcache[0][j].decoded.rd == data.decoded.rs2)
+			sw_reg2 = pipeline_dcache[0][j].result;
+	if(data.decoded.rs2 == '0)
+		sw_reg2 = '0;
+end */
+
 always_comb begin
 	unique case(op)
 		OP_LW, OP_LL, OP_SW, OP_SC: begin
-			mem_wrdata = reg2;
+			mem_wrdata = sw_reg2;
 			mem_sel = 4'b1111;
 		end
 		OP_LB, OP_LBU, OP_SB: begin
-			mem_wrdata = reg2 << (mmu_vaddr[1:0] * 8);
+			mem_wrdata = sw_reg2 << (mmu_vaddr[1:0] * 8);
 			mem_sel = 4'b0001 << mmu_vaddr[1:0];
 		end
 		OP_LH, OP_LHU, OP_SH: begin
-			mem_wrdata = mmu_vaddr[1] ? (reg2 << 16) : reg2;
+			mem_wrdata = mmu_vaddr[1] ? (sw_reg2 << 16) : sw_reg2;
 			mem_sel = mmu_vaddr[1] ? 4'b1100 : 4'b0011;
 		end
 		OP_LWL: begin
-			mem_wrdata = reg2;
+			mem_wrdata = sw_reg2;
 			unique case(mmu_vaddr[1:0])
 				2'd0: mem_sel = 4'b1000;
 				2'd1: mem_sel = 4'b1100;
@@ -260,7 +282,7 @@ always_comb begin
 			endcase
 		end
 		OP_LWR: begin
-			mem_wrdata = reg2;
+			mem_wrdata = sw_reg2;
 			unique case(mmu_vaddr[1:0])
 				2'd0: mem_sel = 4'b1111;
 				2'd1: mem_sel = 4'b0111;
@@ -270,7 +292,7 @@ always_comb begin
 		end
 		OP_SWL:
 		begin
-			mem_wrdata = reg2 >> ((3 - mmu_vaddr[1:0]) * 8);
+			mem_wrdata = sw_reg2 >> ((3 - mmu_vaddr[1:0]) * 8);
 			unique case(mmu_vaddr[1:0])
 				2'd0: mem_sel = 4'b0001;
 				2'd1: mem_sel = 4'b0011;
@@ -280,7 +302,7 @@ always_comb begin
 		end
 		OP_SWR:
 		begin
-			mem_wrdata = reg2 << (mmu_vaddr[1:0] * 8);
+			mem_wrdata = sw_reg2 << (mmu_vaddr[1:0] * 8);
 			unique case(mmu_vaddr[1:0])
 				2'd0: mem_sel = 4'b1111;
 				2'd1: mem_sel = 4'b1110;

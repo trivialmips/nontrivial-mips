@@ -36,6 +36,16 @@ function logic is_load_related(
 	);
 endfunction
 
+function logic is_load_related_store(
+	input decoded_instr_t id,
+	input decoded_instr_t ex
+);
+	return ex.is_load & (
+	    ex.rd != '0 && (id.rs1 == ex.rd
+			|| id.rs2 == ex.rd && ~id.is_store)
+	);
+endfunction
+
 function logic is_data_related(
 	input decoded_instr_t id1,
 	input decoded_instr_t id2
@@ -63,7 +73,7 @@ always_comb begin
 			load_related[i] |= is_load_related(
 				id_decoded[i], ex_decoded[j]);
 			for(int k = 0; k < `DCACHE_PIPE_DEPTH - 1; ++k) begin
-				load_related[i] |= is_load_related(
+				load_related[i] |= is_load_related_store(
 					id_decoded[i], dcache_decoded[k][j]);
 			end
 		end

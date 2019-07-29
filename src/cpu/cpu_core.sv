@@ -20,8 +20,8 @@ logic delayslot_not_exec, hold_resolved_branch;
 logic      [1:0] reg_we;
 uint32_t   [1:0] reg_wdata;
 reg_addr_t [1:0] reg_waddr;
-uint32_t   [3:0] reg_rdata;
-reg_addr_t [3:0] reg_raddr;
+uint32_t   [5:0] reg_rdata;
+reg_addr_t [5:0] reg_raddr;
 
 // waddr is 0 if we do not write registers
 assign reg_we[0] = 1'b1;
@@ -102,7 +102,7 @@ regfile #(
 	.REG_NUM     ( `REG_NUM ),
 	.DATA_WIDTH  ( 32       ),
 	.WRITE_PORTS ( 2        ),
-	.READ_PORTS  ( 4        ),
+	.READ_PORTS  ( 6        ),
 	.ZERO_KEEP   ( 1        )
 ) regfile_inst (
 	.clk,
@@ -170,8 +170,8 @@ decode_and_issue decode_issue_inst(
 	.pipeline_mem,
 	.pipeline_wb,
 	.pipeline_decode,
-	.reg_raddr,
-	.reg_rdata,
+	.reg_raddr    ( reg_raddr[3:0] ),
+	.reg_rdata    ( reg_rdata[3:0] ),
 	.stall_req    ( stall_from_id  )
 );
 
@@ -309,7 +309,12 @@ assign tlbrw_index = pipeline_exec_d[0].tlbreq.tlbwi ? cp0_regs.index : cp0_regs
 
 dbus_mux dbus_mux_inst(
 	.except_req,
-	.data ( pipeline_exec_d ),
+	.reg_raddr   ( reg_raddr[5:4]  ),
+	.reg_rdata   ( reg_rdata[5:4]  ),
+	.pipeline_dcache ( pipeline_dcache[1] ),
+	.pipeline_mem,
+	.pipeline_wb,
+	.data      ( pipeline_exec_d ),
 	.dbus,
 	.dbus_uncached
 );
