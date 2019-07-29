@@ -33,7 +33,11 @@ assign signed_ext_half_word = { {16{aligned_data_rd[15]}}, aligned_data_rd[15:0]
 assign zero_ext_byte      = { 24'b0, aligned_data_rd[7:0] };
 assign zero_ext_half_word = { 16'b0, aligned_data_rd[15:0] };
 // for LWL/LWR, memreq.wdata = reg2
-assign unaligned_word = (data.memreq.wrdata & ~ext_sel) | (unaligned_data_rd & ext_sel);
+generate if(`CPU_LWLR_ENABLED) begin
+	assign unaligned_word = (data.memreq.wrdata & ~ext_sel) | (unaligned_data_rd & ext_sel);
+end else begin
+	assign unaligned_word = '0;
+end endgenerate
 always_comb
 begin
 	if(op == OP_LWL) begin

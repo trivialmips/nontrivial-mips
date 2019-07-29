@@ -12,6 +12,7 @@
 `define CPU_MMU_ENABLED      `COMPILE_FULL
 `define CPU_LLSC_ENABLED     `COMPILE_FULL
 `define CPU_MUTEX_PRIV       `COMPILE_FULL
+`define CPU_LWLR_ENABLED     `COMPILE_FULL
 
 `define FETCH_NUM            2
 `define ISSUE_NUM            2
