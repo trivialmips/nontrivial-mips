@@ -25,6 +25,12 @@ module instr_exec(
 	output logic             [1:0] branch_ready,
 	output rs_index_t        [1:0] branch_index,
 
+	// multiplier
+	input  logic             mul_taken,
+	output logic             mul_valid,
+	output uint64_t          hilo_result,
+	input  uint64_t          hilo_data,
+
 	// CP0
 	input  logic             cp0_taken,
 	output cp0_req_t         cp0_req,
@@ -37,6 +43,7 @@ module instr_exec(
 	input  data_memreq_t     lsu_store_memreq,
 	input  logic             lsu_store_push,
 	output logic             lsu_store_full,
+	output logic             lsu_store_empty,
 
 	// reserve station
 	input  reserve_station_t [1:0] rs_i,
@@ -82,6 +89,12 @@ logic         [`LSU_RS_SIZE-1:0] lsu_data_ack;
 rob_index_t   [`LSU_RS_SIZE-1:0] lsu_data_reorder;
 data_memreq_t [`LSU_RS_SIZE-1:0] lsu_memreq;
 exception_t   [`LSU_RS_SIZE-1:0] lsu_ex;
+
+// multiplier information
+uint32_t    mul_data;
+logic       mul_data_ready;
+logic       mul_data_ack;
+rob_index_t mul_data_reorder;
 
 // CP0 information
 uint32_t    cp0_data;
@@ -167,12 +180,29 @@ lsu_rs lsu_rs_inst(
 	.store_push   ( lsu_store_push   ),
 	.store_memreq ( lsu_store_memreq ),
 	.store_full   ( lsu_store_full   ),
+	.store_empty  ( lsu_store_empty  ),
 	.mmu_vaddr,
 	.mmu_result,
 	.rob_packet,
 	.rob_reorder,
 	.dbus,
 	.dbus_uncached,
+	.cdb
+);
+
+mul_rs mul_rs_inst(
+	.clk,
+	.rst,
+	.flush,
+	.rs_taken     ( mul_taken        ),
+	.rs_i         ( rs_ro[0]         ),
+	.result       ( mul_data         ),
+	.data_ready   ( mul_data_ready   ),
+	.data_reorder ( mul_data_reorder ),
+	.data_ack     ( mul_data_ack     ),
+	.hilo_valid   ( mul_valid        ),
+	.hilo_result,
+	.hilo_data,
 	.cdb
 );
 

@@ -30,6 +30,10 @@ register_status_t [1:0] reg_status_wdata;
 reg_addr_t        [1:0] reg_status_waddr;
 register_status_t [3:0] reg_status_rdata;
 
+// HILO
+logic hilo_lock, hilo_commit, hilo_ready, hilo_data_valid;
+uint64_t hilo_in, hilo_out;
+
 // CDB
 cdb_packet_t cdb;
 
@@ -52,7 +56,7 @@ branch_resolved_t resolved_branch;
 logic       [1:0] alu_ready, branch_ready, lsu_ready;
 rs_index_t  [1:0] alu_index, branch_index, lsu_index;
 logic       [1:0] alu_taken, branch_taken, lsu_taken;
-logic       lsu_store_push, lsu_store_full, lsu_locked;
+logic       lsu_store_push, lsu_store_full, lsu_store_empty, lsu_locked;
 data_memreq_t lsu_store_memreq;
 reserve_station_t [1:0] issue_rs;
 
@@ -142,6 +146,18 @@ regfile_status #(
 	.rdata    ( reg_status_rdata   )
 );
 
+hilo hilo_inst(
+	.clk,
+	.rst,
+	.flush      ( flush_regstat   ),
+	.lock       ( hilo_lock       ),
+	.commit     ( hilo_commit     ),
+	.ready      ( hilo_ready      ),
+	.data_valid ( hilo_data_valid ),
+	.data_i     ( hilo_in         ),
+	.data_o     ( hilo_out        )
+);
+
 rob rob_inst(
 	.clk,
 	.rst,
@@ -196,6 +212,8 @@ instr_issue instr_issue_inst(
 	.branch_taken,
 	.branch_ready,
 	.branch_index,
+	.mul_ready ( hilo_ready  ),
+	.mul_taken ( hilo_lock   ),
 	.cp0_ready ( ~cp0_locked ),
 	.cp0_taken ( cp0_lock    ),
 	.rs_o ( issue_rs ),
@@ -211,6 +229,7 @@ lsu_status lsu_status_inst(
 	.clk,
 	.rst,
 	.flush        ( flush_is       ),
+	.lsu_store_empty,
 	.rs           ( issue_rs       ),
 	.commit_store ( lsu_store_push ),
 	.locked       ( lsu_locked     )
@@ -232,15 +251,20 @@ instr_exec instr_exec_inst(
 	.branch_taken,
 	.branch_ready,
 	.branch_index,
-	.cp0_taken  ( cp0_lock   ),
-	.cp0_req    ( cp0_reg_wr ),
-	.cp0_tlbreq ( tlbreq     ),
+	.mul_taken   ( hilo_lock  ),
+	.mul_valid   ( hilo_data_valid ),
+	.hilo_result ( hilo_in    ),
+	.hilo_data   ( hilo_out   ),
+	.cp0_taken   ( cp0_lock   ),
+	.cp0_req     ( cp0_reg_wr ),
+	.cp0_tlbreq  ( tlbreq     ),
 	.cp0_rdata,
 	.cp0_raddr,
 	.cp0_rsel,
 	.lsu_store_memreq,
 	.lsu_store_push,
 	.lsu_store_full,
+	.lsu_store_empty,
 	.rs_i        ( issue_rs           ),
 	.mmu_result  ( mmu_data_result    ),
 	.mmu_vaddr   ( mmu_data_vaddr     ),
@@ -266,7 +290,8 @@ instr_commit instr_commit_inst(
 	.except_req,
 	.cp0_regs,
 	.interrupt_flag ( '0 ),
-	.commit_cp0 ( cp0_commit ),
+	.commit_cp0 ( cp0_commit  ),
+	.commit_mul ( hilo_commit ),
 	.commit_flush,
 	.commit_flush_pc
 );

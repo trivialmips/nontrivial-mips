@@ -50,6 +50,7 @@ always_comb begin
 
 			unique casez(funct)
 				6'b00100?: decoded_instr.fu = FU_BRANCH;
+				6'b01?0??: decoded_instr.fu = FU_MUL;
 				default:   decoded_instr.fu = FU_ALU;
 			endcase
 
@@ -109,6 +110,7 @@ always_comb begin
 			decoded_instr.rs1 = rs;
 			decoded_instr.rs2 = rt;
 			decoded_instr.rd  = rd;
+			decoded_instr.fu  = funct[5:3] == 3'b000 ? FU_MUL : FU_ALU;
 			unique case(funct)
 				6'b000000: decoded_instr.op = OP_MADD;
 				6'b000001: decoded_instr.op = OP_MADDU;

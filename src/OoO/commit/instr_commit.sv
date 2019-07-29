@@ -28,6 +28,9 @@ module instr_commit(
 	// commit CP0
 	output logic         commit_cp0,
 
+	// commit HILO
+	output logic         commit_mul,
+
 	// commit flush request
 	output logic         commit_flush,
 	output virt_t        commit_flush_pc
@@ -52,6 +55,7 @@ assign store_request    = |is_store;
 assign lsu_store_memreq = is_store[1] ? rob_packet[1].data.memreq : rob_packet[0].data.memreq;
 assign lsu_store_push   = packet_ready & store_request & ~lsu_store_full;
 
+assign commit_mul      = rob_ack && rob_packet[0].fu == FU_MUL && ~except_req.valid;
 assign commit_cp0      = rob_ack && rob_packet[0].fu == FU_CP0 && ~except_req.valid;
 assign resolved_branch = rob_ack ? rob_packet[0].data.resolved_branch : '0;
 

@@ -25,6 +25,9 @@ module instr_issue(
 	input  rs_index_t          [1:0] branch_index,
 	output logic               [1:0] branch_taken,
 
+	input  logic               mul_ready,
+	output logic               mul_taken,
+
 	input  logic               cp0_ready,
 	output logic               cp0_taken,
 
@@ -60,6 +63,8 @@ assign instr_valid[1] = fetch_entry[1].valid
 	&& ~decoded[1].is_controlflow
 	&& decoded[0].fu != FU_CP0
 	&& decoded[1].fu != FU_CP0
+	&& decoded[0].fu != FU_MUL
+	&& decoded[1].fu != FU_MUL
 	&& ~(decoded[1].fu == FU_LOAD && lsu_locked)
 	&& ~(decoded[0].fu == FU_STORE && decoded[1].fu == FU_STORE)
 	&& ~(decoded[0].fu == FU_STORE && decoded[1].fu == FU_LOAD);
@@ -85,6 +90,8 @@ dispatcher dispatcher_instr_1(
 	.branch_index    ( branch_index[0]      ),
 	.cp0_ready,
 	.cp0_taken,
+	.mul_ready,
+	.mul_taken,
 	.rs              ( rs[0]                ),
 	.rob             ( rob_packet[0]        )
 );
@@ -121,6 +128,8 @@ dispatcher dispatcher_instr_2(
 	.branch_index    ( '0                   ),
 	.cp0_ready       ( 1'b0                 ),
 	.cp0_taken       ( /* empty */          ),
+	.mul_ready       ( 1'b0                 ),
+	.mul_taken       ( /* empty */          ),
 	.rs              ( rs[1]                ),
 	.rob             ( rob_packet[1]        )
 );

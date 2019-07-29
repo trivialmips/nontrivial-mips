@@ -22,6 +22,7 @@ module lsu_rs(
 	input  logic             store_push,
 	input  data_memreq_t     store_memreq,
 	output logic             store_full,
+	output logic             store_empty,
 
 	// MMU
 	output virt_t            mmu_vaddr,
@@ -93,7 +94,7 @@ end
 data_memreq_t store_dbus;
 data_memreq_t [`LSU_RS_SIZE-1:0] fu_dbus;
 data_memres_t [`LSU_RS_SIZE-1:0] dbus_res;
-logic store_dbus_req, store_dbus_ready, store_empty;
+logic store_dbus_req, store_dbus_ready;
 logic [`LSU_RS_SIZE-1:0] fu_dbus_req, fu_dbus_ready;
 logic [`LSU_RS_SIZE-1:0] fu_mmu_req, fu_mmu_ready;
 virt_t [`LSU_RS_SIZE-1:0] fu_mmu_vaddr;

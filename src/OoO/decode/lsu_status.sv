@@ -4,6 +4,7 @@ module lsu_status(
 	input  logic    clk,
 	input  logic    rst,
 	input  logic    flush,
+	input  logic    lsu_store_empty,
 
 	input  reserve_station_t   [1:0] rs,
 	input  logic               commit_store,
@@ -13,7 +14,7 @@ module lsu_status(
 );
 
 logic [$clog2(`ROB_SIZE):0] issued_store;
-assign locked = |issued_store;
+assign locked = |issued_store | ~lsu_store_empty;
 
 always_ff @(posedge clk) begin
 	if(rst || flush) begin
