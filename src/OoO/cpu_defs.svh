@@ -355,6 +355,8 @@ typedef struct packed {
 typedef struct packed {
 	logic       busy;
 	rob_index_t reorder;
+	logic       data_valid;
+	uint32_t    data;
 } register_status_t;
 
 `endif

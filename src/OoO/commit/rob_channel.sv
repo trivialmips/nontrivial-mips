@@ -19,10 +19,6 @@ module rob_channel #(
 	output logic        full,
 	output logic        empty,
 
-	input  logic        [3:0][$clog2(DEPTH)-1:0] rob_raddr,
-	output logic        [3:0] rob_rdata_valid,
-	output uint32_t     [3:0] rob_rdata,
-
 	input  cdb_packet_t cdb
 );
 
@@ -42,14 +38,6 @@ assign read_pointer  = read_pointer_q;
 assign full   = (cnt_q == DEPTH[ADDR_WIDTH:0]);
 assign empty  = (cnt_q == 0);
 assign data_o = mem_q[read_pointer_q];
-
-// read ROB
-always_comb begin
-	for(int i = 0; i < 4; ++i) begin
-		rob_rdata[i]       = mem_q[rob_raddr[i]].value;
-		rob_rdata_valid[i] = ~mem_q[rob_raddr[i]].busy & mem_q[rob_raddr[i]].valid;
-	end
-end
 
 // use CDB to update ROB
 always_comb begin

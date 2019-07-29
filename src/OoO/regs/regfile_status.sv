@@ -19,7 +19,9 @@ module regfile_status #(
 	input  rob_index_t [WRITE_PORTS-1:0]                wreorder,
 
 	input  logic [READ_PORTS-1:0][$clog2(REG_NUM)-1:0]  raddr,
-	output dtype [READ_PORTS-1:0]                       rdata
+	output dtype [READ_PORTS-1:0]                       rdata,
+
+	input  cdb_packet_t cdb
 );
 
 dtype [REG_NUM-1:0] regs, regs_wrst, regs_new;
@@ -40,10 +42,18 @@ end
 
 always_comb begin
 	regs_new = regs_wrst;
-	for(int i = ZERO_KEEP; i < REG_NUM; ++i)
+	for(int i = ZERO_KEEP; i < REG_NUM; ++i) begin
+		for(int j = 0; j < `CDB_SIZE; ++j) begin
+			if(regs[i].busy && cdb[j].valid && regs[i].reorder == cdb[j].reorder) begin
+				regs_new[i].data |= cdb[j].value;
+				regs_new[i].data_valid = 1'b1;
+			end
+		end
+
 		for(int j = 0; j < WRITE_PORTS; ++j)
 			if(we[j] && waddr[j] == i)
 				regs_new[i] = wdata[j];
+	end
 end
 
 always_ff @(posedge clk) begin

@@ -41,9 +41,6 @@ cdb_packet_t cdb;
 logic rob_push, rob_pop, rob_full, rob_empty;
 rob_packet_t rob_push_data, rob_pop_data;
 rob_index_t [1:0] rob_reorder, rob_reorder_commit;
-rob_index_t [3:0] rob_raddr;
-logic [3:0] rob_rdata_valid;
-uint32_t [3:0] rob_rdata;
 
 // instruction fetch
 fetch_ack_t          if_fetch_ack;
@@ -144,7 +141,8 @@ regfile_status #(
 	.wrst     ( {2{rob_pop}}       ),
 	.wreorder ( rob_reorder_commit ),
 	.raddr    ( reg_raddr          ),
-	.rdata    ( reg_status_rdata   )
+	.rdata    ( reg_status_rdata   ),
+	.cdb
 );
 
 hilo hilo_inst(
@@ -171,9 +169,6 @@ rob rob_inst(
 	.empty   ( rob_empty     ),
 	.reorder ( rob_reorder   ),
 	.reorder_commit ( rob_reorder_commit ),
-	.rob_raddr,
-	.rob_rdata_valid,
-	.rob_rdata,
 	.cdb
 );
 
@@ -240,9 +235,6 @@ instr_exec instr_exec_inst(
 	.clk,
 	.rst,
 	.flush ( flush_ex ),
-	.rob_raddr,
-	.rob_rdata_valid,
-	.rob_rdata,
 	.alu_taken,
 	.alu_ready,
 	.alu_index,

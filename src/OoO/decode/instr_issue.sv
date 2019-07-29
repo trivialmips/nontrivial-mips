@@ -172,7 +172,9 @@ for(genvar i = 0; i < 2; ++i) begin: gen_write_reg_status
 	assign reg_status_we[i]    = rs[i].busy & ~stall;
 	assign reg_status_waddr[i] = decoded[i].rd;
 	assign reg_status_wdata[i].busy    = 1'b1;
+	assign reg_status_wdata[i].data    = '0;
 	assign reg_status_wdata[i].reorder = rs[i].reorder;
+	assign reg_status_wdata[i].data_valid = 1'b0;
 end
 
 endmodule
