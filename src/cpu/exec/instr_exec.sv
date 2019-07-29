@@ -15,6 +15,12 @@ module instr_exec #(
 	output branch_resolved_t resolved_branch,
 	output logic             stall_req,
 
+	output reg_addr_t        reg_raddr,
+	input  uint32_t          reg_rdata,
+	input  pipeline_exec_t   [1:0][1:0] pipeline_dcache,
+	input  pipeline_memwb_t  [1:0] pipeline_mem,
+	input  pipeline_memwb_t  [1:0] pipeline_wb,
+
 	input  logic        is_usermode,
 	input  uint32_t     cp0_rdata_i,
 	output logic [2:0]  cp0_rsel,
@@ -237,8 +243,6 @@ always_comb begin
 end
 
 uint32_t sw_reg2;
-assign sw_reg2 = reg2;
-/* 
 assign reg_raddr = data.decoded.rs2;
 always_comb begin
 	sw_reg2 = reg_rdata;
@@ -256,7 +260,7 @@ always_comb begin
 			sw_reg2 = pipeline_dcache[0][j].result;
 	if(data.decoded.rs2 == '0)
 		sw_reg2 = '0;
-end */
+end
 
 always_comb begin
 	unique case(op)

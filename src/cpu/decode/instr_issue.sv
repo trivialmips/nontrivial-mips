@@ -72,7 +72,9 @@ always_comb begin
 		for(int j = 0; j < `ISSUE_NUM; ++j) begin
 			load_related[i] |= is_load_related(
 				id_decoded[i], ex_decoded[j]);
-			for(int k = 0; k < `DCACHE_PIPE_DEPTH - 1; ++k) begin
+			load_related[i] |= is_load_related(
+				id_decoded[i], dcache_decoded[0][j]);
+			for(int k = 1; k < `DCACHE_PIPE_DEPTH - 1; ++k) begin
 				load_related[i] |= is_load_related_store(
 					id_decoded[i], dcache_decoded[k][j]);
 			end

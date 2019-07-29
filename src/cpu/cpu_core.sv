@@ -221,6 +221,11 @@ for(genvar i = 0; i < `ISSUE_NUM; ++i) begin : gen_exec
 		.data        ( pipeline_decode_d[i]       ),
 		.result      ( pipeline_exec[i]           ),
 		.stall_req   ( stall_req_ex[i]            ),
+		.reg_raddr   ( reg_raddr[4 + i]           ),
+		.reg_rdata   ( reg_rdata[4 + i]           ),
+		.pipeline_dcache ( pipeline_dcache[1:0]   ),
+		.pipeline_mem,
+		.pipeline_wb,
 		.llbit_value ( llbit_value                ),
 		.mmu_vaddr   ( mmu_data_vaddr[i]          ),
 		.mmu_result  ( mmu_data_result[i]         ),
@@ -309,11 +314,6 @@ assign tlbrw_index = pipeline_exec_d[0].tlbreq.tlbwi ? cp0_regs.index : cp0_regs
 
 dbus_mux dbus_mux_inst(
 	.except_req,
-	.reg_raddr   ( reg_raddr[5:4]  ),
-	.reg_rdata   ( reg_rdata[5:4]  ),
-	.pipeline_dcache ( pipeline_dcache[1] ),
-	.pipeline_mem,
-	.pipeline_wb,
 	.data      ( pipeline_exec_d ),
 	.dbus,
 	.dbus_uncached
