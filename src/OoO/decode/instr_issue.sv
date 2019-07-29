@@ -26,10 +26,10 @@ module instr_issue(
 	output logic               [1:0] branch_taken,
 
 	input  logic               mul_ready,
-	output logic               mul_taken,
+	output logic               [1:0] mul_taken,
 
 	input  logic               cp0_ready,
-	output logic               cp0_taken,
+	output logic               [1:0] cp0_taken,
 
 	// reserve station
 	output reserve_station_t   [1:0] rs_o,
@@ -51,20 +51,25 @@ reserve_station_t [1:0] rs;
 
 logic stall;
 assign stall = rob_full
-	| decoded[0].is_controlflow & ~rs[1].busy;
+	| decoded[0].is_controlflow & ~fetch_entry[1].valid;
 
-assign fetch_ack        = rs_o[0].busy + rs_o[1].busy;
-assign rob_packet_valid = rs_o[0].busy;
+always_comb begin
+	if(rob_packet[0].ex.valid) begin
+		fetch_ack        = 1'b1;
+		rob_packet_valid = 1'b0;
+	end else begin
+		fetch_ack        = rs_o[0].busy + rs_o[1].busy;
+		rob_packet_valid = rs_o[0].busy;
+	end
+end
 
 assign instr_valid[0] = fetch_entry[0].valid
 	&& ~(decoded[0].fu == FU_LOAD && lsu_locked);
 assign instr_valid[1] = fetch_entry[1].valid
 	&& rs[0].busy
 	&& ~decoded[1].is_controlflow
-	&& decoded[0].fu != FU_CP0
-	&& decoded[1].fu != FU_CP0
-	&& decoded[0].fu != FU_MUL
-	&& decoded[1].fu != FU_MUL
+	&& ~(decoded[0].fu == FU_CP0 && decoded[1].fu == FU_CP0)
+	&& ~(decoded[0].fu == FU_MUL && decoded[1].fu == FU_MUL)
 	&& ~(decoded[1].fu == FU_LOAD && lsu_locked)
 	&& ~(decoded[0].fu == FU_STORE && decoded[1].fu == FU_STORE)
 	&& ~(decoded[0].fu == FU_STORE && decoded[1].fu == FU_LOAD);
@@ -88,10 +93,10 @@ dispatcher dispatcher_instr_1(
 	.branch_ready    ( branch_ready[0]      ),
 	.branch_taken    ( branch_taken[0]      ),
 	.branch_index    ( branch_index[0]      ),
-	.cp0_ready,
-	.cp0_taken,
-	.mul_ready,
-	.mul_taken,
+	.cp0_ready       ( cp0_ready            ),
+	.cp0_taken       ( cp0_taken[0]         ),
+	.mul_ready       ( mul_ready            ),
+	.mul_taken       ( mul_taken[0]         ),
 	.rs              ( rs[0]                ),
 	.rob             ( rob_packet[0]        )
 );
@@ -126,10 +131,10 @@ dispatcher dispatcher_instr_2(
 	.branch_ready    ( 1'b0                 ),
 	.branch_taken    ( /* empty */          ),
 	.branch_index    ( '0                   ),
-	.cp0_ready       ( 1'b0                 ),
-	.cp0_taken       ( /* empty */          ),
-	.mul_ready       ( 1'b0                 ),
-	.mul_taken       ( /* empty */          ),
+	.cp0_ready       ( cp0_ready            ),
+	.cp0_taken       ( cp0_taken[1]         ),
+	.mul_ready       ( mul_ready            ),
+	.mul_taken       ( mul_taken[1]         ),
 	.rs              ( rs[1]                ),
 	.rob             ( rob_packet[1]        )
 );

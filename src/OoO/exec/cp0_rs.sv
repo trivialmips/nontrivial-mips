@@ -5,8 +5,8 @@ module cp0_rs(
 	input  logic             rst,
 	input  logic             flush,
 
-	input  logic             rs_taken,
-	input  reserve_station_t rs_i,
+	input  logic             [1:0] rs_taken,
+	input  reserve_station_t [1:0] rs_i,
 
 	// result
 	output logic             data_ready,
@@ -61,7 +61,8 @@ cp0_write_mask cp0_write_mask_inst(
 always_comb begin
 	rs_n = rs_ro;
 	if(data_ack) rs_n = '0;
-	if(rs_taken) rs_n = rs_i;
+	if(rs_taken[0]) rs_n = rs_i[0];
+	if(rs_taken[1]) rs_n = rs_i[1];
 end
 
 // read operands

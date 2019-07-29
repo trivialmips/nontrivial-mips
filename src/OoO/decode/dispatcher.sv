@@ -47,6 +47,7 @@ module dispatcher(
 	output rob_entry_t       rob
 );
 
+exception_t ex;
 uint32_t imm;
 assign imm = { {16{fetch.instr[15] & decoded.imm_signed}}, fetch.instr[15:0] };
 assign rs.reorder = reorder;
@@ -75,44 +76,72 @@ always_comb begin
 	cp0_taken    = 1'b0;
 	lsu_taken    = 1'b0;
 	mul_taken    = 1'b0;
-	unique case(decoded.fu)
-		FU_ALU: begin
-			alu_taken = alu_ready & valid & ~stall;
-			rs.busy   = alu_ready & valid;
-			rs.index  = alu_index;
-		end
-		FU_BRANCH: begin
-			branch_taken = branch_ready & valid & ~stall;
-			rs.busy      = branch_ready & valid;
-			rs.index     = branch_index;
-		end
-		FU_LOAD, FU_STORE: begin
-			lsu_taken = lsu_ready & valid & ~stall;
-			rs.busy   = lsu_ready & valid;
-			rs.index  = lsu_index;
-		end
-		FU_MUL: begin
-			mul_taken    = mul_ready & valid & ~stall;
-			rs.busy      = mul_ready & valid;
-			rs.index     = '0;
-		end
-		FU_CP0: begin
-			cp0_taken    = cp0_ready & valid & ~stall;
-			rs.busy      = cp0_ready & valid;
-			rs.index     = '0;
-		end
-		default:;
-	endcase
+	if(~ex.valid) begin
+		unique case(decoded.fu)
+			FU_ALU: begin
+				alu_taken = alu_ready & valid & ~stall;
+				rs.busy   = alu_ready & valid;
+				rs.index  = alu_index;
+			end
+			FU_BRANCH: begin
+				branch_taken = branch_ready & valid & ~stall;
+				rs.busy      = branch_ready & valid;
+				rs.index     = branch_index;
+			end
+			FU_LOAD, FU_STORE: begin
+				lsu_taken = lsu_ready & valid & ~stall;
+				rs.busy   = lsu_ready & valid;
+				rs.index  = lsu_index;
+			end
+			FU_MUL: begin
+				mul_taken    = mul_ready & valid & ~stall;
+				rs.busy      = mul_ready & valid;
+				rs.index     = '0;
+			end
+			FU_CP0: begin
+				cp0_taken    = cp0_ready & valid & ~stall;
+				rs.busy      = cp0_ready & valid;
+				rs.index     = '0;
+			end
+			default:;
+		endcase
+	end
+end
+
+// ( illegal | unaligned, miss | invalid )
+logic [1:0] ex_if;  // exception in IF
+assign ex_if = {
+	fetch.iaddr_ex.illegal | |fetch.vaddr[1:0],
+	fetch.iaddr_ex.miss | fetch.iaddr_ex.invalid
+};
+
+logic invalid_instr;
+assign invalid_instr = (decoded.op == OP_INVALID);
+
+always_comb begin
+	ex = '0;
+	ex.valid = ((|ex_if) | invalid_instr) & valid;
+	if(|ex_if) begin
+		ex.extra = fetch.vaddr;
+		unique casez(ex_if)
+			2'b1?: ex.exc_code = `EXCCODE_ADEL;
+			2'b01: ex.exc_code = `EXCCODE_TLBL;
+			default:;
+		endcase
+	end else if(invalid_instr) begin
+		ex.exc_code = `EXCCODE_RI;
+	end
 end
 
 always_comb begin
 	rob           = '0;
 	rob.delayslot = delayslot;
-	rob.valid     = rs.busy;
+	rob.valid     = rs.busy | ex.valid;
 	rob.busy      = rs.busy;
 	rob.pc        = fetch.vaddr;
 	rob.dest      = decoded.rd;
 	rob.fu        = decoded.fu;
+	rob.ex        = ex;
 end
 
 endmodule

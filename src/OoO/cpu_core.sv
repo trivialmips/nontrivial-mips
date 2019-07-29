@@ -31,7 +31,7 @@ reg_addr_t        [1:0] reg_status_waddr;
 register_status_t [3:0] reg_status_rdata;
 
 // HILO
-logic hilo_lock, hilo_commit, hilo_ready, hilo_data_valid;
+logic hilo_commit, hilo_ready, hilo_data_valid;
 uint64_t hilo_in, hilo_out;
 
 // CDB
@@ -56,6 +56,7 @@ branch_resolved_t resolved_branch;
 logic       [1:0] alu_ready, branch_ready, lsu_ready;
 rs_index_t  [1:0] alu_index, branch_index, lsu_index;
 logic       [1:0] alu_taken, branch_taken, lsu_taken;
+logic       [1:0] cp0_taken, mul_taken;
 logic       lsu_store_push, lsu_store_full, lsu_store_empty, lsu_locked;
 data_memreq_t lsu_store_memreq;
 reserve_station_t [1:0] issue_rs;
@@ -82,7 +83,7 @@ cp0_req_t    cp0_reg_wr;
 uint32_t     cp0_rdata;
 logic        cp0_user_mode;
 logic        cp0_timer_int;
-logic        cp0_lock, cp0_locked, cp0_commit;
+logic        cp0_locked, cp0_commit;
 except_req_t except_req;
 assign cp0_lock_eret = (issue_rs[0].decoded.op == OP_ERET);
 
@@ -150,7 +151,7 @@ hilo hilo_inst(
 	.clk,
 	.rst,
 	.flush      ( flush_regstat   ),
-	.lock       ( hilo_lock       ),
+	.lock       ( |mul_taken      ),
 	.commit     ( hilo_commit     ),
 	.ready      ( hilo_ready      ),
 	.data_valid ( hilo_data_valid ),
@@ -213,9 +214,9 @@ instr_issue instr_issue_inst(
 	.branch_ready,
 	.branch_index,
 	.mul_ready ( hilo_ready  ),
-	.mul_taken ( hilo_lock   ),
+	.mul_taken,
 	.cp0_ready ( ~cp0_locked ),
-	.cp0_taken ( cp0_lock    ),
+	.cp0_taken,
 	.rs_o ( issue_rs ),
 	.reg_raddr,
 	.reg_rdata,
@@ -251,11 +252,11 @@ instr_exec instr_exec_inst(
 	.branch_taken,
 	.branch_ready,
 	.branch_index,
-	.mul_taken   ( hilo_lock  ),
+	.mul_taken,
 	.mul_valid   ( hilo_data_valid ),
 	.hilo_result ( hilo_in    ),
 	.hilo_data   ( hilo_out   ),
-	.cp0_taken   ( cp0_lock   ),
+	.cp0_taken,
 	.cp0_req     ( cp0_reg_wr ),
 	.cp0_tlbreq  ( tlbreq     ),
 	.cp0_rdata,
@@ -306,7 +307,7 @@ cp0 cp0_inst(
 	.wreq      ( cp0_reg_wr    ),
 	.except_req,
 
-	.lock        ( cp0_lock        ),
+	.lock        ( |cp0_taken      ),
 	.locked      ( cp0_locked      ),
 	.commit      ( cp0_commit      ),
 

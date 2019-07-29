@@ -26,13 +26,13 @@ module instr_exec(
 	output rs_index_t        [1:0] branch_index,
 
 	// multiplier
-	input  logic             mul_taken,
+	input  logic             [1:0] mul_taken,
 	output logic             mul_valid,
 	output uint64_t          hilo_result,
 	input  uint64_t          hilo_data,
 
 	// CP0
-	input  logic             cp0_taken,
+	input  logic             [1:0] cp0_taken,
 	output cp0_req_t         cp0_req,
 	output tlb_request_t     cp0_tlbreq,
 	input  uint32_t          cp0_rdata,
@@ -195,7 +195,7 @@ mul_rs mul_rs_inst(
 	.rst,
 	.flush,
 	.rs_taken     ( mul_taken        ),
-	.rs_i         ( rs_ro[0]         ),
+	.rs_i         ( rs_ro            ),
 	.result       ( mul_data         ),
 	.data_ready   ( mul_data_ready   ),
 	.data_reorder ( mul_data_reorder ),
@@ -211,7 +211,7 @@ cp0_rs cp0_rs_inst(
 	.rst,
 	.flush,
 	.rs_taken     ( cp0_taken        ),
-	.rs_i         ( rs_ro[0]         ),
+	.rs_i         ( rs_ro            ),
 	.data_ready   ( cp0_data_ready   ),
 	.data_reorder ( cp0_data_reorder ),
 	.data_ack     ( cp0_data_ack     ),
