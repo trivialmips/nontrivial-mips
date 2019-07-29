@@ -55,12 +55,16 @@ assign is_mul[1] = rob_packet[1].valid && rob_packet[1].fu == FU_MUL;
 assign is_cp0[0] = rob_packet[0].valid && rob_packet[0].fu == FU_CP0;
 assign is_cp0[1] = rob_packet[1].valid && rob_packet[1].fu == FU_CP0;
 
-assign store_request    = |is_store;
+function logic commit_valid(input logic [1:0] mask, input except_req_t ex);
+	return mask[0] & ~(ex.valid & ex.alpha_taken) || mask[1] & ~ex.valid;
+endfunction
+
+assign store_request    = commit_valid(is_store, except_req);
 assign lsu_store_memreq = is_store[1] ? rob_packet[1].data.memreq : rob_packet[0].data.memreq;
 assign lsu_store_push   = packet_ready & store_request & ~lsu_store_full;
 
-assign commit_mul      = rob_ack && |is_mul && ~except_req.valid;
-assign commit_cp0      = rob_ack && |is_cp0 && ~except_req.valid;
+assign commit_mul      = rob_ack && commit_valid(is_mul, except_req);
+assign commit_cp0      = rob_ack && commit_valid(is_cp0, except_req);
 assign resolved_branch = rob_ack ? rob_packet[0].data.resolved_branch : '0;
 
 assign rob_ack         = packet_ready & (~store_request | store_request & ~lsu_store_full);

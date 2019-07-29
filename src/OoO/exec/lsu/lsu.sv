@@ -153,11 +153,11 @@ assign mem_addrex = mmu_result.illegal | daddr_unaligned;
 // ( addrex_r, addrex_w, tlbex_r, tlbex_w, readonly )
 logic [4:0] ex_mm, pipe_ex_mm;
 assign ex_mm = {
-	mem_addrex & pipe_memreq.read,
-	mem_addrex & pipe_memreq.write,
-	mem_tlbex  & pipe_memreq.read,
-	mem_tlbex  & pipe_memreq.write,
-	~mmu_result.dirty & pipe_memreq.write
+	mem_addrex & memreq.read,
+	mem_addrex & memreq.write,
+	mem_tlbex  & memreq.read,
+	mem_tlbex  & memreq.write,
+	~mmu_result.dirty & memreq.write
 };
 
 always_comb begin
