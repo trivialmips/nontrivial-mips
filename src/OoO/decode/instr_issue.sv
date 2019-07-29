@@ -51,7 +51,7 @@ reserve_station_t [1:0] rs;
 
 logic stall;
 assign stall = rob_full
-	| decoded[0].is_controlflow & ~fetch_entry[1].valid;
+	| decoded[0].is_controlflow & ~rs[1].busy;
 
 always_comb begin
 	if(rob_packet[0].ex.valid) begin
@@ -68,11 +68,12 @@ assign instr_valid[0] = fetch_entry[0].valid
 assign instr_valid[1] = fetch_entry[1].valid
 	&& rs[0].busy
 	&& ~decoded[1].is_controlflow
-	&& ~(decoded[0].fu == FU_CP0 && decoded[1].fu == FU_CP0)
-	&& ~(decoded[0].fu == FU_MUL && decoded[1].fu == FU_MUL)
+	&& decoded[0].fu != FU_CP0 && decoded[1].fu != FU_CP0
+	&& decoded[0].fu != FU_MUL && decoded[1].fu != FU_MUL
 	&& ~(decoded[1].fu == FU_LOAD && lsu_locked)
 	&& ~(decoded[0].fu == FU_STORE && decoded[1].fu == FU_STORE)
-	&& ~(decoded[0].fu == FU_STORE && decoded[1].fu == FU_LOAD);
+	&& ~(decoded[0].fu == FU_STORE && decoded[1].fu == FU_LOAD)
+	|| rs[0].busy && decoded[0].is_controlflow && fetch_entry[1].valid;
 
 // dispatch the first instruction
 dispatcher dispatcher_instr_1(
@@ -168,7 +169,7 @@ end
 
 // write register status
 for(genvar i = 0; i < 2; ++i) begin: gen_write_reg_status
-	assign reg_status_we[i]    = rs[i].busy;
+	assign reg_status_we[i]    = rs[i].busy & ~stall;
 	assign reg_status_waddr[i] = decoded[i].rd;
 	assign reg_status_wdata[i].busy    = 1'b1;
 	assign reg_status_wdata[i].reorder = rs[i].reorder;
