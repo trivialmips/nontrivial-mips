@@ -75,7 +75,7 @@ except except_inst(
 	.rst ( ~rob_ack ),
 	.rob_packet,
 	.cp0_regs,
-	.interrupt_flag ( '0 ),
+	.interrupt_flag,
 	.except_req
 );
 

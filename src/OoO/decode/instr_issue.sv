@@ -51,7 +51,7 @@ reserve_station_t [1:0] rs;
 
 logic stall;
 assign stall = rob_full
-	| decoded[0].is_controlflow & ~rs[1].busy;
+	| decoded[0].is_controlflow & ~rs[1].busy & ~(fetch_entry[1].valid & rob_packet[1].ex.valid);
 
 always_comb begin
 	if(rob_packet[0].ex.valid) begin
