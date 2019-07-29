@@ -9,12 +9,6 @@ module cpu_core(
 	cpu_dbus_if.master     dbus_uncached
 );
 
-assign dbus_uncached.read = '0;
-assign dbus_uncached.write = '0;
-assign dbus_uncached.address = '0;
-assign dbus_uncached.byteenable = '0;
-assign dbus_uncached.wrdata = '0;
-
 // flush and stall signals
 logic flush_if;
 logic flush_is;
@@ -247,11 +241,14 @@ instr_exec instr_exec_inst(
 	.lsu_store_memreq,
 	.lsu_store_push,
 	.lsu_store_full,
-	.rs_i       ( issue_rs        ),
-	.mmu_result ( mmu_data_result ),
-	.mmu_vaddr  ( mmu_data_vaddr  ),
-	.dbus       ( dbus            ),
-	.cdb_o      ( cdb             )
+	.rs_i        ( issue_rs           ),
+	.mmu_result  ( mmu_data_result    ),
+	.mmu_vaddr   ( mmu_data_vaddr     ),
+	.rob_packet  ( rob_pop_data       ),
+	.rob_reorder ( rob_reorder_commit ),
+	.dbus,
+	.dbus_uncached,
+	.cdb_o       ( cdb                )
 );
 
 instr_commit instr_commit_inst(

@@ -45,8 +45,13 @@ module instr_exec(
 	input  mmu_result_t      mmu_result,
 	output virt_t            mmu_vaddr,
 
+	// ROB
+	input  rob_packet_t      rob_packet,
+	input  rob_index_t       [1:0] rob_reorder,
+
 	// DBus
 	cpu_dbus_if.master       dbus,
+	cpu_dbus_if.master       dbus_uncached,
 
 	// CDB
 	output cdb_packet_t      cdb_o
@@ -164,7 +169,10 @@ lsu_rs lsu_rs_inst(
 	.store_full   ( lsu_store_full   ),
 	.mmu_vaddr,
 	.mmu_result,
+	.rob_packet,
+	.rob_reorder,
 	.dbus,
+	.dbus_uncached,
 	.cdb
 );
 

@@ -29,6 +29,11 @@ module lsu_rs(
 
 	// dbus
 	cpu_dbus_if.master       dbus,
+	cpu_dbus_if.master       dbus_uncached,
+
+	// ROB (for uncached read)
+	input  rob_index_t [1:0] rob_reorder,
+	input  rob_packet_t      rob_packet,
 
 	// CDB
 	input  cdb_packet_t      cdb
@@ -87,14 +92,16 @@ end
 
 data_memreq_t store_dbus;
 data_memreq_t [`LSU_RS_SIZE-1:0] fu_dbus;
-data_memres_t dbus_res;
+data_memres_t [`LSU_RS_SIZE-1:0] dbus_res;
 logic store_dbus_req, store_dbus_ready, store_empty;
 logic [`LSU_RS_SIZE-1:0] fu_dbus_req, fu_dbus_ready;
 logic [`LSU_RS_SIZE-1:0] fu_mmu_req, fu_mmu_ready;
 virt_t [`LSU_RS_SIZE-1:0] fu_mmu_vaddr;
 
-assign dbus_res.stall  = dbus.stall;
-assign dbus_res.rddata = dbus.rddata;
+for(genvar i = 0; i < `LSU_RS_SIZE; ++i) begin
+	assign dbus_res[i].stall  = memreq[i].uncached ? dbus_uncached.stall : dbus.stall;
+	assign dbus_res[i].rddata = memreq[i].uncached ? dbus_uncached.rddata : dbus.rddata;
+end
 
 // store unit
 store_unit store_unit_inst(
@@ -125,10 +132,14 @@ end
 // DBus arbitrator
 dbus_arbitrator dbus_arbitrator_inst(
 	.dbus,
+	.dbus_uncached,
 	.store_dbus,
 	.store_dbus_req,
 	.store_dbus_ready,
 	.fu_dbus,
+	.rob_packet,
+	.rob_reorder,
+	.rs_reorder ( data_reorder  ),
 	.dbus_req   ( fu_dbus_req   ),
 	.dbus_ready ( fu_dbus_ready )
 );
@@ -146,7 +157,7 @@ for(genvar i = 0; i < `LSU_RS_SIZE; ++i) begin: gen_lsu
 		.rs           ( rs_q[i]          ),
 		.fu_busy      ( fu_busy[i]       ),
 		.dbus_req     ( fu_dbus[i]       ),
-		.dbus_res     ( dbus_res         ),
+		.dbus_res     ( dbus_res[i]      ),
 		.dbus_request ( fu_dbus_req[i]   ),
 		.dbus_ready   ( fu_dbus_ready[i] ),
 		.mmu_vaddr    ( fu_mmu_vaddr[i]  ),

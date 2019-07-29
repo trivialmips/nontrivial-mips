@@ -53,6 +53,7 @@ assign req             = pipe_memreq;
 assign dbus_request    = (state == WAIT_DBUS);
 assign dbus_req.read       = pipe_memreq.read;
 assign dbus_req.write      = 1'b0;
+assign dbus_req.uncached   = pipe_memreq.uncached;
 assign dbus_req.wrdata     = '0;
 assign dbus_req.paddr      = pipe_memreq.paddr;
 assign dbus_req.byteenable = pipe_memreq.byteenable;
