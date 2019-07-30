@@ -198,6 +198,10 @@ always_comb begin
 			endcase
 		end
 		
+		6'b110011: begin // prefetch
+			decoded_instr.op      = OP_SLL;
+		end
+		
 		6'b110000: begin // load linked word (Reg-Imm)
 			decoded_instr.rs1     = rs;
 			decoded_instr.rd      = rt;
@@ -236,6 +240,7 @@ always_comb begin
 						6'b000110: decoded_instr.op = OP_TLBWR;
 						6'b001000: decoded_instr.op = OP_TLBP;
 						6'b011000: decoded_instr.op = OP_ERET;
+						6'b100000: decoded_instr.op = OP_SLL;  // wait
 						default: decoded_instr.op = OP_INVALID;
 					endcase
 				end
