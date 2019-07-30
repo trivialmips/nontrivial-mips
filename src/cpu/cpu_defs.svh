@@ -73,6 +73,13 @@ typedef struct packed {
 } branch_resolved_t;
 
 typedef struct packed {
+	logic negate;
+	logic mask_equal, mask_sign;
+	logic cond_equal, cond_sign;
+	virt_t target;
+} branch_early_resolved_t;
+
+typedef struct packed {
 	logic mispredict;
 	virt_t pc, target;
 } presolved_branch_t;

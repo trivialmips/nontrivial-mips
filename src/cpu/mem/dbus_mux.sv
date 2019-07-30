@@ -19,8 +19,8 @@ for(genvar i = 0; i < `ISSUE_NUM; ++i) begin : gen_flat_memreq
 	assign ce[i] = we[i] | re[i] | inv[i] | inv_icache[i];
 end
 
-assign kill[0] = flush | (except_req.valid & except_req.alpha_taken);
-assign kill[1] = flush | except_req.valid;
+assign kill[0] = (except_req.valid & except_req.alpha_taken);
+assign kill[1] = except_req.valid;
 
 //assign dbus.icache_inv = 1'b0;
 //assign dbus.dcache_inv = 1'b0;
@@ -45,8 +45,8 @@ always_comb begin
 		dbus.invalidate   |= inv[i] & ~kill[i];
 		dbus.read  |= re[i] & ~memreq[i].uncached & ~kill[i];
 		dbus.write |= we[i] & ~memreq[i].uncached & ~kill[i];
-		dbus_uncached.read  |= re[i] & memreq[i].uncached & ~kill[i];
-		dbus_uncached.write |= we[i] & memreq[i].uncached & ~kill[i];
+		dbus_uncached.read  |= re[i] & memreq[i].uncached & ~kill[i] & ~flush;
+		dbus_uncached.write |= we[i] & memreq[i].uncached & ~kill[i] & ~flush;
 		dbus.wrdata     |= {32{we[i]}} & memreq[i].wrdata;
 		dbus.address    |= {32{ce[i]}} & { memreq[i].paddr[31:2], 2'b0 };
 		dbus.byteenable |= {4{ce[i]}}  & memreq[i].byteenable;

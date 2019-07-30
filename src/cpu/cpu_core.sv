@@ -52,6 +52,7 @@ instr_fetch_memres_t icache_res;
 instr_fetch_memreq_t icache_req;
 branch_resolved_t resolved_branch;
 branch_resolved_t [`ISSUE_NUM-1:0] ex_resolved_branch, delayed_resolved_branch;
+branch_early_resolved_t [`ISSUE_NUM-1:0] delayed_early_resolved_ro, delayed_early_resolved_ro_d;
 
 // MMU
 virt_t       mmu_inst_vaddr;
@@ -329,6 +330,7 @@ for(genvar i = 0; i < `ISSUE_NUM; ++i) begin: gen_delayed_ro
 		.result    ( pipeline_dcache[0][i] ),
 		.reg_raddr ( reg_raddr[7 + 2 * i : 6 + 2 * i] ),
 		.reg_rdata ( reg_rdata[7 + 2 * i : 6 + 2 * i] ),
+		.early_resolved  ( delayed_early_resolved_ro[i] ),
 		.pipeline_dcache ( pipeline_dcache[1] ),
 		.pipeline_mem    ( pipeline_mem       ),
 		.pipeline_wb     ( pipeline_wb        )
@@ -339,12 +341,15 @@ end
 always_ff @(posedge clk) begin
 	if(rst || flush_mm && ~stall_mm) begin
 		pipeline_delayed_ro_d <= '0;
+		delayed_early_resolved_ro_d <= '0;
 	end else if(~stall_mm) begin
 		if(except_req.valid & ~except_req.alpha_taken) begin
 			pipeline_delayed_ro_d[0] <= pipeline_dcache[0][0];
 			pipeline_delayed_ro_d[1] <= '0;
+			delayed_early_resolved_ro_d <= '0;
 		end else begin
 			pipeline_delayed_ro_d <= pipeline_dcache[0];
+			delayed_early_resolved_ro_d <= delayed_early_resolved_ro;
 		end
 	end
 end
@@ -355,7 +360,8 @@ for(genvar i = 0; i < `ISSUE_NUM; ++i) begin: gen_delayed_exec
 		.stall     ( stall_mm                 ),
 		.data      ( pipeline_delayed_ro_d[i] ),
 		.result    ( pipeline_dcache[1][i]    ),
-		.resolved_branch ( delayed_resolved_branch[i] )
+		.early_resolved  ( delayed_early_resolved_ro_d[i] ),
+		.resolved_branch ( delayed_resolved_branch[i]     )
 	);
 end
 

@@ -6,6 +6,7 @@ module delayed_exec #(
 	input  logic             stall,
 	input  pipeline_exec_t   data,
 	output pipeline_exec_t   result,
+	input  branch_early_resolved_t early_resolved,
 	output branch_resolved_t resolved_branch
 );
 
@@ -59,12 +60,34 @@ always_comb begin
 	endcase
 end
 
-branch_resolver branch_resolver_inst(
-	.en   ( ~stall & data.decoded.delayed_exec ),
-	.reg1,
-	.reg2,
-	.data,
-	.resolved_branch
-);
+branch_predict_t branch_sbt;
+assign branch_sbt              = data.branch_predict;
+assign resolved_branch.valid   = data.valid & data.decoded.is_controlflow & data.decoded.delayed_exec & ~stall;
+assign resolved_branch.counter = branch_sbt.counter;
+assign resolved_branch.pc      = data.pc;
+assign resolved_branch.cf      = data.decoded.cf;
+assign resolved_branch.target  = early_resolved.target;
+always_comb begin
+	unique case(op)
+		OP_JAL, OP_JALR: resolved_branch.taken = 1'b1;
+		default: resolved_branch.taken = early_resolved.negate 
+			^ (early_resolved.mask_sign & early_resolved.cond_sign
+			 | early_resolved.mask_equal & early_resolved.cond_equal);
+	endcase
+
+	unique case(data.decoded.op)
+		OP_BLTZ, OP_BLTZAL, OP_BGEZ, OP_BGEZAL,
+		OP_BEQ,  OP_BNE,    OP_BLEZ, OP_BGTZ: begin
+			resolved_branch.mispredict = branch_sbt.valid
+				& (branch_sbt.taken ^ resolved_branch.taken);
+			if(resolved_branch.taken)
+				resolved_branch.mispredict |= (branch_sbt.target != resolved_branch.target) | ~branch_sbt.valid;
+		end
+		OP_JAL:
+			resolved_branch.mispredict = (branch_sbt.target != resolved_branch.target) | ~branch_sbt.valid;
+		OP_JALR: resolved_branch.mispredict = (branch_sbt.target != resolved_branch.target) | ~branch_sbt.valid;
+		default: resolved_branch.mispredict = 1'b1;
+	endcase
+end
 
 endmodule

@@ -163,7 +163,7 @@ assign stall_req =
 	| (id_decoded[0].is_nonrw_priv && priv_executing) & `CPU_MUTEX_PRIV
 	| nonrw_priv_executing & `CPU_MUTEX_PRIV
 	| delayslot_not_loaded
-//	| (speculative_branch & possible_except[0])
+	| (speculative_branch & (id_decoded[0].is_store | id_decoded[1].is_store))
 	| (instr_valid == '0);
 
 logic [1:0] id_delayed_exec;
