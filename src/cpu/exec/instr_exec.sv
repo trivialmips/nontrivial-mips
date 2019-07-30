@@ -44,11 +44,13 @@ assign result.ex     = ex;
 assign result.result = exec_ret;
 assign result.pc     = data.fetch.vaddr;
 assign result.eret   = (op == OP_ERET);
-assign result.delayslot    = delayslot;
-assign result.tlbreq.probe = (op == OP_TLBP);
-assign result.tlbreq.read  = (op == OP_TLBR);
-assign result.tlbreq.tlbwr = (op == OP_TLBWR);
-assign result.tlbreq.tlbwi = (op == OP_TLBWI);
+assign result.delayed_reg[0] = reg1;
+assign result.delayed_reg[1] = reg2;
+assign result.delayslot      = delayslot;
+assign result.tlbreq.probe   = (op == OP_TLBP);
+assign result.tlbreq.read    = (op == OP_TLBR);
+assign result.tlbreq.tlbwr   = (op == OP_TLBWR);
+assign result.tlbreq.tlbwi   = (op == OP_TLBWI);
 
 // unsigned register arithmetic
 uint32_t add_u, sub_u;

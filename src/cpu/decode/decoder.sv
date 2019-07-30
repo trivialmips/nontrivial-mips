@@ -42,6 +42,7 @@ always_comb begin
 	decoded_instr.is_load    = 1'b0;
 	decoded_instr.is_store   = 1'b0;
 	decoded_instr.is_priv    = opcode == 6'b101111 || opcode == 6'b010000;
+	decoded_instr.delayed_exec   = 1'b0;
 	decoded_instr.is_nonrw_priv  = 1'b0;
 	decoded_instr.is_controlflow = is_branch | is_jump_i | is_jump_r;
 
@@ -50,6 +51,19 @@ always_comb begin
 			decoded_instr.rs1 = rs;
 			decoded_instr.rs2 = rt;
 			decoded_instr.rd  = rd;
+			unique case(funct)
+				/* shift */
+				6'b000000, 6'b000010, 6'b000011,
+				6'b000100, 6'b000110, 6'b000111,
+				/* add and substract (no exception) */
+				6'b100001, 6'b100011,
+				/* logical */
+				6'b100100, 6'b100101, 6'b100110, 6'b100111,
+				/* compare and set */
+				6'b101010, 6'b101011:
+					decoded_instr.delayed_exec = 1'b1;
+				default: decoded_instr.delayed_exec = 1'b0;
+			endcase
 			unique case(funct)
 				/* shift */
 				6'b000000: decoded_instr.op = OP_SLL;
@@ -152,8 +166,9 @@ always_comb begin
 		6'b001???: begin // logic and arithmetic (Reg-Imm)
 			decoded_instr.rs1 = rs;
 			decoded_instr.rd  = rt;
-			decoded_instr.use_imm    = 1'b1;
-			decoded_instr.imm_signed = ~opcode[2];
+			decoded_instr.use_imm      = 1'b1;
+			decoded_instr.delayed_exec = 1'b1;
+			decoded_instr.imm_signed   = ~opcode[2];
 			unique case(opcode[2:0])
 				3'b100: decoded_instr.op = OP_AND;
 				3'b101: decoded_instr.op = OP_OR;

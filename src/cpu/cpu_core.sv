@@ -20,8 +20,8 @@ logic delayslot_not_exec, hold_resolved_branch;
 logic      [1:0] reg_we;
 uint32_t   [1:0] reg_wdata;
 reg_addr_t [1:0] reg_waddr;
-uint32_t   [5:0] reg_rdata;
-reg_addr_t [5:0] reg_raddr;
+uint32_t   [9:0] reg_rdata;
+reg_addr_t [9:0] reg_raddr;
 
 // waddr is 0 if we do not write registers
 assign reg_we[0] = 1'b1;
@@ -37,12 +37,12 @@ logic llbit_value;
 // pipeline data
 pipeline_decode_t [1:0] pipeline_decode, pipeline_decode_d;
 pipeline_exec_t   [1:0] pipeline_exec, pipeline_exec_d;
-pipeline_exec_t   [`DCACHE_PIPE_DEPTH-1:0][1:0] pipeline_dcache;
+pipeline_exec_t   [2:0][1:0] pipeline_dcache;
+pipeline_exec_t   [1:0] pipeline_delayed_ro_d;
 pipeline_exec_t   [1:0] pipeline_dcache_last;
 pipeline_memwb_t  [1:0] pipeline_mem, pipeline_mem_d;
 pipeline_memwb_t  [1:0] pipeline_wb;
 assign pipeline_dcache_last = pipeline_dcache[`DCACHE_PIPE_DEPTH-1];
-assign pipeline_exec_d = pipeline_dcache[0];
 assign pipeline_wb = pipeline_mem_d;
 
 fetch_ack_t          if_fetch_ack;
@@ -102,7 +102,7 @@ regfile #(
 	.REG_NUM     ( `REG_NUM ),
 	.DATA_WIDTH  ( 32       ),
 	.WRITE_PORTS ( 2        ),
-	.READ_PORTS  ( 6        ),
+	.READ_PORTS  ( 10       ),
 	.ZERO_KEEP   ( 1        )
 ) regfile_inst (
 	.clk,
@@ -242,13 +242,13 @@ end
 // pipeline between EX and D$
 always_ff @(posedge clk) begin
 	if(rst || flush_ex || (stall_ex && ~stall_mm)) begin
-		pipeline_dcache[0] <= '0;
+		pipeline_exec_d <= '0;
 	end else if(except_req.valid & ~except_req.alpha_taken) begin
 		if(~stall_mm)
-			pipeline_dcache[0][0] <= '0;
-		pipeline_dcache[0][1] <= '0;
+			pipeline_exec_d[0] <= '0;
+		pipeline_exec_d[1] <= '0;
 	end else if(~stall_ex) begin
-		pipeline_dcache[0] <= pipeline_exec;
+		pipeline_exec_d <= pipeline_exec;
 	end
 end
 
@@ -319,29 +319,46 @@ dbus_mux dbus_mux_inst(
 	.dbus_uncached
 );
 
+// delayed read operands
+for(genvar i = 0; i < `ISSUE_NUM; ++i) begin: gen_delayed_ro
+	delayed_register_forward delayed_register_forward_inst(
+		.data      ( pipeline_exec_d[i]    ),
+		.result    ( pipeline_dcache[0][i] ),
+		.reg_raddr ( reg_raddr[7 + 2 * i : 6 + 2 * i] ),
+		.reg_rdata ( reg_rdata[7 + 2 * i : 6 + 2 * i] ),
+		.pipeline_dcache ( pipeline_dcache[1] ),
+		.pipeline_mem    ( pipeline_mem       ),
+		.pipeline_wb     ( pipeline_wb        )
+	);
+end
+
 // pipeline between D$ and MEM
-for(genvar i = 1; i < `DCACHE_PIPE_DEPTH; ++i) begin : gen_pipe_dcache
-	if(i == 1) begin : gen_first_pipe_dcache
-		always_ff @(posedge clk) begin
-			if(rst || flush_mm && ~stall_mm) begin
-				pipeline_dcache[1] <= '0;
-			end else if(~stall_mm) begin
-				if(except_req.valid & ~except_req.alpha_taken) begin
-					pipeline_dcache[1][0] <= pipeline_dcache[0][0];
-					pipeline_dcache[1][1] <= '0;
-				end else begin
-					pipeline_dcache[1] <= pipeline_dcache[0];
-				end
-			end
+always_ff @(posedge clk) begin
+	if(rst || flush_mm && ~stall_mm) begin
+		pipeline_delayed_ro_d <= '0;
+	end else if(~stall_mm) begin
+		if(except_req.valid & ~except_req.alpha_taken) begin
+			pipeline_delayed_ro_d[0] <= pipeline_dcache[0][0];
+			pipeline_delayed_ro_d[1] <= '0;
+		end else begin
+			pipeline_delayed_ro_d <= pipeline_dcache[0];
 		end
-	end else begin : generate_other_pipe_dcache
-		always_ff @(posedge clk) begin
-			if(rst) begin
-				pipeline_dcache[i] <= '0;
-			end else if(~stall_mm) begin
-				pipeline_dcache[i] <= pipeline_dcache[i - 1];
-			end
-		end
+	end
+end
+
+// delayed execution
+for(genvar i = 0; i < `ISSUE_NUM; ++i) begin: gen_delayed_exec
+	delayed_exec delayed_exec_inst(
+		.data      ( pipeline_delayed_ro_d[i] ),
+		.result    ( pipeline_dcache[1][i]    )
+	);
+end
+
+always_ff @(posedge clk) begin
+	if(rst) begin
+		pipeline_dcache[2] <= '0;
+	end else if(~stall_mm) begin
+		pipeline_dcache[2] <= pipeline_dcache[1];
 	end
 end
 
@@ -356,29 +373,13 @@ for(genvar i = 0; i < `ISSUE_NUM; ++i) begin : gen_mem
 end
 
 // pipeline between MEM and WB
-generate if(`DCACHE_PIPE_DEPTH == 1) begin : dcache_no_pipe
-	always_ff @(posedge clk) begin
-		if(rst || flush_mm || stall_mm) begin
-			pipeline_mem_d <= '0;
-		end else begin
-			if(except_req.valid & ~except_req.alpha_taken) begin
-				pipeline_mem_d[0] <= pipeline_mem[0];
-				pipeline_mem_d[1] <= '0;
-			end else begin
-				pipeline_mem_d <= pipeline_mem;
-			end
-		end
-	end
-end else begin : dcache_pipe
-	always_ff @(posedge clk) begin
-		if(rst || stall_mm) begin
-			pipeline_mem_d <= '0;
-		end else if(~stall_mm) begin
-			pipeline_mem_d <= pipeline_mem;
-		end
+always_ff @(posedge clk) begin
+	if(rst || stall_mm) begin
+		pipeline_mem_d <= '0;
+	end else if(~stall_mm) begin
+		pipeline_mem_d <= pipeline_mem;
 	end
 end
-endgenerate
 
 // write back
 for(genvar i = 0; i < `ISSUE_NUM; ++i) begin : gen_write_back

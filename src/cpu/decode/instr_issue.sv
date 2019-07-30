@@ -55,22 +55,47 @@ function logic is_data_related(
 	);
 endfunction
 
+function logic is_data_delayed(
+	input decoded_instr_t id,
+	input decoded_instr_t ex
+);
+	return ex.delayed_exec & (
+	    ex.rd != '0 && (id.rs1 == ex.rd || id.rs2 == ex.rd)
+	);
+endfunction
+
 logic instr2_not_taken;
 logic priv_executing, nonrw_priv_executing;
 logic [`ISSUE_NUM-1:0] instr_valid;
-logic [`ISSUE_NUM-1:0] load_related, mem_access, hilo_access;
+logic [`ISSUE_NUM-1:0] ex_load_related, load_related, mem_access, hilo_access, data_delayed;
+logic [`ISSUE_NUM-1:0]allow_delayed;
 
 for(genvar i = 0; i < `ISSUE_NUM; ++i) begin : gen_access
-	assign mem_access[i]  = id_decoded[i].is_load | id_decoded[i].is_store;
-	assign instr_valid[i] = fetch_entry[i].valid;
-	assign hilo_access[i] = is_hilo(fetch_entry[i].instr);
+	assign mem_access[i]    = id_decoded[i].is_load | id_decoded[i].is_store;
+	assign instr_valid[i]   = fetch_entry[i].valid;
+	assign hilo_access[i]   = is_hilo(fetch_entry[i].instr);
+	assign allow_delayed[i] = id_decoded[i].delayed_exec;
+end
+
+always_comb begin
+	data_delayed = '0;
+	for(int i = 0; i < `ISSUE_NUM; ++i) begin
+		for(int j = 0; j < `ISSUE_NUM; ++j) begin
+			data_delayed[i] |= is_data_delayed(
+				id_decoded[i], ex_decoded[j]);
+			data_delayed[i] |= is_data_delayed(
+				id_decoded[i], dcache_decoded[0][j]);
+		end
+	end
+	data_delayed &= instr_valid;
 end
 
 always_comb begin
 	load_related = '0;
+	ex_load_related = '0;
 	for(int i = 0; i < `ISSUE_NUM; ++i) begin
 		for(int j = 0; j < `ISSUE_NUM; ++j) begin
-			load_related[i] |= is_load_related(
+			ex_load_related[i] |= is_load_related(
 				id_decoded[i], ex_decoded[j]);
 			load_related[i] |= is_load_related(
 				id_decoded[i], dcache_decoded[0][j]);
@@ -123,16 +148,31 @@ assign instr2_not_taken =
    || (id_decoded[0].is_priv | id_decoded[1].is_priv)
    || (id_decoded[1].op == OP_DIV || id_decoded[1].op == OP_DIVU);
 
-assign stall_req = load_related[0]
-	| (load_related[1] & ~instr2_not_taken)
+assign stall_req =
+	  ex_load_related[0]
+	| (ex_load_related[1] & ~instr2_not_taken)
+	| (load_related[0] & ~allow_delayed[0])
+	| (load_related[1] & ~instr2_not_taken & ~(&allow_delayed))
+	| (data_delayed[0] & ~allow_delayed[0])
+	| (data_delayed[1] & ~instr2_not_taken & ~(&allow_delayed))
 	| (id_decoded[0].is_nonrw_priv && priv_executing) & `CPU_MUTEX_PRIV
 	| nonrw_priv_executing & `CPU_MUTEX_PRIV
 	| delayslot_not_loaded
 	| (instr_valid == '0);
 
+logic [1:0] id_delayed_exec;
+assign id_delayed_exec[0] =
+	  (load_related[0] & allow_delayed[0])
+	| (data_delayed[0] & allow_delayed[0]);
+assign id_delayed_exec[1] = 
+	  (load_related[1] & ~instr2_not_taken & &allow_delayed)
+	| (data_delayed[1] & ~instr2_not_taken & &allow_delayed);
+
 always_comb begin
 	issue_instr = id_decoded;
 	issue_num   = 2;
+	issue_instr[0].delayed_exec = id_delayed_exec[0];
+	issue_instr[1].delayed_exec = id_delayed_exec[1];
 	if(instr2_not_taken) begin
 		issue_num      = 1;
 		issue_instr[1] = '0;

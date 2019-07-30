@@ -172,6 +172,7 @@ typedef struct packed {
 	logic  is_store;        // store data
 	logic  is_priv;         // privileged instructions
 	logic  is_nonrw_priv;   // privileged instructions other than MFC0 and MTC0
+	logic  delayed_exec;
 } decoded_instr_t;
 
 // fetched instruction
@@ -241,6 +242,7 @@ typedef struct packed {
 typedef struct packed {
 	logic           valid;
 	virt_t          pc;
+	uint32_t [1:0]  delayed_reg;
 	uint32_t        result;
 	logic           delayslot;
 	logic           eret;
