@@ -254,6 +254,7 @@ always_ff @(posedge clk) begin
 end
 
 // resolve interrupt requests
+logic pipe_interrupt_flush;
 logic [7:0] pipe_interrupt, interrupt_flag;
 assign interrupt_flag = cp0_regs.status.im & {
 	cp0_timer_int,
@@ -262,7 +263,12 @@ assign interrupt_flag = cp0_regs.status.im & {
 };
 
 always_ff @(posedge clk) begin
-	if(rst || except_req.valid && ~flush_delayed_mispredict)
+	if(rst) pipe_interrupt_flush <= '0;
+	else    pipe_interrupt_flush <= except_req.valid && ~flush_delayed_mispredict;
+end
+
+always_ff @(posedge clk) begin
+	if(rst || pipe_interrupt_flush)
 		pipe_interrupt <= '0;
 	else if(pipe_interrupt == '0)
 		pipe_interrupt <= interrupt_flag;
