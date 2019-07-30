@@ -132,18 +132,12 @@ end
 // 	delayslot_load_related &= id_decoded[1].is_controlflow;
 // end
 logic delayslot_not_loaded, speculative_branch;
-logic speculative_branch_conflict;
-
 logic [`ISSUE_NUM-1:0] possible_except;
 assign delayslot_not_loaded = id_decoded[0].is_controlflow & ~instr_valid[1];
 assign speculative_branch = ex_decoded[0].is_controlflow & ex_decoded[0].delayed_exec;
 for(genvar i = 0; i < `ISSUE_NUM; ++i) begin: gen_possible_ex
 	assign possible_except[i] = ~id_decoded[i].delayed_exec | (|fetch_entry[i].iaddr_ex);
 end
-
-assign speculative_branch_conflict =
-	  (id_decoded[0].is_store | id_decoded[1].is_store)
-	| (id_decoded[0].is_priv | id_decoded[1].is_priv);
 
 assign instr2_not_taken = 
       ~instr_valid[1]
@@ -169,8 +163,8 @@ assign stall_req =
 	| (id_decoded[0].is_nonrw_priv && priv_executing) & `CPU_MUTEX_PRIV
 	| nonrw_priv_executing & `CPU_MUTEX_PRIV
 	| delayslot_not_loaded
-	| (speculative_branch & speculative_branch_conflict)
-//	| (speculative_branch & ~(id_decoded[0].delayed_exec & id_decoded[1].delayed_exec))
+//	| (speculative_branch & (id_decoded[0].is_store | id_decoded[1].is_store))
+	| (speculative_branch & ~(id_decoded[0].delayed_exec & id_decoded[1].delayed_exec))
 	| (instr_valid == '0);
 
 logic [1:0] id_delayed_exec;

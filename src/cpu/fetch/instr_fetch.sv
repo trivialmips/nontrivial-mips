@@ -233,16 +233,19 @@ assign replay_valid = queue_full && (avail_instr_s2_d != '0) && ~delayslot_s3;
 decoded_instr_t [2:0] decoded;
 
 decoder decoder_inst1(
+	.vaddr         ( entry_s2_d[0].vaddr   ),
 	.instr         ( icache_res.data[31:0] ),
 	.decoded_instr ( decoded[0]            )
 );
 
 decoder decoder_inst2(
+	.vaddr         ( entry_s2_d[1].vaddr    ),
 	.instr         ( icache_res.data[63:32] ),
 	.decoded_instr ( decoded[1]             )
 );
 
 decoder decoder_inst3(
+	.vaddr         ( entry_s2_d[2].vaddr         ),
 	.instr         ( icache_res.data_extra[31:0] ),
 	.decoded_instr ( decoded[2]                  )
 );

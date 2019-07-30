@@ -172,6 +172,8 @@ typedef struct packed {
 	reg_addr_t   rd;
 	oper_t       op;
 	controlflow_t cf;       // controlflow type
+	virt_t default_jump_i;
+	virt_t default_jump_j;
 	logic  imm_signed;      // use sign-extened immediate
 	logic  use_imm;         // use immediate as reg2
 	logic  is_controlflow;  // controlflow maybe changed
@@ -243,8 +245,6 @@ typedef struct packed {
 	uint32_t         reg2;
 	fetch_entry_t    fetch;
 	decoded_instr_t  decoded;
-	virt_t           default_jump_i;
-	virt_t           default_jump_j;
 } pipeline_decode_t;
 
 // pipeline data (EX -> MEM)

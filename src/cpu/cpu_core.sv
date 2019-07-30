@@ -277,7 +277,7 @@ ll_bit llbit_inst(
 );
 
 except except_inst(
-	.rst ( flush_delayed_mispredict | stall_mm ),
+	.rst,
 	.cp0_regs,
 	.pipe_mm        ( pipeline_exec_d ),
 	.interrupt_flag ( pipe_interrupt  ),

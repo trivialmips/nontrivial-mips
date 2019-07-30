@@ -1,6 +1,7 @@
 `include "cpu_defs.svh"
 
 module decoder(
+	input  virt_t          vaddr,
 	input  uint32_t        instr,
 	output decoded_instr_t decoded_instr
 );
@@ -8,6 +9,13 @@ module decoder(
 // setup instruction fields
 logic [5:0] opcode, funct;
 reg_addr_t rs, rt, rd;
+
+virt_t pc_plus4;
+assign pc_plus4 = vaddr + 32'd4;
+assign decoded_instr.default_jump_i = pc_plus4
+       + { {14{instr[15]}}, instr[15:0], 2'b0 };
+assign decoded_instr.default_jump_j = {
+       pc_plus4[31:28], instr[25:0], 2'b0 };
 
 assign opcode    = instr[31:26];
 assign rs        = instr[25:21];
