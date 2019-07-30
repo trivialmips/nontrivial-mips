@@ -14,6 +14,7 @@ logic flush_if, stall_if;
 logic flush_id, stall_id, stall_from_id;
 logic flush_ex, stall_ex, stall_from_ex;
 logic flush_mm, stall_mm, stall_from_mm;
+logic flush_delayed_mispredict;
 logic delayslot_not_exec, hold_resolved_branch;
 
 // register file
@@ -50,7 +51,7 @@ fetch_entry_t [1:0]  if_fetch_entry;
 instr_fetch_memres_t icache_res;
 instr_fetch_memreq_t icache_req;
 branch_resolved_t resolved_branch;
-branch_resolved_t [`ISSUE_NUM-1:0] ex_resolved_branch;
+branch_resolved_t [`ISSUE_NUM-1:0] ex_resolved_branch, delayed_resolved_branch;
 
 // MMU
 virt_t       mmu_inst_vaddr;
@@ -94,7 +95,6 @@ assign icache_res.iaddr_ex.invalid = mmu_inst_result.invalid;
 ctrl ctrl_inst(
 	.*,
 	.fetch_entry       ( if_fetch_entry     ),
-	.resolved_branch_i ( ex_resolved_branch ),
 	.resolved_branch_o ( resolved_branch    )
 );
 
@@ -277,6 +277,7 @@ ll_bit llbit_inst(
 
 except except_inst(
 	.rst,
+	.stall          ( stall_mm        ),
 	.cp0_regs,
 	.pipe_mm        ( pipeline_exec_d ),
 	.interrupt_flag ( pipe_interrupt  ),
@@ -287,6 +288,7 @@ except except_inst(
 cp0 cp0_inst(
 	.clk,
 	.rst,
+	.flush     ( flush_delayed_mispredict ),
 	.raddr     ( cp0_raddr     ),
 	.rsel      ( cp0_rsel      ),
 	.wreq      ( cp0_reg_wr    ),
@@ -314,7 +316,8 @@ assign tlbrw_index = pipeline_exec_d[0].tlbreq.tlbwi ? cp0_regs.index : cp0_regs
 
 dbus_mux dbus_mux_inst(
 	.except_req,
-	.data      ( pipeline_exec_d ),
+	.flush ( flush_delayed_mispredict ),
+	.data  ( pipeline_exec_d ),
 	.dbus,
 	.dbus_uncached
 );
@@ -349,8 +352,10 @@ end
 // delayed execution
 for(genvar i = 0; i < `ISSUE_NUM; ++i) begin: gen_delayed_exec
 	delayed_exec delayed_exec_inst(
+		.stall     ( stall_mm                 ),
 		.data      ( pipeline_delayed_ro_d[i] ),
-		.result    ( pipeline_dcache[1][i]    )
+		.result    ( pipeline_dcache[1][i]    ),
+		.resolved_branch ( delayed_resolved_branch[i] )
 	);
 end
 

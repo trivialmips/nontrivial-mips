@@ -3,6 +3,7 @@
 module cp0(
 	input  logic clk,
 	input  logic rst,
+	input  logic flush,
 
 	input  reg_addr_t    raddr,
 	input  logic [2:0]   rsel,
@@ -135,7 +136,7 @@ always_comb begin
 	regs_nxt.random = regs_now.random + tlbwr_req;
 
 	/* write register (WB stage) */
-	if(wreq.we) begin
+	if(wreq.we && ~flush) begin
 		if(wreq.wsel == 3'b0) begin
 			wdata = regs_nxt[wreq.waddr * 32 +: 32];
 			wdata = (wreq.wdata & wmask) | (wdata & ~wmask);
@@ -147,7 +148,7 @@ always_comb begin
 	end
 
 	/* TLBR/TLBP instruction (WB stage) */
-	if(tlbr_req) begin
+	if(tlbr_req && ~flush) begin
 		regs_nxt.entry_hi[31:13] = tlbr_res.vpn2;
 		regs_nxt.entry_hi[7:0]   = tlbr_res.asid;
 		regs_nxt.entry_lo1 = {
@@ -158,10 +159,10 @@ always_comb begin
 			tlbr_res.d0, tlbr_res.v0, tlbr_res.G };
 	end
 
-	if(tlbp_req) regs_nxt.index = tlbp_res;
+	if(tlbp_req && ~flush) regs_nxt.index = tlbp_res;
 
 	/* exception (MEM stage) */
-	if(except_req.valid) begin
+	if(except_req.valid && ~flush) begin
 		if(except_req.eret) begin
 			if(regs_nxt.status.erl)
 				regs_nxt.status.erl = 1'b0;

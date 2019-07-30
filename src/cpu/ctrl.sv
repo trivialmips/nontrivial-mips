@@ -13,13 +13,15 @@ module ctrl(
 	output logic flush_id,
 	output logic flush_ex,
 	output logic flush_mm,
+	output logic flush_delayed_mispredict,
 
 	input  pipeline_exec_t   [`DCACHE_PIPE_DEPTH-1:0][1:0] pipeline_dcache,
 
 	input  except_req_t      except_req,
 	input  fetch_entry_t     [`FETCH_NUM-1:0] fetch_entry,
 	input  pipeline_exec_t   [1:0] pipeline_exec,
-	input  branch_resolved_t [1:0] resolved_branch_i,
+	input  branch_resolved_t [1:0] ex_resolved_branch,
+	input  branch_resolved_t [1:0] delayed_resolved_branch,
 	output branch_resolved_t resolved_branch_o,
 	// mispredict but delayslot does not executed
 	output logic   delayslot_not_exec,
@@ -29,20 +31,24 @@ module ctrl(
 logic [3:0] stall, flush;
 assign { stall_if, stall_id, stall_ex, stall_mm } = stall;
 assign { flush_if, flush_id, flush_ex, flush_mm } = flush;
-assign hold_resolved_branch = (stall_ex | stall_mm) & ~flush_id;
 
-logic [1:0] mispredict;
+logic [1:0] mispredict, delayed_mispredict;
 for(genvar i = 0; i < 2; ++i) begin : gen_mispredict
-	assign mispredict[i] = resolved_branch_i[i].valid & resolved_branch_i[i].mispredict;
+	assign mispredict[i] = ex_resolved_branch[i].valid & ex_resolved_branch[i].mispredict;
+	assign delayed_mispredict[i] = delayed_resolved_branch[i].valid & delayed_resolved_branch[i].mispredict;
 end
 
+assign hold_resolved_branch = (|mispredict & (stall_ex | stall_mm) & ~flush_id);
+
 logic fetch_entry_avail, wait_delayslot, flush_mispredict;
-assign delayslot_not_exec = resolved_branch_i[1].valid
-	| (resolved_branch_i[0].valid & ~pipeline_exec[1].valid);
+assign delayslot_not_exec = ex_resolved_branch[1].valid
+	| (ex_resolved_branch[0].valid & ~pipeline_exec[1].valid);
 assign wait_delayslot = delayslot_not_exec & ~fetch_entry_avail;
 
 logic mispredict_with_delayslot;
 assign mispredict_with_delayslot = mispredict[0] & pipeline_exec[1].valid;
+
+assign flush_delayed_mispredict = (|delayed_mispredict);
 
 assign flush_mispredict = (|mispredict)
 	& ~delayslot_not_exec
@@ -60,11 +66,14 @@ end
 always_comb begin
 	resolved_branch_o = '0;
 	for(int i = 0; i < 2; ++i) begin
-		if(resolved_branch_i[i].valid)
-			resolved_branch_o = resolved_branch_i[i];
+		if(ex_resolved_branch[i].valid)
+			resolved_branch_o = ex_resolved_branch[i];
 	end
 
 	if(wait_delayslot) resolved_branch_o = '0;
+
+	if(flush_delayed_mispredict)
+		resolved_branch_o = delayed_resolved_branch[0];
 end
 
 function logic is_memory(input pipeline_exec_t pipe);
@@ -94,7 +103,9 @@ assign mutex_uncached = uncached_exec & memory_accessing
 
 always_comb begin
 	flush = '0;
-	if(except_req.valid) begin
+	if(flush_delayed_mispredict) begin
+		flush = 4'b1111;
+	end else if(except_req.valid) begin
 		flush = { 2'b11, {2{except_req.alpha_taken}} };
 	end else if(flush_mispredict) begin
 		flush = 4'b1100;

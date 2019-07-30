@@ -253,6 +253,7 @@ typedef struct packed {
 	decoded_instr_t decoded;
 	tlb_request_t   tlbreq;
 	cp0_req_t       cp0_req;
+	branch_predict_t branch_predict;
 } pipeline_exec_t;
 
 // pipeline data (MEM -> WB)

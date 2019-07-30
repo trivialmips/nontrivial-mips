@@ -3,8 +3,10 @@
 module delayed_exec #(
 	parameter int HAS_DIV = 1
 ) (
+	input  logic             stall,
 	input  pipeline_exec_t   data,
-	output pipeline_exec_t   result
+	output pipeline_exec_t   result,
+	output branch_resolved_t resolved_branch
 );
 
 oper_t op;
@@ -56,5 +58,13 @@ always_comb begin
 		default: exec_ret = data.result;
 	endcase
 end
+
+branch_resolver branch_resolver_inst(
+	.en   ( ~stall & data.decoded.delayed_exec ),
+	.reg1,
+	.reg2,
+	.data,
+	.resolved_branch
+);
 
 endmodule

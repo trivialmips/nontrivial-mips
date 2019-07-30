@@ -60,7 +60,9 @@ always_comb begin
 				/* logical */
 				6'b100100, 6'b100101, 6'b100110, 6'b100111,
 				/* compare and set */
-				6'b101010, 6'b101011:
+				6'b101010, 6'b101011,
+				/* unconditional jump (reg) */
+				6'b001000, 6'b001001:
 					decoded_instr.delayed_exec = 1'b1;
 				default: decoded_instr.delayed_exec = 1'b0;
 			endcase
@@ -135,6 +137,7 @@ always_comb begin
 			decoded_instr.rs1 = rs;
 			decoded_instr.rd  = (instr[20:17] == 4'b1000) ? 5'd31 : 5'd0;
 			decoded_instr.use_imm = 1'b1;
+			decoded_instr.delayed_exec = (instr[19:17] == 3'b000);
 			unique case(instr[20:16])
 				/* trap */
 				5'b01000: decoded_instr.op = OP_TGE;
@@ -155,6 +158,7 @@ always_comb begin
 		6'b0001??: begin // branch (Reg-Imm)
 			decoded_instr.rs1 = rs;
 			decoded_instr.rs2 = rt;
+			decoded_instr.delayed_exec = 1'b1;
 			unique case(opcode[1:0])
 				2'b00: decoded_instr.op = OP_BEQ;
 				2'b01: decoded_instr.op = OP_BNE;
