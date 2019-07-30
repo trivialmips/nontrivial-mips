@@ -65,12 +65,20 @@ always_ff @(posedge clk) begin
 	end
 end
 
-// write request
-assign we[0] = ~update.pc[2] & update.valid;
-assign we[1] = update.pc[2]  & update.valid;
-assign waddr = get_index(update.pc);
-assign wdata.target = update.target;
-assign wdata.cf     = update.cf;
+// delayed write request
+always_ff @(posedge clk) begin
+	if(rst) begin
+		we     <= '0;
+		waddr  <= '0;
+		wdata  <= '0;
+	end else begin
+		we[0]        <= ~update.pc[2] & update.valid;
+		we[1]        <= update.pc[2]  & update.valid;
+		waddr        <= get_index(update.pc);
+		wdata.target <= update.target;
+		wdata.cf     <= update.cf;
+	end
+end
 
 for(genvar i = 0; i < 2; ++i) begin : gen_btb_ram
 	dual_port_ram #(
