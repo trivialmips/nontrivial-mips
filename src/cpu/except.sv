@@ -2,7 +2,6 @@
 
 module except(
 	input  logic            rst,
-	input  logic            flush,
 	input  logic            stall,
 	input  pipeline_exec_t  [1:0] pipe_mm,
 	input  cp0_regs_t       cp0_regs,
@@ -47,7 +46,7 @@ always_comb begin
 		except_req.alpha_taken = 1'b0;
 	end
 
-	except_req.valid &= ~rst & ~stall & ~flush;
+	except_req.valid &= ~rst & ~stall;
 
 	if(except_req.eret) begin
 		if(cp0_regs.status.erl)

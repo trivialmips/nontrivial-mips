@@ -71,7 +71,6 @@ always_comb begin
 	end
 
 	if(wait_delayslot) resolved_branch_o = '0;
-
 	if(flush_delayed_mispredict)
 		resolved_branch_o = delayed_resolved_branch[0];
 end

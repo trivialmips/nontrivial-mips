@@ -152,7 +152,7 @@ instr_fetch #(
 	.rst,
 	.flush_pc     ( flush_if              ),
 	.stall_pop    ( stall_if              ),
-	.except_valid ( except_req.valid      ),
+	.except_valid ( except_req.valid & ~flush_delayed_mispredict ),
 	.except_vec   ( except_req.except_vec ),
 	.resolved_branch_i ( resolved_branch  ),
 	.hold_resolved_branch,
@@ -278,7 +278,6 @@ ll_bit llbit_inst(
 
 except except_inst(
 	.rst,
-	.flush ( flush_delayed_mispredict ),
 	.stall          ( stall_mm        ),
 	.cp0_regs,
 	.pipe_mm        ( pipeline_exec_d ),
