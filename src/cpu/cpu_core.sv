@@ -152,7 +152,7 @@ instr_fetch #(
 	.rst,
 	.flush_pc     ( flush_if              ),
 	.stall_pop    ( stall_if              ),
-	.except_valid ( except_req.valid & ~flush_delayed_mispredict ),
+	.except_valid ( except_req.valid      ),
 	.except_vec   ( except_req.except_vec ),
 	.resolved_branch_i ( resolved_branch  ),
 	.hold_resolved_branch,
@@ -278,7 +278,6 @@ ll_bit llbit_inst(
 
 except except_inst(
 	.rst,
-	.stall          ( stall_mm        ),
 	.cp0_regs,
 	.pipe_mm        ( pipeline_exec_d ),
 	.interrupt_flag ( pipe_interrupt  ),
@@ -289,7 +288,6 @@ except except_inst(
 cp0 cp0_inst(
 	.clk,
 	.rst,
-	.flush     ( flush_delayed_mispredict ),
 	.raddr     ( cp0_raddr     ),
 	.rsel      ( cp0_rsel      ),
 	.wreq      ( cp0_reg_wr    ),
@@ -317,7 +315,6 @@ assign tlbrw_index = pipeline_exec_d[0].tlbreq.tlbwi ? cp0_regs.index : cp0_regs
 
 dbus_mux dbus_mux_inst(
 	.except_req,
-	.flush ( flush_delayed_mispredict ),
 	.data  ( pipeline_exec_d ),
 	.dbus,
 	.dbus_uncached

@@ -1,7 +1,6 @@
 `include "cpu_defs.svh"
 
 module dbus_mux(
-	input  logic           flush,
 	input  except_req_t    except_req,
 	input  pipeline_exec_t [`ISSUE_NUM-1:0] data,
 	cpu_dbus_if.master     dbus,
@@ -45,8 +44,8 @@ always_comb begin
 		dbus.invalidate   |= inv[i] & ~kill[i];
 		dbus.read  |= re[i] & ~memreq[i].uncached & ~kill[i];
 		dbus.write |= we[i] & ~memreq[i].uncached & ~kill[i];
-		dbus_uncached.read  |= re[i] & memreq[i].uncached & ~kill[i] & ~flush;
-		dbus_uncached.write |= we[i] & memreq[i].uncached & ~kill[i] & ~flush;
+		dbus_uncached.read  |= re[i] & memreq[i].uncached & ~kill[i];
+		dbus_uncached.write |= we[i] & memreq[i].uncached & ~kill[i];
 		dbus.wrdata     |= {32{we[i]}} & memreq[i].wrdata;
 		dbus.address    |= {32{ce[i]}} & { memreq[i].paddr[31:2], 2'b0 };
 		dbus.byteenable |= {4{ce[i]}}  & memreq[i].byteenable;
