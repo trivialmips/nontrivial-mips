@@ -278,6 +278,7 @@ ll_bit llbit_inst(
 
 except except_inst(
 	.rst,
+	.flush ( flush_delayed_mispredict ),
 	.stall          ( stall_mm        ),
 	.cp0_regs,
 	.pipe_mm        ( pipeline_exec_d ),
