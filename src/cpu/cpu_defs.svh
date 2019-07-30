@@ -242,6 +242,7 @@ typedef struct packed {
 typedef struct packed {
 	logic           valid;
 	virt_t          pc;
+	uint32_t        instr;
 	uint32_t [1:0]  delayed_reg;
 	uint32_t        result;
 	logic           delayslot;

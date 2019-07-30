@@ -8,8 +8,8 @@ module delayed_exec #(
 );
 
 oper_t op;
-exception_t ex;
 uint32_t exec_ret, reg1, reg2, instr;
+assign instr = data.instr;
 assign reg1 = data.delayed_reg[0];
 assign reg2 = data.delayed_reg[1];
 assign op   = data.decoded.op;
@@ -39,8 +39,8 @@ always_comb begin
 		OP_NOR: exec_ret = ~(reg1 | reg2);
 
 		/* add and subtract */
-		OP_ADD: exec_ret = add_u;
-		OP_SUB: exec_ret = sub_u;
+		OP_ADDU: exec_ret = add_u;
+		OP_SUBU: exec_ret = sub_u;
 
 		/* shift instructions */
 		OP_SLL:  exec_ret = reg2 << instr[10:6];

@@ -39,6 +39,7 @@ assign reg2 = data.reg2;
 assign instr = data.fetch.instr;
 assign op = data.decoded.op;
 
+assign result.instr  = instr;
 assign result.valid  = data.valid;
 assign result.ex     = ex;
 assign result.result = exec_ret;

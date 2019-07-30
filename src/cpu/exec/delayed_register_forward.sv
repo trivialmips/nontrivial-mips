@@ -28,6 +28,8 @@ always_comb begin
 	for(int j = 0; j < `ISSUE_NUM; ++j)
 		if(pipeline_dcache[j].decoded.rd == data.decoded.rs1)
 			regs[0] = pipeline_dcache[j].result;
+	if(data.decoded.rs1 == '0)
+		regs[0] = '0;
 
 	for(int j = 0; j < `ISSUE_NUM; ++j)
 		if(pipeline_wb[j].rd == data.decoded.rs2)
