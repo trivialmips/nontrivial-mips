@@ -262,7 +262,7 @@ assign interrupt_flag = cp0_regs.status.im & {
 };
 
 always_ff @(posedge clk) begin
-	if(rst || except_req.valid)
+	if(rst || except_req.valid && ~flush_delayed_mispredict)
 		pipe_interrupt <= '0;
 	else if(pipe_interrupt == '0)
 		pipe_interrupt <= interrupt_flag;

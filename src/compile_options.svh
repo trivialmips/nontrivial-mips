@@ -14,6 +14,9 @@
 `define CPU_MUTEX_PRIV       `COMPILE_FULL
 `define CPU_LWLR_ENABLED     `COMPILE_FULL
 
+`define CPU_PERFORMANCE      1
+`define CPU_DELAYED_BRANCH   `CPU_PERFORMANCE
+
 `define FETCH_NUM            2
 `define ISSUE_NUM            2
 `define REG_NUM              32
