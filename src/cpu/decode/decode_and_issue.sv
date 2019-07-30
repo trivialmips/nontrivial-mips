@@ -72,12 +72,21 @@ instr_issue issue_inst(
 	.stall_req
 );
 
+virt_t [1:0] pc_plus4, pc_plus8;
+
 for(genvar i = 0; i < `ISSUE_NUM; ++i) begin : gen_issue
 	assign pipeline_decode[i].fetch = fetch_entry[i];
 	assign pipeline_decode[i].reg1 = reg_forward[i * 2];
 	assign pipeline_decode[i].reg2 = reg_forward[i * 2 + 1];
 	assign pipeline_decode[i].decoded = issue_instr[i];
 	assign pipeline_decode[i].valid = (i < issue_num);
+
+	assign pc_plus4[i] = fetch_entry[i].vaddr + 32'd4;
+	assign pc_plus8[i] = fetch_entry[i].vaddr + 32'd8;
+	assign pipeline_decode[i].default_jump_i = pc_plus4[i]
+		+ { {14{fetch_entry[i].instr[15]}}, fetch_entry[i].instr[15:0], 2'b0 };
+	assign pipeline_decode[i].default_jump_j = {
+		pc_plus4[i][31:28], fetch_entry[i].instr[25:0], 2'b0 };
 end
 
 endmodule

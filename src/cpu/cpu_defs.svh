@@ -243,6 +243,8 @@ typedef struct packed {
 	uint32_t         reg2;
 	fetch_entry_t    fetch;
 	decoded_instr_t  decoded;
+	virt_t           default_jump_i;
+	virt_t           default_jump_j;
 } pipeline_decode_t;
 
 // pipeline data (EX -> MEM)

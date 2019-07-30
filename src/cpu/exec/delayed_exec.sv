@@ -67,14 +67,10 @@ assign resolved_branch.counter = branch_sbt.counter;
 assign resolved_branch.pc      = data.pc;
 assign resolved_branch.cf      = data.decoded.cf;
 assign resolved_branch.target  = early_resolved.target;
+assign resolved_branch.taken   = early_resolved.negate 
+	^ (early_resolved.mask_sign & early_resolved.cond_sign
+	| early_resolved.mask_equal & early_resolved.cond_equal);
 always_comb begin
-	unique case(op)
-		OP_JAL, OP_JALR: resolved_branch.taken = 1'b1;
-		default: resolved_branch.taken = early_resolved.negate 
-			^ (early_resolved.mask_sign & early_resolved.cond_sign
-			 | early_resolved.mask_equal & early_resolved.cond_equal);
-	endcase
-
 	unique case(data.decoded.op)
 		OP_BLTZ, OP_BLTZAL, OP_BGEZ, OP_BGEZAL,
 		OP_BEQ,  OP_BNE,    OP_BLEZ, OP_BGTZ: begin
@@ -83,9 +79,6 @@ always_comb begin
 			if(resolved_branch.taken)
 				resolved_branch.mispredict |= (branch_sbt.target != resolved_branch.target) | ~branch_sbt.valid;
 		end
-		OP_JAL:
-			resolved_branch.mispredict = (branch_sbt.target != resolved_branch.target) | ~branch_sbt.valid;
-		OP_JALR: resolved_branch.mispredict = (branch_sbt.target != resolved_branch.target) | ~branch_sbt.valid;
 		default: resolved_branch.mispredict = 1'b1;
 	endcase
 end

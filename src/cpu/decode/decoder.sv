@@ -60,9 +60,7 @@ always_comb begin
 				/* logical */
 				6'b100100, 6'b100101, 6'b100110, 6'b100111,
 				/* compare and set */
-				6'b101010, 6'b101011,
-				/* unconditional jump (reg) */
-				6'b001000, 6'b001001:
+				6'b101010, 6'b101011:
 					decoded_instr.delayed_exec = 1'b1;
 				default: decoded_instr.delayed_exec = 1'b0;
 			endcase

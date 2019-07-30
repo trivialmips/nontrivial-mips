@@ -51,15 +51,13 @@ end
 /* resolve branch */
 oper_t op;
 uint32_t instr;
-virt_t pc_plus4, pc_plus8;
+virt_t pc_plus4;
 virt_t default_jump_j, default_jump_i;
 branch_predict_t branch_sbt;
 assign op             = data.decoded.op;
 assign instr          = data.instr;
 assign pc_plus4       = data.pc + 32'd4;
-assign pc_plus8       = data.pc + 32'd8;
 assign default_jump_i = pc_plus4 + { {14{instr[15]}}, instr[15:0], 2'b0 };
-assign default_jump_j = { pc_plus4[31:28], instr[25:0], 2'b0 };
 
 assign early_resolved.cond_equal = (regs[0] == regs[1]);
 assign early_resolved.cond_sign  = regs[0][31];
@@ -79,8 +77,6 @@ always_comb begin
 		OP_BLTZ, OP_BLTZAL, OP_BGEZ, OP_BGEZAL,
 		OP_BEQ,  OP_BNE,    OP_BLEZ, OP_BGTZ:
 			early_resolved.target = default_jump_i;
-		OP_JAL: early_resolved.target  = default_jump_j;
-		OP_JALR: early_resolved.target = regs[0];
 		default: early_resolved.target = '0;
 	endcase
 end

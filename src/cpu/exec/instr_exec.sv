@@ -418,7 +418,7 @@ branch_resolver branch_resolver_inst(
 	.en   ( ~data.decoded.delayed_exec ),
 	.reg1,
 	.reg2,
-	.data ( result    ),
+	.data,
 	.resolved_branch
 );
 
