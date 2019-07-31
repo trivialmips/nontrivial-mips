@@ -43,24 +43,28 @@ assign tlbrw_wdata.d0   = regs.entry_lo0[2];
 assign tlbrw_wdata.v0   = regs.entry_lo0[1];
 assign tlbrw_wdata.G    = regs.entry_lo0[0];
 
-always_comb
-begin
-	if(rsel == 3'b0) begin
-		rdata = regs[raddr * 32 +: 32];
-	end else if(rsel == 3'b1) begin
-		if(`COMPILE_FULL) begin
-			unique case(raddr)
-				5'd15: rdata = regs.ebase;
-				5'd16: rdata = regs.config1;
-				default: rdata = '0;
-			endcase
-		end else begin
-			rdata = '0;
-		end
-	end else begin
-		rdata = 32'b0;
-	end
+uint32_t cp0_rdata_sel1;
+uint32_t cp0_rdata_sel0;
+assign cp0_rdata_sel0 = regs[raddr * 32 +: 32];
+always_comb begin
+	unique case(raddr)
+		5'd15: cp0_rdata_sel1 = regs.ebase;
+		5'd16: cp0_rdata_sel1 = regs.config1;
+		default: cp0_rdata_sel1 = '0;
+	endcase
 end
+
+generate if(`COMPILE_FULL) begin: gen_full_cp0
+	always_comb begin
+		unique case(rsel)
+			3'b0: rdata = cp0_rdata_sel0;
+			3'b1: rdata = cp0_rdata_sel1;
+			default: rdata = '0;
+		endcase
+	end
+end else begin
+	assign rdata = (rsel == '0) ? cp0_rdata_sel0 : '0;
+end endgenerate
 
 uint32_t config0_default, config1_default, prid_default;
 assign config0_default = {
