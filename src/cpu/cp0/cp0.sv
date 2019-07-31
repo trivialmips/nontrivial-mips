@@ -58,7 +58,7 @@ begin
 	end
 end
 
-uint32_t config0_default, config1_default, prid_default;
+uint32_t config0_default, config1_default, prid_default, ebase_default;
 assign config0_default = {
 	1'b1,   // M, config1 not implemented
 	21'b0,
@@ -88,6 +88,9 @@ assign config1_default = {
 
 assign prid_default = {8'b0, 8'b1, 16'h8000};
 
+// for single-CPU, the 10 LSB of ebase is CPU id (which is always 0)
+assign ebase_default = 32'h80000000 & {~22'b0, 10'b0};
+
 always @(posedge clk)
 begin
 	if(rst)
@@ -107,7 +110,7 @@ begin
 		regs_now.cause     <= '0;
 		regs_now.epc       <= '0;
 		regs_now.error_epc <= '0;
-		regs_now.ebase     <= 32'h80000001;
+		regs_now.ebase     <= ebase_default;
 		regs_now.config0   <= config0_default;
 		regs_now.config1   <= config1_default;
 		regs_now.prid      <= prid_default;
