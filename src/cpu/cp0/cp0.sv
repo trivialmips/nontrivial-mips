@@ -48,11 +48,15 @@ begin
 	if(rsel == 3'b0) begin
 		rdata = regs[raddr * 32 +: 32];
 	end else if(rsel == 3'b1) begin
-		unique case(raddr)
-			5'd15: rdata = regs.ebase;
-			5'd16: rdata = regs.config1;
-			default: rdata = '0;
-		endcase
+		if(`COMPILE_FULL) begin
+			unique case(raddr)
+				5'd15: rdata = regs.ebase;
+				5'd16: rdata = regs.config1;
+				default: rdata = '0;
+			endcase
+		end else begin
+			rdata = '0;
+		end
 	end else begin
 		rdata = 32'b0;
 	end

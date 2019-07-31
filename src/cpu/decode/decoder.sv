@@ -177,7 +177,7 @@ always_comb begin
 			decoded_instr.rs1 = rs;
 			decoded_instr.rd  = rt;
 			decoded_instr.use_imm      = 1'b1;
-			decoded_instr.delayed_exec = 1'b1;
+			decoded_instr.delayed_exec = (opcode[2:0] != 3'b000);
 			decoded_instr.imm_signed   = ~opcode[2];
 			unique case(opcode[2:0])
 				3'b100: decoded_instr.op = OP_AND;
