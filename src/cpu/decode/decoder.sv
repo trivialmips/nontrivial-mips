@@ -247,6 +247,10 @@ always_comb begin
 			decoded_instr.op  = OP_JAL;
 		end
 
+		6'b110011: begin // prefetch
+			decoded_instr.op  = OP_SLL;
+		end
+
 		6'b010000: begin // COP0
 			unique case(instr[25:21])
 				5'b00000: begin
