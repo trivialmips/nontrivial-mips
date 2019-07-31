@@ -46,8 +46,8 @@ pipeline_memwb_t  [1:0] pipeline_wb;
 assign pipeline_dcache_last = pipeline_dcache[`DCACHE_PIPE_DEPTH-1];
 assign pipeline_wb = pipeline_mem_d;
 
-fetch_ack_t          if_fetch_ack;
-fetch_entry_t [1:0]  if_fetch_entry;
+(* mark_debug = "true" *) fetch_ack_t          if_fetch_ack;
+(* mark_debug = "true" *) fetch_entry_t [1:0]  if_fetch_entry;
 instr_fetch_memres_t icache_res;
 instr_fetch_memreq_t icache_req;
 branch_resolved_t resolved_branch;
