@@ -35,4 +35,6 @@
 `define DCACHE_WB_FIFO_DEPTH 8
 `define DBUS_TRANS_WIDTH     8
 
+`define ICACHE_NO_INVALIDATE 0
+
 `endif
