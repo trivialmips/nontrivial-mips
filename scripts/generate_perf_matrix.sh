@@ -30,12 +30,13 @@ function alter_clocking {
   tmpfile=$(mktemp)
   echo "[MATRIX] Alter clk freq to $freq"
   echo "[MATRIX] Using temp file as tcl source: $tmpfile"
-  echo $CLK_CMDS[$freq] > $tmpfile
+  echo ${CLK_CMDS["$freq"]} > $tmpfile
+  echo "exit" >> $tmpfile
 
-  $VIVADO_PATH -mode tcl -source $tmpfile loongson/soc_axi_perf/run_vivado/mycpu_prj1/mycpu.xpr > "$FREQ_PATH/vivado.clk.log"
+  $VIVADO_PATH -mode tcl -source $tmpfile loongson/soc_axi_perf/run_vivado/mycpu_prj1/mycpu.xpr | tee "$FREQ_PATH/vivado.clk.log"
 
   echo "[MATRIX] generate all IP"
-  $VIVADO_PATH -mode tcl -source scripts/generate_all_ips.tcl loongson/soc_axi_perf/run_vivado/mycpu_prj1/mycpu.xpr > "$FREQ_PATH/vivado.gen.log"
+  $VIVADO_PATH -mode tcl -source scripts/generate_all_ips.tcl loongson/soc_axi_perf/run_vivado/mycpu_prj1/mycpu.xpr | tee "$FREQ_PATH/vivado.gen.log"
 }
 
 # Apply parameters
@@ -56,7 +57,7 @@ function run_iterations {
     mkdir -p $ITER_PATH
 
     echo "[MATRIX] Running for case $STUB, freq $freq, iteration $i"
-    $VIVADO_PATH -mode tcl -source scripts/generate_bitstream.tcl loongson/soc_axi_perf/run_vivado/mycpu_prj1/mycpu.xpr > "$ITER_PATH/vivado.bit.log"
+    $VIVADO_PATH -mode tcl -source scripts/generate_bitstream.tcl loongson/soc_axi_perf/run_vivado/mycpu_prj1/mycpu.xpr | tee "$ITER_PATH/vivado.bit.log"
 
     cp loongson/soc_axi_perf/run_vivado/mycpu_prj1/mycpu.runs/impl_1/soc_axi_lite_top.bit $ITER_PATH/soc.bit
     mkdir -p "$ITER_PATH/rpt"
