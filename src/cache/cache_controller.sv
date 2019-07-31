@@ -54,7 +54,7 @@ module cache_controller #(
         .clk,
         .rst,
         .ibus(ibus),
-		.invalidate_icache(`ICACHE_NO_INCALIDATE ? 1'b0 : dbus.invalidate_icache),
+		.invalidate_icache(`ICACHE_NO_INVALIDATE ? 1'b0 : dbus.invalidate_icache),
 		.invalidate_addr(dbus.address),
         .axi_req(icache_axi_req),
         .axi_req_arid(icache_arid),
