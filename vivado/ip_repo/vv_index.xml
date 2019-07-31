@@ -9,7 +9,7 @@
 		</DisplayName>
 		<Description value="NonTrivialMIPS is a synthesizable superscalar MIPS processor with branch prediction and FPU support, and it is capable of booting linux.">
 		</Description>
-		<CoreRevision value="4">
+		<CoreRevision value="5">
 		</CoreRevision>
 		<ComponentPath value="nontrivial_mips/component.xml">
 		</ComponentPath>
