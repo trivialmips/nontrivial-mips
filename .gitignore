@@ -4,4 +4,7 @@
 *.sims/
 *.cache/
 *.hw/
+vivado.jou
+vivado.log
+vivado*.str
 
