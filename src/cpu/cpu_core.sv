@@ -3,19 +3,19 @@
 module cpu_core(
 	input  logic           clk,
 	input  logic           rst,
-	input  cpu_interrupt_t intr,
+	(* mark_debug = "true" *) input  cpu_interrupt_t intr,
 	(* mark_debug = "true" *) cpu_ibus_if.master     ibus,
 	(* mark_debug = "true" *) cpu_dbus_if.master     dbus,
 	(* mark_debug = "true" *) cpu_dbus_if.master     dbus_uncached
 );
 
 // flush and stall signals
-logic flush_if, stall_if;
-logic flush_id, stall_id, stall_from_id;
-logic flush_ex, stall_ex, stall_from_ex;
-logic flush_mm, stall_mm, stall_from_mm;
-logic flush_delayed_mispredict;
-logic delayslot_not_exec, hold_resolved_branch;
+(* mark_debug = "true" *) logic flush_if, stall_if;
+(* mark_debug = "true" *) logic flush_id, stall_id, stall_from_id;
+(* mark_debug = "true" *) logic flush_ex, stall_ex, stall_from_ex;
+(* mark_debug = "true" *) logic flush_mm, stall_mm, stall_from_mm;
+(* mark_debug = "true" *) logic flush_delayed_mispredict;
+(* mark_debug = "true" *) logic delayslot_not_exec, hold_resolved_branch;
 
 // register file
 logic      [1:0] reg_we;
@@ -37,7 +37,7 @@ logic llbit_value;
 
 // pipeline data
 pipeline_decode_t [1:0] pipeline_decode, pipeline_decode_d;
-pipeline_exec_t   [1:0] pipeline_exec, pipeline_exec_d;
+(* mark_debug = "true" *) pipeline_exec_t   [1:0] pipeline_exec, pipeline_exec_d;
 pipeline_exec_t   [2:0][1:0] pipeline_dcache;
 pipeline_exec_t   [1:0] pipeline_delayed_ro_d;
 pipeline_exec_t   [1:0] pipeline_dcache_last;
