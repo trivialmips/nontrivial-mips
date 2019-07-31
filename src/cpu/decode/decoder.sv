@@ -177,7 +177,7 @@ always_comb begin
 			decoded_instr.rs1 = rs;
 			decoded_instr.rd  = rt;
 			decoded_instr.use_imm      = 1'b1;
-			decoded_instr.delayed_exec = 1'b1;
+			decoded_instr.delayed_exec = (opcode[2:0] != 3'b000);
 			decoded_instr.imm_signed   = ~opcode[2];
 			unique case(opcode[2:0])
 				3'b100: decoded_instr.op = OP_AND;
@@ -243,6 +243,10 @@ always_comb begin
 			decoded_instr.op  = OP_JAL;
 		end
 
+		6'b110011: begin // prefetch
+			decoded_instr.op  = OP_SLL;
+		end
+
 		6'b010000: begin // COP0
 			unique case(instr[25:21])
 				5'b00000: begin
@@ -261,6 +265,7 @@ always_comb begin
 						6'b000110: decoded_instr.op = OP_TLBWR;
 						6'b001000: decoded_instr.op = OP_TLBP;
 						6'b011000: decoded_instr.op = OP_ERET;
+						6'b100000: decoded_instr.op = OP_SLL;  // wait
 						default: decoded_instr.op = OP_INVALID;
 					endcase
 				end

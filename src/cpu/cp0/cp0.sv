@@ -45,9 +45,14 @@ assign tlbrw_wdata.G    = regs.entry_lo0[0];
 
 always_comb
 begin
-	if(rsel == 3'b0)
-	begin
+	if(rsel == 3'b0) begin
 		rdata = regs[raddr * 32 +: 32];
+	end else if(rsel == 3'b1 && `COMPILE_FULL) begin
+		unique case(raddr)
+			5'd15: rdata = regs.ebase;
+			5'd16: rdata = regs.config1;
+			default: rdata = '0;
+		endcase
 	end else begin
 		rdata = 32'b0;
 	end
@@ -102,7 +107,7 @@ begin
 		regs_now.cause     <= '0;
 		regs_now.epc       <= '0;
 		regs_now.error_epc <= '0;
-		regs_now.ebase     <= 32'h80000001;
+		regs_now.ebase     <= 32'h80000000;
 		regs_now.config0   <= config0_default;
 		regs_now.config1   <= config1_default;
 		regs_now.prid      <= prid_default;
