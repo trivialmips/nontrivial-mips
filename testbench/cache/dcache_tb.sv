@@ -3,6 +3,7 @@
 `define PATH_PREFIX "testbench/cache/cases/"
 
 `define CASE_NAME "random.be.data"
+localparam int unsigned REQ_COUNT = 50000;
 
 module dcache_tb();
 
@@ -30,7 +31,8 @@ cpu_dbus_if dbus();
 // scenarios
 
 dcache #(
-    .CACHE_SIZE (2048)
+    .CACHE_SIZE (2048),
+    .WB_FIFO_DEPTH (2)
 ) cache (
 	.clk (clk),
 	.rst (rst),
@@ -45,7 +47,6 @@ dcache #(
 	.axi_resp_bid (4'b0000)
 );
 
-localparam int unsigned REQ_COUNT = 50000;
 logic [$clog2(REQ_COUNT+3):0] req;
 logic [REQ_COUNT+3:0][31:0] address;
 logic [REQ_COUNT+3:0][31:0] data;

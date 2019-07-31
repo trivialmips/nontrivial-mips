@@ -56,6 +56,7 @@ typedef enum logic [2:0] {
     RECEIVING,
     FINISH,
     INVALIDATE,
+    INVALIDATE_WAIT,
     RST 
 } state_t;
 
@@ -439,10 +440,9 @@ always_comb begin
                 fifo_push = 1'b1;
             end
 
-            // Invalidate tag
-            tag_we[assoc_cnt] = 1'b1;
-
+            // Only invalidate tag if the tag is going to be pushed into FIFO
             if(~(fifo_push && fifo_full)) begin
+                tag_we[assoc_cnt] = 1'b1;
                 assoc_cnt_d = assoc_cnt + 1;
             end
         end
@@ -476,18 +476,20 @@ always_comb begin
         FINISH:
             state_d = IDLE;
         WAIT_AXI_READY:
-            if(axi_resp.arready) begin
+            if(axi_resp.arready)
                 state_d = RECEIVING;
-            end
         RECEIVING:
-            if(axi_resp.rvalid & axi_resp.rlast) begin
+            if(axi_resp.rvalid & axi_resp.rlast)
                 state_d = FINISH;
-            end
         RST:
-            if(&invalidate_cnt) state_d = FINISH;
-        INVALIDATE: begin
-            if(&assoc_cnt) state_d = FINISH;
-        end
+            if(&invalidate_cnt)
+                state_d = FINISH;
+        INVALIDATE:
+            if(&assoc_cnt && ~fifo_full)
+                state_d = INVALIDATE_WAIT;
+        INVALIDATE_WAIT:
+            if(wb_state == IDLE && fifo_empty)
+                state_d = FINISH;
     endcase
 end
 
