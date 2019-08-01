@@ -254,24 +254,17 @@ always_ff @(posedge clk) begin
 end
 
 // resolve interrupt requests
-(* mark_debug="true" *) logic pipe_interrupt_flush;
 (* mark_debug="true" *) logic [7:0] pipe_interrupt, interrupt_flag;
-assign interrupt_flag = cp0_regs.status.im & {
+
+assign interrupt_flag = {
 	cp0_timer_int,
 	intr[4:0],
 	cp0_regs.cause.ip[1:0]
 };
 
 always_ff @(posedge clk) begin
-	if(rst) pipe_interrupt_flush <= '0;
-	else    pipe_interrupt_flush <= except_req.valid && ~flush_delayed_mispredict;
-end
-
-always_ff @(posedge clk) begin
-	if(rst || pipe_interrupt_flush)
-		pipe_interrupt <= '0;
-	else if(pipe_interrupt == '0)
-		pipe_interrupt <= interrupt_flag;
+	if(rst) pipe_interrupt <= '0;
+	else    pipe_interrupt <= interrupt_flag;
 end
 
 ll_bit llbit_inst(
@@ -307,6 +300,7 @@ cp0 cp0_inst(
 
 	.tlbrw_wdata,
 
+	.interrupt_flag ( pipe_interrupt     ),
 	.kseg0_uncached ( cp0_kseg0_uncached ),
 	.rdata     ( cp0_rdata     ),
 	.regs      ( cp0_regs      ),

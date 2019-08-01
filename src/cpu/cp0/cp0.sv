@@ -8,6 +8,7 @@ module cp0(
 	input  logic [2:0]   rsel,
 	input  cp0_req_t     wreq,
 	input  except_req_t  except_req,
+	input  logic [7:0]   interrupt_flag,
 
 	input  logic         tlbr_req,
 	input  tlb_entry_t   tlbr_res,
@@ -116,8 +117,7 @@ begin
 	end
 end
 
-always @(posedge clk)
-begin
+always @(posedge clk) begin
 	if(rst)
 		timer_int <= 1'b0;
 	else if(regs.compare != 32'b0 && regs.compare == regs.count)
@@ -138,6 +138,7 @@ always_comb begin
 	regs_nxt = regs_now;
 	regs_nxt.count  = regs_nxt.count + 32'b1;
 	regs_nxt.random = regs_now.random + tlbwr_req;
+	regs_nxt.cause.ip[7:2] = interrupt_flag[7:2];
 
 	/* write register (WB stage) */
 	if(wreq.we) begin
@@ -186,9 +187,6 @@ always_comb begin
 
 			regs_nxt.status.exl = 1'b1;
 			regs_nxt.cause.exc_code = except_req.code;
-
-			if(except_req.code == `EXCCODE_INT)
-				regs_nxt.cause.ip = except_req.extra[7:0];
 
 			if(except_req.code == `EXCCODE_ADEL || except_req.code == `EXCCODE_ADES) begin
 				regs_nxt.bad_vaddr = except_req.extra;
