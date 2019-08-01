@@ -7,7 +7,7 @@
 
 **/
 
-// `define COMPILE_FULL_M
+`define COMPILE_FULL_M
 
 `ifdef COMPILE_FULL_M
 	`define COMPILE_FULL 1
