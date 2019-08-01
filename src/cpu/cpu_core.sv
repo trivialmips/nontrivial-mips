@@ -10,11 +10,11 @@ module cpu_core(
 );
 
 // flush and stall signals
-logic flush_if, stall_if;
-logic flush_id, stall_id, stall_from_id;
-logic flush_ex, stall_ex, stall_from_ex;
-logic flush_mm, stall_mm, stall_from_mm;
-logic flush_delayed_mispredict;
+(* mark_debug = "true" *) logic flush_if, stall_if;
+(* mark_debug = "true" *) logic flush_id, stall_id, stall_from_id;
+(* mark_debug = "true" *) logic flush_ex, stall_ex, stall_from_ex;
+(* mark_debug = "true" *) logic flush_mm, stall_mm, stall_from_mm;
+(* mark_debug = "true" *) logic flush_delayed_mispredict;
 logic delayslot_not_exec, hold_resolved_branch;
 
 // register file
@@ -37,20 +37,20 @@ logic llbit_value;
 
 // pipeline data
 pipeline_decode_t [1:0] pipeline_decode, pipeline_decode_d;
-pipeline_exec_t   [1:0] pipeline_exec, pipeline_exec_d;
+(* mark_debug = "true" *) pipeline_exec_t   [1:0] pipeline_exec, pipeline_exec_d;
 pipeline_exec_t   [2:0][1:0] pipeline_dcache;
 pipeline_exec_t   [1:0] pipeline_delayed_ro_d;
 pipeline_exec_t   [1:0] pipeline_dcache_last;
-pipeline_memwb_t  [1:0] pipeline_mem, pipeline_mem_d;
+(* mark_debug = "true" *) pipeline_memwb_t  [1:0] pipeline_mem, pipeline_mem_d;
 pipeline_memwb_t  [1:0] pipeline_wb;
 assign pipeline_dcache_last = pipeline_dcache[`DCACHE_PIPE_DEPTH-1];
 assign pipeline_wb = pipeline_mem_d;
 
-fetch_ack_t          if_fetch_ack;
-fetch_entry_t [1:0]  if_fetch_entry;
+(* mark_debug = "true" *) fetch_ack_t          if_fetch_ack;
+(* mark_debug = "true" *) fetch_entry_t [1:0]  if_fetch_entry;
 instr_fetch_memres_t icache_res;
 instr_fetch_memreq_t icache_req;
-branch_resolved_t resolved_branch;
+(* mark_debug = "true" *) branch_resolved_t resolved_branch;
 branch_resolved_t [`ISSUE_NUM-1:0] ex_resolved_branch, delayed_resolved_branch;
 branch_early_resolved_t [`ISSUE_NUM-1:0] delayed_early_resolved_ro, delayed_early_resolved_ro_d;
 
