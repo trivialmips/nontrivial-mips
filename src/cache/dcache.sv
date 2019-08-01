@@ -27,6 +27,9 @@ module dcache #(
     input  logic            rst,
     // CPU signals
     cpu_dbus_if.slave       dbus,
+    cpu_dbus_if.slave       dbus_uncached,
+
+    // Cached
     // AXI request
     output axi_req_t                axi_req,
     output logic [BUS_WIDTH - 1 :0] axi_req_arid,
@@ -35,7 +38,18 @@ module dcache #(
     // AXI response
     input  axi_resp_t               axi_resp,
     input  logic [BUS_WIDTH - 1 :0] axi_resp_rid,
-    input  logic [BUS_WIDTH - 1 :0] axi_resp_bid
+    input  logic [BUS_WIDTH - 1 :0] axi_resp_bid,
+
+    // Uncached
+    // AXI request
+    output axi_req_t                axi_req_uncached,
+    output logic [BUS_WIDTH - 1 :0] axi_req_uncached_arid,
+    output logic [BUS_WIDTH - 1 :0] axi_req_uncached_awid,
+    output logic [BUS_WIDTH - 1 :0] axi_req_uncached_wid,
+    // AXI response
+    input  axi_resp_t               axi_resp_uncached,
+    input  logic [BUS_WIDTH - 1 :0] axi_resp_uncached_rid,
+    input  logic [BUS_WIDTH - 1 :0] axi_resp_uncached_bid
 );
 
 localparam int LINE_NUM    = CACHE_SIZE / LINE_WIDTH;
@@ -49,7 +63,7 @@ localparam int TAG_WIDTH   = 32 - INDEX_WIDTH - LINE_BYTE_OFFSET;
 
 localparam int BURST_LIMIT = (LINE_WIDTH / 32) - 1;
 
-typedef enum logic [2:0] {
+typedef enum logic [3:0] {
     IDLE,
     REFILL,
     WAIT_AXI_READY,
@@ -57,7 +71,13 @@ typedef enum logic [2:0] {
     FINISH,
     INVALIDATE,
     INVALIDATE_WAIT,
-    RST 
+    RST,
+
+	UNCACHED_READ_WAIT_AXI,
+	UNCACHED_WRITE_WAIT_AXI,
+	UNCACHED_READ,
+	UNCACHED_WRITE,
+	UNCACHED_WAIT_BVALID
 } state_t;
 
 typedef enum logic [2:0] {
@@ -158,10 +178,10 @@ logic [SET_ASSOC-1:0] hit;
 // Stage 2 reg + output
 logic s2_vacant;
 
-logic [31:0] pipe_2_addr;
+logic [31:0] pipe_2_addr, pipe_2_uncached_addr;
 logic [3:0] pipe_2_byteenable;
 logic [DATA_WIDTH-1:0] pipe_2_wdata;
-logic pipe_2_write, pipe_2_read, pipe_2_invalidate;
+logic pipe_2_write, pipe_2_read, pipe_2_invalidate, pipe_2_uncached_read, pipe_2_uncached_write;
 logic pipe_2_fifo_found, pipe_2_fifo_written;
 line_t pipe_2_fifo_qdata;
 logic [SET_ASSOC-1:0] pipe_2_hit, patched_hit; // patched_hit: hit data to pass into stage 3
@@ -184,10 +204,12 @@ logic s3_vacant;
 logic pipe_read;
 logic pipe_write;
 logic pipe_invalidate;
+logic pipe_uncached_read;
+logic pipe_uncached_write;
 logic pipe_request_refill;
 logic [SET_ASSOC-1:0] pipe_hit;
 logic [3:0] pipe_byteenable;
-logic [31:0] pipe_addr;
+logic [31:0] pipe_addr, pipe_uncached_addr;
 logic [DATA_WIDTH-1:0] pipe_wdata, pipe_rdata;
 line_t pipe_data_mux_line;
 trans_t pipe_trans;
@@ -206,7 +228,10 @@ logic [3:0] exited_byteenable;
 logic [DATA_WIDTH-1:0] exited_wdata;
 logic exited_vacant;
 
-assign dbus.stall = ~(state == FINISH || (state == IDLE && ~(pipe_invalidate || pipe_request_refill)));
+logic stall;
+assign stall = ~(state == FINISH || (state == IDLE && ~(pipe_invalidate || pipe_request_refill || pipe_uncached_read || pipe_uncached_write)));
+assign dbus.stall = stall;
+assign dbus_uncached.stall = stall;
 // assign dbus.stall = state_d != IDLE || state == RST;
 
 assign dbus.trans_out = pipe_trans;
@@ -218,6 +243,8 @@ always_comb begin
         dbus.rddata = line_recv[get_offset(pipe_addr)];
     end
 end
+
+assign dbus_uncached.rddata = line_recv[0];
 
 /* Read / Write: Sync part */
 
@@ -243,7 +270,7 @@ always_comb begin
     fifo_wbe[get_offset(dbus.address)] = dbus.byteenable;
 end
 
-assign fifo_write = ~dbus.stall && dbus.write;
+assign fifo_write = ~dbus.stall && dbus.write; // Only handles cached writes
 
 // Stage 2
 //   - Way select among RAM, FIFO and write-back line
@@ -377,6 +404,26 @@ always_comb begin
     axi_req.arprot = '0;
     axi_req.arcache = '0;
 
+    // Uncached AXI
+	axi_req_uncached = '0;
+
+    axi_req_uncached_arid = '0;
+    axi_req_uncached_awid = '0;
+    axi_req_uncached_wid = '0;
+
+	// INCR, but we are only doing one transfer in a burst
+	axi_req_uncached.arburst = 2'b01;
+	axi_req_uncached.awburst = 2'b01;
+	axi_req_uncached.arlen   = 3'b0000;
+	axi_req_uncached.awlen   = 3'b0000;
+	axi_req_uncached.arsize  = 2'b010; // 4 bytes
+	axi_req_uncached.awsize  = 2'b010;
+	axi_req_uncached.wstrb   = pipe_byteenable;
+	axi_req_uncached.araddr  = pipe_addr;
+	axi_req_uncached.awaddr  = pipe_addr;
+	axi_req_uncached.wdata   = pipe_wdata;
+	axi_req_uncached.bready = 1'b1;
+
     case(state)
         IDLE: begin
             if(pipe_request_refill) begin
@@ -391,6 +438,9 @@ always_comb begin
                 tag_we = pipe_hit;
                 data_we = pipe_hit;
             end
+
+			axi_req_uncached.arvalid = pipe_uncached_read;
+			axi_req_uncached.awvalid = pipe_uncached_write;
         end
         WAIT_AXI_READY: begin
             burst_cnt_d     = '0;
@@ -446,6 +496,14 @@ always_comb begin
                 assoc_cnt_d = assoc_cnt + 1;
             end
         end
+
+		UNCACHED_READ_WAIT_AXI:  axi_req_uncached.arvalid = 1'b1;
+		UNCACHED_WRITE_WAIT_AXI: axi_req_uncached.awvalid = 1'b1;
+		UNCACHED_READ:  if(axi_resp_uncached.rvalid) axi_req_uncached.rready = 1'b1;
+		UNCACHED_WRITE: begin
+			axi_req_uncached.wvalid = 1'b1;  // Write a single transfer
+			axi_req_uncached.wlast = 1'b1;   // The burst length is 1
+		end
     endcase
 end
 
@@ -456,6 +514,8 @@ always_comb begin
         IDLE: begin
             if(pipe_request_refill) state_d = REFILL;
             if(pipe_invalidate) state_d = INVALIDATE;
+			if(pipe_uncached_read)  state_d = axi_resp_uncached.arready ? UNCACHED_READ  : UNCACHED_READ_WAIT_AXI;
+			if(pipe_uncached_write) state_d = axi_resp_uncached.awready ? UNCACHED_WRITE : UNCACHED_WRITE_WAIT_AXI;
         end
         REFILL: begin
             if(victim_locked) begin
@@ -490,6 +550,12 @@ always_comb begin
         INVALIDATE_WAIT:
             if(wb_state == IDLE && fifo_empty)
                 state_d = FINISH;
+
+		UNCACHED_READ_WAIT_AXI:  if(axi_resp_uncached.arready) state_d = UNCACHED_READ;
+		UNCACHED_WRITE_WAIT_AXI: if(axi_resp_uncached.awready) state_d = UNCACHED_WRITE;
+		UNCACHED_READ:           if(axi_resp_uncached.rvalid)  state_d = FINISH;
+		UNCACHED_WRITE:          if(axi_resp_uncached.wready)  state_d = UNCACHED_WAIT_BVALID;
+		UNCACHED_WAIT_BVALID:    if(axi_resp_uncached.bvalid)  state_d = FINISH;
     endcase
 end
 
@@ -504,6 +570,8 @@ always_ff @(posedge clk) begin
         line_recv <= wb_line;
     end else if(state == RECEIVING && axi_resp.rvalid) begin
         line_recv[burst_cnt] <= axi_resp.rdata;
+    end else if(state == UNCACHED_READ && axi_resp_uncached.rvalid) begin
+        line_recv[0] <= axi_resp_uncached.rdata;
     end
 
     if(rst) begin
@@ -531,6 +599,8 @@ always_ff @(posedge clk) begin
         pipe_2_read <= 1'b0;
         pipe_2_write <= 1'b0;
         pipe_2_invalidate <= 1'b0;
+        pipe_2_uncached_read <= 1'b0;
+        pipe_2_uncached_write <= 1'b0;
         pipe_2_byteenable <= '0;
         pipe_2_addr <= '0;
         pipe_2_wdata <= '0;
@@ -544,6 +614,8 @@ always_ff @(posedge clk) begin
         pipe_read <= 1'b0;
         pipe_write <= 1'b0;
         pipe_invalidate <= 1'b0;
+        pipe_uncached_read <= 1'b0;
+        pipe_uncached_write <= 1'b0;
         pipe_addr <= '0;
         pipe_wdata <= '0;
         pipe_byteenable <= '0;
@@ -561,7 +633,7 @@ always_ff @(posedge clk) begin
         exited_wdata <= '0;
 
     end else if(~dbus.stall) begin
-        s2_vacant <= 1'b0;
+        s2_vacant <= ~(dbus.read || dbus.write || dbus.invalidate);
         s3_vacant <= s2_vacant;
         exited_vacant <= s3_vacant;
 
@@ -569,9 +641,12 @@ always_ff @(posedge clk) begin
         pipe_2_read <= dbus.read;
         pipe_2_write <= dbus.write;
         pipe_2_invalidate <= dbus.invalidate;
-        pipe_2_byteenable <= dbus.byteenable;
-        pipe_2_addr <= dbus.address;
-        pipe_2_wdata <= dbus.wrdata;
+        pipe_2_uncached_read <= dbus_uncached.read;
+        pipe_2_uncached_write <= dbus_uncached.write;
+
+        pipe_2_byteenable <= (dbus_uncached.read || dbus_uncached.write) ? dbus_uncached.byteenable : dbus.byteenable;
+        pipe_2_addr <= (dbus_uncached.read || dbus_uncached.write) ? dbus_uncached.address : dbus.address;
+        pipe_2_wdata <= (dbus_uncached.read || dbus_uncached.write) ? dbus_uncached.wrdata : dbus.wrdata;
         pipe_2_fifo_found <= fifo_found;
         pipe_2_fifo_written <= fifo_written;
         pipe_2_fifo_qdata <= fifo_qdata;
@@ -582,6 +657,9 @@ always_ff @(posedge clk) begin
         pipe_read <= pipe_2_read;
         pipe_write <= pipe_2_write;
         pipe_invalidate <= pipe_2_invalidate;
+        pipe_uncached_read <= pipe_2_uncached_read;
+        pipe_uncached_write <= pipe_2_uncached_write;
+
         pipe_addr <= pipe_2_addr;
         pipe_wdata <= pipe_2_wdata;
         pipe_byteenable <= pipe_2_byteenable;

@@ -21,6 +21,11 @@ mem_device mem (
 );
 
 cpu_dbus_if dbus();
+cpu_dbus_if dbus_dummy();
+
+assign dbus_dummy.invalidate = 1'b0;
+assign dbus_dummy.read = 1'b0;
+assign dbus_dummy.write = 1'b0;
 
 // Size = 2048, Line-Width = 256 => 8 lines
 // Assoc = 2, so we have 4 lines in each ram
@@ -39,7 +44,9 @@ dcache #(
 	.axi_req (axi_req),
 	.axi_resp (axi_resp),
 
-	.dbus (dbus),
+    .dbus (dbus),
+	.dbus_uncached (dbus_dummy),
+
 	.axi_req_awid ( /* open */ ),
 	.axi_req_arid ( /* open */ ),
 	.axi_req_wid ( /* open */ ),
