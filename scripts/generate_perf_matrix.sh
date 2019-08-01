@@ -8,7 +8,7 @@ RESULT_PATH="scripts/matrix/result"
 # Initial setup
 sed -i "s/ICACHE_NO_INVALIDATE *0/ICACHE_NO_INVALIDATE 1/" src/compile_options.svh
 sed -i "s/CPU_PERFORMANCE *0/CPU_PERFORMANCE 1/" src/compile_options.svh
-sed -i "s/\`define COMPILE_FULL_M/# \`define COMPILE_FULL_M/" src/compile_options.svh
+sed -i "s/\`define COMPILE_FULL_M/\\/\\/ \`define COMPILE_FULL_M/" src/compile_options.svh
 
 # Set clocking commands
 declare -A CLK_CMDS=(
