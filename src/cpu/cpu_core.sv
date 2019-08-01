@@ -255,7 +255,7 @@ end
 
 // resolve interrupt requests
 (* mark_debug="true" *) logic pipe_interrupt_flush;
-logic [7:0] pipe_interrupt, interrupt_flag;
+(* mark_debug="true" *) logic [7:0] pipe_interrupt, interrupt_flag;
 assign interrupt_flag = cp0_regs.status.im & {
 	cp0_timer_int,
 	intr[4:0],
