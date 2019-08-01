@@ -114,6 +114,7 @@ always_comb begin
 				/* compare and set */
 				6'b101010: decoded_instr.op = OP_SLT;
 				6'b101011: decoded_instr.op = OP_SLTU;
+				`ifdef COMPILE_FULL_M
 				/* trap */
 				6'b110000: decoded_instr.op = OP_TGE;
 				6'b110001: decoded_instr.op = OP_TGEU;
@@ -121,9 +122,11 @@ always_comb begin
 				6'b110011: decoded_instr.op = OP_TLTU;
 				6'b110100: decoded_instr.op = OP_TEQ;
 				6'b110110: decoded_instr.op = OP_TNE;
+				`endif
 				default:   decoded_instr.op = OP_INVALID;
 			endcase
 		end
+		`ifdef COMPILE_FULL_M
 		6'b011100: begin // SPECIAL2 (Reg-Reg)
 			decoded_instr.rs1 = rs;
 			decoded_instr.rs2 = rt;
@@ -139,12 +142,14 @@ always_comb begin
 				default:   decoded_instr.op = OP_INVALID;
 			endcase
 		end
+		`endif
 		6'b000001: begin // REGIMM (Reg-Imm)
 			decoded_instr.rs1 = rs;
 			decoded_instr.rd  = (instr[20:17] == 4'b1000) ? 5'd31 : 5'd0;
 			decoded_instr.use_imm = 1'b1;
 			decoded_instr.delayed_exec = (instr[19:17] == 3'b000) & `CPU_DELAYED_BRANCH;
 			unique case(instr[20:16])
+				`ifdef COMPILE_FULL_M
 				/* trap */
 				5'b01000: decoded_instr.op = OP_TGE;
 				5'b01001: decoded_instr.op = OP_TGEU;
@@ -152,6 +157,7 @@ always_comb begin
 				5'b01011: decoded_instr.op = OP_TLTU;
 				5'b01100: decoded_instr.op = OP_TEQ;
 				5'b01110: decoded_instr.op = OP_TNE;
+				`endif
 				/* branch */
 				5'b00000: decoded_instr.op = OP_BLTZ;
 				5'b00001: decoded_instr.op = OP_BGEZ;
@@ -223,10 +229,7 @@ always_comb begin
 			endcase
 		end
 		
-		6'b110011: begin // prefetch
-			decoded_instr.op      = OP_SLL;
-		end
-		
+		`ifdef COMPILE_FULL_M
 		6'b110000: begin // load linked word (Reg-Imm)
 			decoded_instr.rs1     = rs;
 			decoded_instr.rd      = rt;
@@ -241,14 +244,15 @@ always_comb begin
 			decoded_instr.op       = OP_SC;
 			decoded_instr.is_store = 1'b1;
 		end
+
+		6'b110011: begin // prefetch
+			decoded_instr.op = OP_SLL;
+		end
+		`endif
 		
 		6'b00001?: begin // jump and link
 			decoded_instr.rd  = {$bits(reg_addr_t){opcode[0]}};
 			decoded_instr.op  = OP_JAL;
-		end
-
-		6'b110011: begin // prefetch
-			decoded_instr.op  = OP_SLL;
 		end
 
 		6'b010000: begin // COP0
@@ -264,12 +268,14 @@ always_comb begin
 				5'b10000: begin
 					decoded_instr.is_nonrw_priv = 1'b1;
 					unique case(instr[5:0])
+						`ifdef COMPILE_FULL_M
 						6'b000001: decoded_instr.op = OP_TLBR;
 						6'b000010: decoded_instr.op = OP_TLBWI;
 						6'b000110: decoded_instr.op = OP_TLBWR;
 						6'b001000: decoded_instr.op = OP_TLBP;
-						6'b011000: decoded_instr.op = OP_ERET;
 						6'b100000: decoded_instr.op = OP_SLL;  // wait
+						`endif
+						6'b011000: decoded_instr.op = OP_ERET;
 						default: decoded_instr.op = OP_INVALID;
 					endcase
 				end

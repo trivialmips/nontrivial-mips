@@ -7,14 +7,20 @@
 
 **/
 
-`define COMPILE_FULL 1
+// `define COMPILE_FULL_M
+
+`ifdef COMPILE_FULL_M
+	`define COMPILE_FULL 1
+`else
+	`define COMPILE_FULL 0
+`endif
 
 `define CPU_MMU_ENABLED      `COMPILE_FULL
 `define CPU_LLSC_ENABLED     `COMPILE_FULL
 `define CPU_MUTEX_PRIV       `COMPILE_FULL
 `define CPU_LWLR_ENABLED     `COMPILE_FULL
 
-`define CPU_PERFORMANCE 0
+`define CPU_PERFORMANCE      1
 `define CPU_DELAYED_BRANCH   `CPU_PERFORMANCE
 
 `define FETCH_NUM            2
@@ -34,7 +40,5 @@
 `define DCACHE_SIZE          16 * 1024 * 8
 `define DCACHE_WB_FIFO_DEPTH 8
 `define DBUS_TRANS_WIDTH     8
-
-`define ICACHE_NO_INVALIDATE 0
 
 `endif

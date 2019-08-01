@@ -71,6 +71,7 @@ assign unsigned_lt = (reg1 < reg2);
 
 // count leading bits
 uint32_t clz_cnt, clo_cnt;
+generate if(`COMPILE_FULL) begin: generate_cloclz
 count_bit count_clz(
 	.bit_val(1'b0),
 	.val(reg1),
@@ -82,6 +83,10 @@ count_bit count_clo(
 	.val(reg1),
 	.count(clo_cnt)
 );
+end else begin: generate_disable_cloclz
+	assign clo_cnt = '0;
+	assign clz_cnt = '0;
+end endgenerate
 
 // multi-cycle execution
 logic multi_cyc_busy;
@@ -198,8 +203,10 @@ always_comb begin
 		OP_SLTU: exec_ret = { 30'b0, unsigned_lt };
 		OP_SLT:  exec_ret = { 30'b0, signed_lt   };
 
+`ifdef COMPILE_FULL_M
 		/* conditional store */
 		OP_SC:   exec_ret = llbit_value;
+`endif
 
 		/* read coprocessers */
 		OP_MFC0: exec_ret = cp0_rdata;
@@ -213,6 +220,7 @@ logic icache_invalidate;
 always_comb begin
 	dcache_invalidate = 1'b0;
 	icache_invalidate = 1'b0;
+`ifdef COMPILE_FULL_M
 	if(op == OP_CACHE) begin
 		case(instr[20:16])
 			5'b00000, 5'b10000:
@@ -221,6 +229,7 @@ always_comb begin
 				dcache_invalidate = 1'b1;
 		endcase
 	end
+`endif
 end
 
 /* memory operation */
@@ -233,8 +242,12 @@ always_comb begin
 	result.memreq.invalidate_icache = icache_invalidate;
 	result.memreq.invalidate = dcache_invalidate;
 	result.memreq.read       = data.decoded.is_load;
+`ifdef COMPILE_FULL_M
 	result.memreq.write      = data.decoded.is_store & (op != OP_CACHE)
 							   & (llbit_value || (op != OP_SC));
+`else
+	result.memreq.write      = data.decoded.is_store;
+`endif
 	result.memreq.uncached   = mmu_result.uncached;
 	result.memreq.vaddr      = mmu_vaddr;
 	result.memreq.paddr      = mmu_result.phy_addr;
@@ -328,6 +341,7 @@ end
 /* exception */
 logic trap_valid, daddr_unaligned, invalid_instr;
 always_comb begin
+`ifdef COMPILE_FULL_M
 	unique case(op)
 		OP_TEQ:  trap_valid = (reg1 == reg2);
 		OP_TNE:  trap_valid = (reg1 != reg2);
@@ -337,6 +351,9 @@ always_comb begin
 		OP_TLTU: trap_valid = unsigned_lt;
 		default: trap_valid = 1'b0;
 	endcase
+`else
+	trap_valid = '0;
+`endif
 	unique case(op)
 		OP_LW, OP_LL, OP_SW, OP_SC:
 			daddr_unaligned = mmu_vaddr[0] | mmu_vaddr[1];
