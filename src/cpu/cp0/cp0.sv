@@ -25,7 +25,7 @@ module cp0(
 	output logic         timer_int
 );
 
-cp0_regs_t regs_now, regs_nxt;
+(*mark_debug="true"*) cp0_regs_t regs_now, regs_nxt;
 assign regs = regs_now;
 assign asid = regs.entry_hi[7:0];
 assign user_mode = (regs.status[4:1] == 4'b1000);
