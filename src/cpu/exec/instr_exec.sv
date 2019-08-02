@@ -16,10 +16,7 @@ module instr_exec (
 	input  pipeline_memwb_t  [1:0] pipeline_wb,
 
 	input  logic        is_usermode,
-	input  uint32_t     cp0_rdata_i,
-	output logic [2:0]  cp0_rsel,
-	output reg_addr_t   cp0_raddr,
-	input  cp0_req_t    cp0_req_fwd,
+	input  uint32_t     cp0_rdata,
 
 	output virt_t       mmu_vaddr,
 	input  mmu_result_t mmu_result
@@ -98,30 +95,6 @@ assign result.hiloreq.we    = (
 assign result.hiloreq.wdata = multicyc_hilo;
 
 // CP0 operation
-uint32_t cp0_wmask, cp0_rdata;
-cp0_write_mask cp0_write_mask_inst(
-	.rst  ( 1'b0      ),
-	.sel  ( cp0_rsel  ),
-	.addr ( cp0_raddr ),
-	.mask ( cp0_wmask )
-);
-
-function logic cp0_match(
-	input cp0_req_t   req,
-	input reg_addr_t  addr,
-	input logic [2:0] sel
-);
-	return req.we && req.waddr == addr && req.wsel == sel;
-endfunction
-
-always_comb begin
-	cp0_rdata = cp0_rdata_i;
-	if(cp0_match(cp0_req_fwd, cp0_raddr, cp0_rsel))
-		cp0_rdata = (cp0_wmask & cp0_req_fwd.wdata) | (~cp0_wmask & cp0_rdata_i);
-end
-
-assign cp0_raddr = instr[15:11];
-assign cp0_rsel  = instr[2:0];
 assign result.cp0_req.we    = (op == OP_MTC0);
 assign result.cp0_req.wdata = reg1;
 assign result.cp0_req.waddr = instr[15:11];

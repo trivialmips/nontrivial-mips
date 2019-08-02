@@ -194,11 +194,15 @@ hilo_forward hilo_forward_inst(
 );
 
 logic [`ISSUE_NUM-1:0] resolved_delayslot;
-logic [`ISSUE_NUM-1:0][2:0] ex_cp0_rsel;
-reg_addr_t [`ISSUE_NUM-1:0] ex_cp0_raddr;
-// only pipeline 0 will access CP0
-assign cp0_rsel  = ex_cp0_rsel[0];
-assign cp0_raddr = ex_cp0_raddr[0];
+always_comb begin
+	if(pipeline_decode[0].decoded.is_priv) begin
+		cp0_rsel  = pipeline_decode[0].fetch.instr[2:0];
+		cp0_raddr = pipeline_decode[0].fetch.instr[15:11];
+	end else begin
+		cp0_rsel  = pipeline_decode[1].fetch.instr[2:0];
+		cp0_raddr = pipeline_decode[1].fetch.instr[15:11];
+	end
+end
 
 resolve_delayslot resolve_delayslot_inst(
 	.clk,
@@ -238,10 +242,7 @@ for(genvar i = 0; i < `ISSUE_NUM; ++i) begin : gen_exec
 		.mmu_vaddr   ( mmu_data_vaddr[i]          ),
 		.mmu_result  ( mmu_data_result[i]         ),
 		.is_usermode ( cp0_user_mode              ),
-		.cp0_req_fwd ( pipeline_exec_d[0].cp0_req ),
-		.cp0_rdata_i ( cp0_rdata                  ),
-		.cp0_rsel    ( ex_cp0_rsel[i]             ),
-		.cp0_raddr   ( ex_cp0_raddr[i]            ),
+		.cp0_rdata   ( cp0_rdata                  ),
 		.delayslot   ( resolved_delayslot[i]      ),
 		.resolved_branch ( ex_resolved_branch[i]  )
 	);
@@ -323,9 +324,27 @@ cp0 cp0_inst(
 	.timer_int ( cp0_timer_int )
 );
 
-assign cp0_reg_wr  = pipeline_exec_d[0].cp0_req & ~except_req.valid;
-assign tlbrw_we    = pipeline_exec_d[0].tlbreq.tlbwi | pipeline_exec_d[0].tlbreq.tlbwr;
-assign tlbrw_index = pipeline_exec_d[0].tlbreq.tlbwi ? cp0_regs.index : cp0_regs.random;
+always_comb begin
+	cp0_reg_wr = '0;
+	tlbrw_we = 1'b0;
+	tlbrw_index = '0;
+	if(~except_req.valid) begin
+		if(pipeline_exec_d[0].decoded.is_priv) begin
+			cp0_reg_wr = pipeline_exec_d[0].cp0_req;
+			tlbrw_index = pipeline_exec_d[0].tlbreq.tlbwi ?
+				cp0_regs.index : cp0_regs.random;
+		end else begin
+			cp0_reg_wr = pipeline_exec_d[1].cp0_req;
+			tlbrw_index = pipeline_exec_d[1].tlbreq.tlbwi ?
+				cp0_regs.index : cp0_regs.random;
+		end
+
+		tlbrw_we = pipeline_exec_d[0].tlbreq.tlbwi
+			| pipeline_exec_d[0].tlbreq.tlbwr
+			| pipeline_exec_d[1].tlbreq.tlbwi
+			| pipeline_exec_d[1].tlbreq.tlbwr;
+	end
+end
 
 dbus_mux dbus_mux_inst(
 	.except_req,
