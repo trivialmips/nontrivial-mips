@@ -4,7 +4,7 @@ module except(
 	input  logic            rst,
 	input  pipeline_exec_t  [1:0] pipe_mm,
 	input  cp0_regs_t       cp0_regs,
-	input  logic [7:0]      interrupt_flag,
+	input  logic [7:0]      interrupt_req,
 	output except_req_t     except_req
 );
 
@@ -16,7 +16,7 @@ assign interrupt_occur = (
 	cp0_regs.status.ie
 	&& ~cp0_regs.status.exl
 	&& ~cp0_regs.status.erl
-	&& interrupt_flag != 8'b0
+	&& interrupt_req != 8'b0
 	&& (pipe_mm[0].valid || pipe_mm[1].valid)
 );
 
@@ -25,7 +25,7 @@ always_comb begin
 	if(interrupt_occur) begin
 		except_req.valid = 1'b1;
 		except_req.code  = `EXCCODE_INT;
-		except_req.extra = interrupt_flag;
+		except_req.extra = '0;
 		except_req.pc    = pipe_mm[0].pc;
 		except_req.delayslot   = 1'b0;
 		except_req.alpha_taken = 1'b1;

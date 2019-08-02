@@ -3,11 +3,13 @@
 module cp0(
 	input  logic clk,
 	input  logic rst,
+	input  logic stall,
 
 	input  reg_addr_t    raddr,
 	input  logic [2:0]   rsel,
 	input  cp0_req_t     wreq,
 	input  except_req_t  except_req,
+	input  logic [7:0]   interrupt_flag,
 
 	input  logic         tlbr_req,
 	input  tlb_entry_t   tlbr_res,
@@ -25,11 +27,17 @@ module cp0(
 	output logic         timer_int
 );
 
-cp0_regs_t regs_now, regs_nxt;
+(*mark_debug="true"*) cp0_regs_t regs_now, regs_nxt;
 assign regs = regs_now;
+`ifdef COMPILE_FULL_M
 assign asid = regs.entry_hi[7:0];
 assign user_mode = (regs.status[4:1] == 4'b1000);
 assign kseg0_uncached = (regs.config0[2:0] == 3'd2);
+`else
+assign asid = '0;
+assign user_mode = 1'b0;
+assign kseg0_uncached = 1'b0;
+`endif
 
 assign tlbrw_wdata.vpn2 = regs.entry_hi[31:13];
 assign tlbrw_wdata.asid = regs.entry_hi[7:0];
@@ -116,8 +124,7 @@ begin
 	end
 end
 
-always @(posedge clk)
-begin
+always @(posedge clk) begin
 	if(rst)
 		timer_int <= 1'b0;
 	else if(regs.compare != 32'b0 && regs.compare == regs.count)
@@ -138,9 +145,10 @@ always_comb begin
 	regs_nxt = regs_now;
 	regs_nxt.count  = regs_nxt.count + 32'b1;
 	regs_nxt.random = regs_now.random + tlbwr_req;
+	regs_nxt.cause.ip[7:2] = interrupt_flag[7:2];
 
 	/* write register (WB stage) */
-	if(wreq.we) begin
+	if(wreq.we && ~stall) begin
 		if(wreq.wsel == 3'b0) begin
 			wdata = regs_nxt[wreq.waddr * 32 +: 32];
 			wdata = (wreq.wdata & wmask) | (wdata & ~wmask);
@@ -152,7 +160,7 @@ always_comb begin
 	end
 
 	/* TLBR/TLBP instruction (WB stage) */
-	if(tlbr_req) begin
+	if(tlbr_req && ~stall) begin
 		regs_nxt.entry_hi[31:13] = tlbr_res.vpn2;
 		regs_nxt.entry_hi[7:0]   = tlbr_res.asid;
 		regs_nxt.entry_lo1 = {
@@ -163,7 +171,7 @@ always_comb begin
 			tlbr_res.d0, tlbr_res.v0, tlbr_res.G };
 	end
 
-	if(tlbp_req) regs_nxt.index = tlbp_res;
+	if(tlbp_req && ~stall) regs_nxt.index = tlbp_res;
 
 	/* exception (MEM stage) */
 	if(except_req.valid) begin
@@ -186,9 +194,6 @@ always_comb begin
 
 			regs_nxt.status.exl = 1'b1;
 			regs_nxt.cause.exc_code = except_req.code;
-
-			if(except_req.code == `EXCCODE_INT)
-				regs_nxt.cause.ip = except_req.extra[7:0];
 
 			if(except_req.code == `EXCCODE_ADEL || except_req.code == `EXCCODE_ADES) begin
 				regs_nxt.bad_vaddr = except_req.extra;

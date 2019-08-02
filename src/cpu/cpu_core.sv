@@ -10,11 +10,11 @@ module cpu_core(
 );
 
 // flush and stall signals
-logic flush_if, stall_if;
-logic flush_id, stall_id, stall_from_id;
-logic flush_ex, stall_ex, stall_from_ex;
-logic flush_mm, stall_mm, stall_from_mm;
-logic flush_delayed_mispredict;
+(* mark_debug = "true" *) logic flush_if, stall_if;
+(* mark_debug = "true" *) logic flush_id, stall_id, stall_from_id;
+(* mark_debug = "true" *) logic flush_ex, stall_ex, stall_from_ex;
+(* mark_debug = "true" *) logic flush_mm, stall_mm, stall_from_mm;
+(* mark_debug = "true" *) logic flush_delayed_mispredict;
 logic delayslot_not_exec, hold_resolved_branch;
 
 // register file
@@ -37,20 +37,20 @@ logic llbit_value;
 
 // pipeline data
 pipeline_decode_t [1:0] pipeline_decode, pipeline_decode_d;
-pipeline_exec_t   [1:0] pipeline_exec, pipeline_exec_d;
+(* mark_debug = "true" *) pipeline_exec_t   [1:0] pipeline_exec, pipeline_exec_d;
 pipeline_exec_t   [2:0][1:0] pipeline_dcache;
 pipeline_exec_t   [1:0] pipeline_delayed_ro_d;
 pipeline_exec_t   [1:0] pipeline_dcache_last;
-pipeline_memwb_t  [1:0] pipeline_mem, pipeline_mem_d;
+(* mark_debug = "true" *) pipeline_memwb_t  [1:0] pipeline_mem, pipeline_mem_d;
 pipeline_memwb_t  [1:0] pipeline_wb;
 assign pipeline_dcache_last = pipeline_dcache[`DCACHE_PIPE_DEPTH-1];
 assign pipeline_wb = pipeline_mem_d;
 
-fetch_ack_t          if_fetch_ack;
-fetch_entry_t [1:0]  if_fetch_entry;
+(* mark_debug = "true" *) fetch_ack_t          if_fetch_ack;
+(* mark_debug = "true" *) fetch_entry_t [1:0]  if_fetch_entry;
 instr_fetch_memres_t icache_res;
 instr_fetch_memreq_t icache_req;
-branch_resolved_t resolved_branch;
+(* mark_debug = "true" *) branch_resolved_t resolved_branch;
 branch_resolved_t [`ISSUE_NUM-1:0] ex_resolved_branch, delayed_resolved_branch;
 branch_early_resolved_t [`ISSUE_NUM-1:0] delayed_early_resolved_ro, delayed_early_resolved_ro_d;
 
@@ -196,8 +196,6 @@ hilo_forward hilo_forward_inst(
 logic [`ISSUE_NUM-1:0] resolved_delayslot;
 logic [`ISSUE_NUM-1:0][2:0] ex_cp0_rsel;
 reg_addr_t [`ISSUE_NUM-1:0] ex_cp0_raddr;
-logic [`ISSUE_NUM-1:0] stall_req_ex;
-assign stall_from_ex = |stall_req_ex;
 // only pipeline 0 will access CP0
 assign cp0_rsel  = ex_cp0_rsel[0];
 assign cp0_raddr = ex_cp0_raddr[0];
@@ -211,22 +209,31 @@ resolve_delayslot resolve_delayslot_inst(
 	.resolved_delayslot
 );
 
+uint32_t multicyc_reg;
+uint64_t multicyc_hilo;
+multi_cycle_exec multi_cycle_exec_inst(
+	.clk,
+	.rst,
+	.flush     ( flush_ex          ),
+	.stall     ( stall_mm          ),
+	.stall_req ( stall_from_ex     ),
+	.request   ( pipeline_decode_d ),
+	.hilo_i    ( hilo_forward      ),
+	.hilo_o    ( multicyc_hilo     ),
+	.reg_o     ( multicyc_reg      )
+);
+
 for(genvar i = 0; i < `ISSUE_NUM; ++i) begin : gen_exec
-	instr_exec #(
-		.HAS_DIV(i == 0)
-	) exec_inst (
-		.clk,
-		.rst,
-		.flush       ( flush_ex                   ),
-		.hilo        ( hilo_forward               ),
+	instr_exec exec_inst (
 		.data        ( pipeline_decode_d[i]       ),
 		.result      ( pipeline_exec[i]           ),
-		.stall_req   ( stall_req_ex[i]            ),
 		.reg_raddr   ( reg_raddr[4 + i]           ),
 		.reg_rdata   ( reg_rdata[4 + i]           ),
 		.pipeline_dcache ( pipeline_dcache[1:0]   ),
 		.pipeline_mem,
 		.pipeline_wb,
+		.multicyc_reg,
+		.multicyc_hilo,
 		.llbit_value ( llbit_value                ),
 		.mmu_vaddr   ( mmu_data_vaddr[i]          ),
 		.mmu_result  ( mmu_data_result[i]         ),
@@ -254,24 +261,23 @@ always_ff @(posedge clk) begin
 end
 
 // resolve interrupt requests
-logic pipe_interrupt_flush;
-logic [7:0] pipe_interrupt, interrupt_flag;
-assign interrupt_flag = cp0_regs.status.im & {
+(* mark_debug="true" *) logic [7:0] pipe0_interrupt, pipe_interrupt, interrupt_flag, pipe_interrupt_req;
+
+assign interrupt_flag = {
 	cp0_timer_int,
 	intr[4:0],
 	cp0_regs.cause.ip[1:0]
 };
 
 always_ff @(posedge clk) begin
-	if(rst) pipe_interrupt_flush <= '0;
-	else    pipe_interrupt_flush <= except_req.valid && ~flush_delayed_mispredict;
-end
+	if(rst) pipe0_interrupt <= '0;
+	else    pipe0_interrupt <= interrupt_flag;
 
-always_ff @(posedge clk) begin
-	if(rst || pipe_interrupt_flush)
-		pipe_interrupt <= '0;
-	else if(pipe_interrupt == '0)
-		pipe_interrupt <= interrupt_flag;
+	if(rst) pipe_interrupt <= '0;
+	else    pipe_interrupt <= pipe0_interrupt;
+
+	if(rst) pipe_interrupt_req <= '0;
+	else    pipe_interrupt_req <= pipe0_interrupt & cp0_regs.status.im;
 end
 
 ll_bit llbit_inst(
@@ -285,8 +291,8 @@ ll_bit llbit_inst(
 except except_inst(
 	.rst,
 	.cp0_regs,
-	.pipe_mm        ( pipeline_exec_d ),
-	.interrupt_flag ( pipe_interrupt  ),
+	.pipe_mm        ( pipeline_exec_d    ),
+	.interrupt_req  ( pipe_interrupt_req ),
 	.except_req
 );
 
@@ -294,6 +300,7 @@ except except_inst(
 cp0 cp0_inst(
 	.clk,
 	.rst,
+	.stall     ( 1'b0          ),
 	.raddr     ( cp0_raddr     ),
 	.rsel      ( cp0_rsel      ),
 	.wreq      ( cp0_reg_wr    ),
@@ -307,6 +314,7 @@ cp0 cp0_inst(
 
 	.tlbrw_wdata,
 
+	.interrupt_flag ( pipe_interrupt     ),
 	.kseg0_uncached ( cp0_kseg0_uncached ),
 	.rdata     ( cp0_rdata     ),
 	.regs      ( cp0_regs      ),

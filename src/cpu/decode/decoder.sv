@@ -52,6 +52,7 @@ always_comb begin
 	decoded_instr.is_priv    = opcode == 6'b101111 || opcode == 6'b010000;
 	decoded_instr.delayed_exec   = 1'b0;
 	decoded_instr.is_nonrw_priv  = 1'b0;
+	decoded_instr.is_multicyc    = 1'b0;
 	decoded_instr.is_controlflow = is_branch | is_jump_i | is_jump_r;
 
 	unique casez(opcode)
@@ -71,6 +72,10 @@ always_comb begin
 				6'b101010, 6'b101011:
 					decoded_instr.delayed_exec = 1'b1;
 				default: decoded_instr.delayed_exec = 1'b0;
+			endcase
+			unique casez(funct)
+				6'b01?0??: decoded_instr.is_multicyc = 1'b1;
+				default:   decoded_instr.is_multicyc = 1'b0;
 			endcase
 			unique case(funct)
 				/* shift */
@@ -131,6 +136,11 @@ always_comb begin
 			decoded_instr.rs1 = rs;
 			decoded_instr.rs2 = rt;
 			decoded_instr.rd  = rd;
+			unique casez(funct)
+				6'b000?0?, 6'b000010:
+					decoded_instr.is_multicyc = 1'b1;
+				default: decoded_instr.is_multicyc = 1'b0;
+			endcase
 			unique case(funct)
 				6'b000000: decoded_instr.op = OP_MADD;
 				6'b000001: decoded_instr.op = OP_MADDU;

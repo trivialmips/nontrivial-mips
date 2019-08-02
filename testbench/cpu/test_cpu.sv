@@ -196,6 +196,10 @@ begin
 	unittest("except/delayslot");
 	unittest("except/interrupt");
 	unittest("except/timer");
+	unittest("hazard/tlbwi");
+	unittest("hazard/delayed_div");
+	unittest("delayed-exec/1");
+	unittest("delayed-exec/2");
 	unittest("sys/usermode");
 	unittest("across_tlb/1");
 	unittest("across_tlb/2");
