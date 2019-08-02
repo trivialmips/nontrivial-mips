@@ -146,8 +146,9 @@ assign instr2_not_taken =
    || id_decoded[1].is_controlflow
    || (is_ssnop(fetch_entry[0]) | is_ssnop(fetch_entry[1]))
    || (id_decoded[0].op == OP_SC || id_decoded[1].op == OP_SC)
-   || (id_decoded[0].is_priv | id_decoded[1].is_priv)
-   || (id_decoded[1].is_multicyc && id_decoded[0].is_multicyc);
+   || (id_decoded[0].is_priv && id_decoded[1].is_priv)
+   || (id_decoded[1].is_multicyc && id_decoded[0].is_multicyc)
+   || (id_decoded[1].op == OP_ERET);
 
 assign stall_req =
 	  ex_load_related[0]
@@ -158,6 +159,7 @@ assign stall_req =
 	| (data_delayed[1] & ~instr2_not_taken & ~(&allow_delayed))
 	| (id_decoded[0].is_nonrw_priv && priv_executing) & `CPU_MUTEX_PRIV
 	| nonrw_priv_executing & `CPU_MUTEX_PRIV
+	| (ex_decoded[0].is_priv | ex_decoded[1].is_priv)
 	| delayslot_not_loaded
 	| (speculative_branch & speculative_branch_conflict)
 	| (instr_valid == '0);

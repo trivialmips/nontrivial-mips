@@ -51,19 +51,41 @@ assign tlbrw_wdata.d0   = regs.entry_lo0[2];
 assign tlbrw_wdata.v0   = regs.entry_lo0[1];
 assign tlbrw_wdata.G    = regs.entry_lo0[0];
 
-always_comb
-begin
+uint32_t rdata_d;
+always_comb begin
 	if(rsel == 3'b0) begin
-		rdata = regs[raddr * 32 +: 32];
+		unique case(raddr)
+			5'd0:  rdata_d = regs.index;
+			5'd1:  rdata_d = regs.random;
+			5'd2:  rdata_d = regs.entry_lo0;
+			5'd3:  rdata_d = regs.entry_lo1;
+			5'd4:  rdata_d = regs.context_;
+			5'd5:  rdata_d = regs.page_mask;
+			5'd8:  rdata_d = regs.bad_vaddr;
+			5'd9:  rdata_d = regs.count;
+			5'd10: rdata_d = regs.entry_hi;
+			5'd11: rdata_d = regs.compare;
+			5'd12: rdata_d = regs.status;
+			5'd13: rdata_d = regs.cause;
+			5'd14: rdata_d = regs.epc;
+			5'd15: rdata_d = regs.prid;
+			5'd16: rdata_d = regs.config0;
+			default: rdata_d = '0;
+		endcase
 	end else if(rsel == 3'b1 && `COMPILE_FULL) begin
 		unique case(raddr)
-			5'd15: rdata = regs.ebase;
-			5'd16: rdata = regs.config1;
-			default: rdata = '0;
+			5'd15: rdata_d = regs.ebase;
+			5'd16: rdata_d = regs.config1;
+			default: rdata_d = '0;
 		endcase
 	end else begin
-		rdata = 32'b0;
+		rdata_d = 32'b0;
 	end
+end
+
+always_ff @(posedge clk) begin
+	if(rst) rdata <= '0;
+	else rdata <= rdata_d;
 end
 
 uint32_t config0_default, config1_default, prid_default;
@@ -133,26 +155,44 @@ always @(posedge clk) begin
 		timer_int <= 1'b0;
 end
 
-uint32_t wmask, wdata;
-cp0_write_mask cp0_write_mask_inst(
-	.rst,
-	.sel  ( wreq.wsel  ),
-	.addr ( wreq.waddr ),
-	.mask ( wmask      )
-);
+uint32_t wdata;
+assign wdata = wreq.wdata;
 
 always_comb begin
 	regs_nxt = regs_now;
-	regs_nxt.count  = regs_nxt.count + 32'b1;
+	regs_nxt.count  = regs_now.count + 32'b1;
 	regs_nxt.random = regs_now.random + tlbwr_req;
 	regs_nxt.cause.ip[7:2] = interrupt_flag[7:2];
 
 	/* write register (WB stage) */
 	if(wreq.we && ~stall) begin
 		if(wreq.wsel == 3'b0) begin
-			wdata = regs_nxt[wreq.waddr * 32 +: 32];
-			wdata = (wreq.wdata & wmask) | (wdata & ~wmask);
-			regs_nxt[wreq.waddr * 32 +: 32] = wdata;
+			case(wreq.waddr)
+				5'd0:  regs_nxt.index[$clog2(`TLB_ENTRIES_NUM)-1:0] = wdata[$clog2(`TLB_ENTRIES_NUM)-1:0];
+				5'd2:  regs_nxt.entry_lo0 = wdata[29:0];
+				5'd3:  regs_nxt.entry_lo1 = wdata[29:0];
+				5'd4:  regs_nxt.context_[31:23] = wdata[31:23];
+//				5'd5:  regs_nxt.page_mask;
+				5'd9:  regs_nxt.count = wdata;
+				5'd10: begin
+					regs_nxt.entry_hi[31:13] = wdata[31:13];
+					regs_nxt.entry_hi[7:0] = wdata[7:0];
+				end
+				5'd11: regs_nxt.compare = wdata;
+				5'd12: begin
+					regs_nxt.status.cu0 = wdata[28];
+					regs_nxt.status.bev = wdata[22];
+					regs_nxt.status.im = wdata[15:8];
+					regs_nxt.status.um = wdata[4];
+					regs_nxt.status[2:0] = wdata[2:0]; // ERL/EXL/IE
+				end
+				5'd13: begin
+					regs_nxt.cause.iv = wdata[23];
+					regs_nxt.cause.ip[1:0] = wdata[9:8];
+				end
+				5'd14: regs_nxt.epc = wdata;
+				5'd16: regs_nxt.config0[2:0] = wdata[2:0];
+			endcase
 		end else if(wreq.wsel == 3'b1) begin
 			if(wreq.waddr == 5'd15)
 				regs_nxt.ebase[29:12] = wreq.wdata[29:12];

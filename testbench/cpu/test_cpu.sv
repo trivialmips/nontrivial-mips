@@ -197,6 +197,9 @@ begin
 	unittest("except/interrupt");
 	unittest("except/timer");
 	unittest("hazard/tlbwi");
+	unittest("hazard/tlbwi_ds");
+	unittest("hazard/mfc");
+	unittest("hazard/mfc_ds");
 	unittest("hazard/delayed_div");
 	unittest("delayed-exec/1");
 	unittest("delayed-exec/2");
