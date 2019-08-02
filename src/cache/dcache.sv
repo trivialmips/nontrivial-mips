@@ -73,11 +73,11 @@ typedef enum logic [3:0] {
     INVALIDATE_WAIT,
     RST,
 
-	UNCACHED_READ_WAIT_AXI,
-	UNCACHED_WRITE_WAIT_AXI,
-	UNCACHED_READ,
-	UNCACHED_WRITE,
-	UNCACHED_WAIT_BVALID
+    UNCACHED_READ_WAIT_AXI,
+    UNCACHED_WRITE_WAIT_AXI,
+    UNCACHED_READ,
+    UNCACHED_WRITE,
+    UNCACHED_WAIT_BVALID
 } state_t;
 
 typedef enum logic [2:0] {
@@ -110,7 +110,7 @@ function logic [TAG_WIDTH-1:0] get_tag( input logic [31:0] addr );
 endfunction
 
 function offset_t get_offset( input logic [31:0] addr );
-	return addr[LINE_BYTE_OFFSET - 1 : DATA_BYTE_OFFSET];
+    return addr[LINE_BYTE_OFFSET - 1 : DATA_BYTE_OFFSET];
 endfunction
 
 function logic [TAG_WIDTH-1:0] get_fifo_tag( input logic [31:0] addr );
@@ -405,24 +405,24 @@ always_comb begin
     axi_req.arcache = '0;
 
     // Uncached AXI
-	axi_req_uncached = '0;
+    axi_req_uncached = '0;
 
     axi_req_uncached_arid = '0;
     axi_req_uncached_awid = '0;
     axi_req_uncached_wid = '0;
 
-	// INCR, but we are only doing one transfer in a burst
-	axi_req_uncached.arburst = 2'b01;
-	axi_req_uncached.awburst = 2'b01;
-	axi_req_uncached.arlen   = 3'b0000;
-	axi_req_uncached.awlen   = 3'b0000;
-	axi_req_uncached.arsize  = 2'b010; // 4 bytes
-	axi_req_uncached.awsize  = 2'b010;
-	axi_req_uncached.wstrb   = pipe_byteenable;
-	axi_req_uncached.araddr  = pipe_addr;
-	axi_req_uncached.awaddr  = pipe_addr;
-	axi_req_uncached.wdata   = pipe_wdata;
-	axi_req_uncached.bready = 1'b1;
+    // INCR, but we are only doing one transfer in a burst
+    axi_req_uncached.arburst = 2'b01;
+    axi_req_uncached.awburst = 2'b01;
+    axi_req_uncached.arlen   = 3'b0000;
+    axi_req_uncached.awlen   = 3'b0000;
+    axi_req_uncached.arsize  = 2'b010; // 4 bytes
+    axi_req_uncached.awsize  = 2'b010;
+    axi_req_uncached.wstrb   = pipe_byteenable;
+    axi_req_uncached.araddr  = pipe_addr;
+    axi_req_uncached.awaddr  = pipe_addr;
+    axi_req_uncached.wdata   = pipe_wdata;
+    axi_req_uncached.bready = 1'b1;
 
     case(state)
         IDLE: begin
@@ -439,8 +439,8 @@ always_comb begin
                 data_we = pipe_hit;
             end
 
-			axi_req_uncached.arvalid = pipe_uncached_read;
-			axi_req_uncached.awvalid = pipe_uncached_write;
+            axi_req_uncached.arvalid = pipe_uncached_read;
+            axi_req_uncached.awvalid = pipe_uncached_write;
         end
         WAIT_AXI_READY: begin
             burst_cnt_d     = '0;
@@ -497,13 +497,13 @@ always_comb begin
             end
         end
 
-		UNCACHED_READ_WAIT_AXI:  axi_req_uncached.arvalid = 1'b1;
-		UNCACHED_WRITE_WAIT_AXI: axi_req_uncached.awvalid = 1'b1;
-		UNCACHED_READ:  if(axi_resp_uncached.rvalid) axi_req_uncached.rready = 1'b1;
-		UNCACHED_WRITE: begin
-			axi_req_uncached.wvalid = 1'b1;  // Write a single transfer
-			axi_req_uncached.wlast = 1'b1;   // The burst length is 1
-		end
+        UNCACHED_READ_WAIT_AXI:  axi_req_uncached.arvalid = 1'b1;
+        UNCACHED_WRITE_WAIT_AXI: axi_req_uncached.awvalid = 1'b1;
+        UNCACHED_READ:  if(axi_resp_uncached.rvalid) axi_req_uncached.rready = 1'b1;
+        UNCACHED_WRITE: begin
+            axi_req_uncached.wvalid = 1'b1;  // Write a single transfer
+            axi_req_uncached.wlast = 1'b1;   // The burst length is 1
+        end
     endcase
 end
 
@@ -514,8 +514,8 @@ always_comb begin
         IDLE: begin
             if(pipe_request_refill) state_d = REFILL;
             if(pipe_invalidate) state_d = INVALIDATE;
-			if(pipe_uncached_read)  state_d = axi_resp_uncached.arready ? UNCACHED_READ  : UNCACHED_READ_WAIT_AXI;
-			if(pipe_uncached_write) state_d = axi_resp_uncached.awready ? UNCACHED_WRITE : UNCACHED_WRITE_WAIT_AXI;
+            if(pipe_uncached_read)  state_d = axi_resp_uncached.arready ? UNCACHED_READ  : UNCACHED_READ_WAIT_AXI;
+            if(pipe_uncached_write) state_d = axi_resp_uncached.awready ? UNCACHED_WRITE : UNCACHED_WRITE_WAIT_AXI;
         end
         REFILL: begin
             if(victim_locked) begin
@@ -551,11 +551,11 @@ always_comb begin
             if(wb_state == IDLE && fifo_empty)
                 state_d = FINISH;
 
-		UNCACHED_READ_WAIT_AXI:  if(axi_resp_uncached.arready) state_d = UNCACHED_READ;
-		UNCACHED_WRITE_WAIT_AXI: if(axi_resp_uncached.awready) state_d = UNCACHED_WRITE;
-		UNCACHED_READ:           if(axi_resp_uncached.rvalid)  state_d = FINISH;
-		UNCACHED_WRITE:          if(axi_resp_uncached.wready)  state_d = UNCACHED_WAIT_BVALID;
-		UNCACHED_WAIT_BVALID:    if(axi_resp_uncached.bvalid)  state_d = FINISH;
+        UNCACHED_READ_WAIT_AXI:  if(axi_resp_uncached.arready) state_d = UNCACHED_READ;
+        UNCACHED_WRITE_WAIT_AXI: if(axi_resp_uncached.awready) state_d = UNCACHED_WRITE;
+        UNCACHED_READ:           if(axi_resp_uncached.rvalid)  state_d = FINISH;
+        UNCACHED_WRITE:          if(axi_resp_uncached.wready)  state_d = UNCACHED_WAIT_BVALID;
+        UNCACHED_WAIT_BVALID:    if(axi_resp_uncached.bvalid)  state_d = FINISH;
     endcase
 end
 
@@ -577,12 +577,12 @@ always_ff @(posedge clk) begin
     if(rst) begin
         state     <= RST;
         burst_cnt <= '0;
-		invalidate_cnt <= '0;
+        invalidate_cnt <= '0;
         assoc_cnt <= '0;
     end else begin
         state     <= state_d;
         burst_cnt <= burst_cnt_d;
-		invalidate_cnt <= invalidate_cnt_d;
+        invalidate_cnt <= invalidate_cnt_d;
         assoc_cnt <= assoc_cnt_d;
     end
 end
