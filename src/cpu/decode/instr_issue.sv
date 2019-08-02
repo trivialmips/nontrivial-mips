@@ -160,7 +160,6 @@ assign stall_req =
 	| (id_decoded[0].is_nonrw_priv && priv_executing) & `CPU_MUTEX_PRIV
 	| nonrw_priv_executing & `CPU_MUTEX_PRIV
 	| (ex_decoded[0].is_priv | ex_decoded[1].is_priv)
-	| (dcache_decoded[0][0].is_priv | dcache_decoded[0][1].is_priv)
 	| delayslot_not_loaded
 	| (speculative_branch & speculative_branch_conflict)
 	| (instr_valid == '0);

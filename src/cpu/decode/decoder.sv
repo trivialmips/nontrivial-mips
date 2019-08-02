@@ -270,6 +270,7 @@ always_comb begin
 				5'b00000: begin
 					decoded_instr.op = OP_MFC0;
 					decoded_instr.rd = rt;
+					decoded_instr.is_multicyc = 1'b1;
 				end
 				5'b00100: begin
 					decoded_instr.op  = OP_MTC0;

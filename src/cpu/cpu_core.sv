@@ -194,16 +194,6 @@ hilo_forward hilo_forward_inst(
 );
 
 logic [`ISSUE_NUM-1:0] resolved_delayslot;
-always_comb begin
-	if(pipeline_decode[0].decoded.is_priv) begin
-		cp0_rsel  = pipeline_decode[0].fetch.instr[2:0];
-		cp0_raddr = pipeline_decode[0].fetch.instr[15:11];
-	end else begin
-		cp0_rsel  = pipeline_decode[1].fetch.instr[2:0];
-		cp0_raddr = pipeline_decode[1].fetch.instr[15:11];
-	end
-end
-
 resolve_delayslot resolve_delayslot_inst(
 	.clk,
 	.rst,
@@ -224,7 +214,9 @@ multi_cycle_exec multi_cycle_exec_inst(
 	.request   ( pipeline_decode_d ),
 	.hilo_i    ( hilo_forward      ),
 	.hilo_o    ( multicyc_hilo     ),
-	.reg_o     ( multicyc_reg      )
+	.reg_o     ( multicyc_reg      ),
+	.cp0_rsel,
+	.cp0_raddr
 );
 
 for(genvar i = 0; i < `ISSUE_NUM; ++i) begin : gen_exec

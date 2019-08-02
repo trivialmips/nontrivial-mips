@@ -9,6 +9,10 @@ module multi_cycle_exec(
 	input  pipeline_decode_t [1:0] request,
 	output logic    stall_req,
 
+	output reg_addr_t    cp0_raddr,
+	output logic [2:0]   cp0_rsel,
+	input  uint32_t      cp0_rdata,
+
 	input  uint64_t hilo_i,
 	output uint64_t hilo_o,
 	output uint32_t reg_o
@@ -77,6 +81,22 @@ always_ff @(posedge clk) begin
 	end
 end
 
+/* setup CP0 address */
+always_ff @(posedge clk) begin
+	if(rst) begin
+		cp0_rsel  <= '0;
+		cp0_raddr <= '0;
+	end else begin
+		if(request[0].decoded.is_priv) begin
+			cp0_rsel  <= request[0].fetch.instr[2:0];
+			cp0_raddr <= request[0].fetch.instr[15:11];
+		end else begin
+			cp0_rsel  <= request[1].fetch.instr[2:0];
+			cp0_raddr <= request[1].fetch.instr[15:11];
+		end
+	end
+end
+
 /* cycle control */
 logic [DIV_CYC:0] cyc_stage, cyc_stage_d;
 assign data_ready = cyc_stage[0];
@@ -91,6 +111,8 @@ always_comb begin
 				OP_DIV, OP_DIVU:
 					cyc_stage_d = 1 << DIV_CYC;
 				OP_MFHI, OP_MFLO, OP_MTHI, OP_MTLO:
+					cyc_stage_d = 1;
+				OP_MFC0:
 					cyc_stage_d = 1;
 				default:
 					cyc_stage_d = '0;
@@ -190,6 +212,7 @@ always_comb begin
 		OP_MFHI: reg_ret = hilo[63:32];
 		OP_MFLO: reg_ret = hilo[31:0];
 		OP_MUL:  reg_ret = mul_result[31:0];
+		/* result of OP_MFC0 is computed in CP0 */
 		default: reg_ret = '0;
 	endcase
 end
