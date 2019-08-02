@@ -851,4 +851,7 @@ logic debug_uncache_access, debug_cache_miss;
 assign debug_uncache_access = (pipe_read | pipe_write) & (state == IDLE);
 assign debug_cache_miss = state == IDLE && (pipe_invalidate || pipe_request_refill);
 
+logic uncached_access;
+assign uncached_access = state == IDLE && (pipe_uncached_read || pipe_uncached_write);
+
 endmodule

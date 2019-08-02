@@ -163,7 +163,7 @@ begin
 		dcache_access_counter <= dcache_access_counter + soc_lite.u_cpu.nontrivial_mips_inst.cache_controller_inst.dcache_inst.debug_uncache_access;
 		noncf_miss_counter <= noncf_miss_counter + soc_lite.u_cpu.nontrivial_mips_inst.cpu_core_inst.instr_fetch_inst.presolved_branch.mispredict;
 		dcache_counter <= dcache_counter + soc_lite.u_cpu.nontrivial_mips_inst.cache_controller_inst.dcache_inst.debug_cache_miss;
-		uncache_counter <= uncache_counter + soc_lite.u_cpu.nontrivial_mips_inst.cache_controller_inst.uncached_inst.uncache_access;
+		uncache_counter <= uncache_counter + soc_lite.u_cpu.nontrivial_mips_inst.cache_controller_inst.dcache_inst.uncached_access;
 		branch_counter <= branch_counter + resolved_branch.valid;
 		mispredict_counter <= mispredict_counter + (resolved_branch.valid & resolved_branch.mispredict);
 		stall_mm_counter <= stall_mm_counter + soc_lite.u_cpu.nontrivial_mips_inst.cpu_core_inst.stall_from_mm;
