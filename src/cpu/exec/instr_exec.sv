@@ -1,19 +1,13 @@
 `include "cpu_defs.svh"
 
-module instr_exec #(
-	parameter int HAS_DIV = 1
-) (
-	input  logic    clk,
-	input  logic    rst,
-	input  logic    flush,
-
+module instr_exec (
 	input  logic             delayslot,
 	input  logic             llbit_value,
-	input  uint64_t          hilo,
+	input  uint64_t          multicyc_hilo,
+	input  uint32_t          multicyc_reg,
 	input  pipeline_decode_t data,
 	output pipeline_exec_t   result,
 	output branch_resolved_t resolved_branch,
-	output logic             stall_req,
 
 	output reg_addr_t        reg_raddr,
 	input  uint32_t          reg_rdata,
@@ -88,20 +82,6 @@ end else begin: generate_disable_cloclz
 	assign clz_cnt = '0;
 end endgenerate
 
-// multi-cycle execution
-logic multi_cyc_busy;
-uint32_t mult_word;
-uint64_t multi_cyc_ret;
-multi_cycle_exec #(
-	.HAS_DIV(HAS_DIV)
-) multi_cyc_instance ( 
-	.*,
-	.ret     ( multi_cyc_ret  ),
-	.is_busy ( multi_cyc_busy )
-);
-
-assign stall_req = multi_cyc_busy;
-
 // conditional move
 always_comb begin
 	result.decoded = data.decoded;
@@ -111,25 +91,16 @@ always_comb begin
 end
 
 // setup hilo request
-always_comb begin
-	result.hiloreq.we = 1'b1;
-	unique case(op)
-		OP_MTHI: result.hiloreq.wdata = { reg1, hilo[31:0]  };
-		OP_MTLO: result.hiloreq.wdata = { hilo[63:32], reg1 };
-		OP_MADDU, OP_MADD, OP_MSUBU, OP_MSUB,
-		OP_MULT, OP_MULTU, OP_DIV, OP_DIVU:
-			result.hiloreq.wdata = multi_cyc_ret;
-		default: begin
-			result.hiloreq.we    = 1'b0;
-			result.hiloreq.wdata = '0;
-		end
-	endcase
-end
+assign result.hiloreq.we    = (
+	op == OP_MADD || op == OP_MADDU || op == OP_MSUB || op == OP_MSUBU
+	|| op == OP_MULT || op == OP_MULTU || op == OP_DIV || op == OP_DIVU
+	|| op == OP_MTHI || op == OP_MTLO);
+assign result.hiloreq.wdata = multicyc_hilo;
 
 // CP0 operation
 uint32_t cp0_wmask, cp0_rdata;
 cp0_write_mask cp0_write_mask_inst(
-	.rst,
+	.rst  ( 1'b0      ),
 	.sel  ( cp0_rsel  ),
 	.addr ( cp0_raddr ),
 	.mask ( cp0_wmask )
@@ -144,13 +115,9 @@ function logic cp0_match(
 endfunction
 
 always_comb begin
-	if(rst) begin
-		cp0_rdata = '0;
-	end else begin
-		cp0_rdata = cp0_rdata_i;
-		if(cp0_match(cp0_req_fwd, cp0_raddr, cp0_rsel))
-			cp0_rdata = (cp0_wmask & cp0_req_fwd.wdata) | (~cp0_wmask & cp0_rdata_i);
-	end
+	cp0_rdata = cp0_rdata_i;
+	if(cp0_match(cp0_req_fwd, cp0_raddr, cp0_rsel))
+		cp0_rdata = (cp0_wmask & cp0_req_fwd.wdata) | (~cp0_wmask & cp0_rdata_i);
 end
 
 assign cp0_raddr = instr[15:11];
@@ -181,11 +148,10 @@ always_comb begin
 
 		/* move instructions */
 		OP_MOVZ, OP_MOVN: exec_ret = reg1;
-		OP_MFHI: exec_ret = hilo[63:32];
-		OP_MFLO: exec_ret = hilo[31:0];
 
-		/* multiplication */
-		OP_MUL: exec_ret = mult_word;
+		/* multi-cycle */
+		OP_MFHI, OP_MFLO, OP_MUL:
+			exec_ret = multicyc_reg;
 
 		/* jump instructions */
 		OP_JAL, OP_BLTZAL, OP_BGEZAL, OP_JALR:

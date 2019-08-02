@@ -1,0 +1,6 @@
+skip
+$4=0xfffffff1
+$5=0x00000011
+$hilo=0xfffffff100000000
+$3=0xfffffff1
+$9=0xdead0000

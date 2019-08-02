@@ -196,8 +196,6 @@ hilo_forward hilo_forward_inst(
 logic [`ISSUE_NUM-1:0] resolved_delayslot;
 logic [`ISSUE_NUM-1:0][2:0] ex_cp0_rsel;
 reg_addr_t [`ISSUE_NUM-1:0] ex_cp0_raddr;
-logic [`ISSUE_NUM-1:0] stall_req_ex;
-assign stall_from_ex = |stall_req_ex;
 // only pipeline 0 will access CP0
 assign cp0_rsel  = ex_cp0_rsel[0];
 assign cp0_raddr = ex_cp0_raddr[0];
@@ -211,22 +209,31 @@ resolve_delayslot resolve_delayslot_inst(
 	.resolved_delayslot
 );
 
+uint32_t multicyc_reg;
+uint64_t multicyc_hilo;
+multi_cycle_exec multi_cycle_exec_inst(
+	.clk,
+	.rst,
+	.flush     ( flush_ex          ),
+	.stall     ( stall_mm          ),
+	.stall_req ( stall_from_ex     ),
+	.request   ( pipeline_decode_d ),
+	.hilo_i    ( hilo_forward      ),
+	.hilo_o    ( multicyc_hilo     ),
+	.reg_o     ( multicyc_reg      )
+);
+
 for(genvar i = 0; i < `ISSUE_NUM; ++i) begin : gen_exec
-	instr_exec #(
-		.HAS_DIV(i == 0)
-	) exec_inst (
-		.clk,
-		.rst,
-		.flush       ( flush_ex                   ),
-		.hilo        ( hilo_forward               ),
+	instr_exec exec_inst (
 		.data        ( pipeline_decode_d[i]       ),
 		.result      ( pipeline_exec[i]           ),
-		.stall_req   ( stall_req_ex[i]            ),
 		.reg_raddr   ( reg_raddr[4 + i]           ),
 		.reg_rdata   ( reg_rdata[4 + i]           ),
 		.pipeline_dcache ( pipeline_dcache[1:0]   ),
 		.pipeline_mem,
 		.pipeline_wb,
+		.multicyc_reg,
+		.multicyc_hilo,
 		.llbit_value ( llbit_value                ),
 		.mmu_vaddr   ( mmu_data_vaddr[i]          ),
 		.mmu_result  ( mmu_data_result[i]         ),

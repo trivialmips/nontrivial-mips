@@ -181,6 +181,7 @@ typedef struct packed {
 	logic  is_store;        // store data
 	logic  is_priv;         // privileged instructions
 	logic  is_nonrw_priv;   // privileged instructions other than MFC0 and MTC0
+	logic  is_multicyc;
 	logic  delayed_exec;
 } decoded_instr_t;
 

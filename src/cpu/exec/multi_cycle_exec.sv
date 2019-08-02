@@ -1,50 +1,111 @@
 `include "cpu_defs.svh"
 
-module multi_cycle_exec #(
-	parameter int HAS_DIV = 1
-) (
-	input  logic     clk,
-	input  logic     rst,
-	input  logic     flush,
-	input  oper_t    op,
-	input  uint32_t  reg1,
-	input  uint32_t  reg2,
-	input  uint64_t  hilo,
-	output uint64_t  ret,
-	output uint32_t  mult_word,
-	output logic     is_busy
+module multi_cycle_exec(
+	input  logic    clk,
+	input  logic    rst,
+	input  logic    stall,
+	input  logic    flush,
+
+	input  pipeline_decode_t [1:0] request,
+	output logic    stall_req,
+
+	input  uint64_t hilo_i,
+	output uint64_t hilo_o,
+	output uint32_t reg_o
 );
 
-parameter DIV_CYC = 36;
+localparam int DIV_CYC = 36;
 
-/* cycle control */
-logic [5:0] cyc_number;
-logic [DIV_CYC:0] cyc_stage;
-assign is_busy = (cyc_number != 1 && ~cyc_stage[0]);
-always @(posedge clk) begin
-	if(rst || flush) begin
-		cyc_stage <= 0;
-	end else if(cyc_stage != 0) begin
-		cyc_stage <= cyc_stage >> 1;
-	end else begin
-		cyc_stage <= ((1 << cyc_number) >> 2);
+enum logic [1:0] {
+	IDLE,
+	WAIT,
+	FINISH
+} state, state_d;
+
+oper_t op, op0;
+uint32_t reg1, reg2;
+uint64_t hilo, hilo_ret;
+uint32_t reg_ret;
+logic data_ready;
+logic [1:0] is_multicyc;
+
+assign is_multicyc[0] = request[0].decoded.is_multicyc;
+assign is_multicyc[1] = request[1].decoded.is_multicyc;
+assign op0 = is_multicyc[1] ? request[1].decoded.op : request[0].decoded.op;
+
+assign stall_req = ~(state == IDLE && ~(|is_multicyc) || state == FINISH);
+
+always_comb begin
+	state_d = state;
+	unique case(state)
+		IDLE:   if(|is_multicyc) state_d = WAIT;
+		WAIT:   if(data_ready) state_d = FINISH;
+		FINISH: if(~stall) state_d = IDLE;
+	endcase
+end
+
+always_ff @(posedge clk) begin
+	if(rst) begin
+		hilo_o <= '0;
+		reg_o  <= '0;
+	end else if(state == WAIT) begin
+		hilo_o <= hilo_ret;
+		reg_o  <= reg_ret;
 	end
 end
 
-always_comb
-begin
+always_ff @(posedge clk) begin
 	if(rst || flush) begin
-		cyc_number = 1;
+		state <= IDLE;
 	end else begin
-		unique case(op)
-			OP_MADD, OP_MADDU, OP_MSUB, OP_MSUBU,
-			OP_MUL, OP_MULT, OP_MULTU:
-				cyc_number = 4;
-			OP_DIV, OP_DIVU:
-				cyc_number = DIV_CYC;
-			default:
-				cyc_number = 1;
-		endcase
+		state <= state_d;
+	end
+end
+
+/* read operands */
+always_ff @(posedge clk) begin
+	if(rst) begin
+		reg1 <= '0;
+		reg2 <= '0;
+		hilo <= '0;
+		op   <= OP_SLL;
+	end else if(state == IDLE) begin
+		reg1 <= is_multicyc[1] ? request[1].reg1 : request[0].reg1;
+		reg2 <= is_multicyc[1] ? request[1].reg2 : request[0].reg2;
+		op   <= op0;
+		hilo <= hilo_i;
+	end
+end
+
+/* cycle control */
+logic [DIV_CYC:0] cyc_stage, cyc_stage_d;
+assign data_ready = cyc_stage[0];
+
+always_comb begin
+	unique case(state)
+		IDLE: begin
+			unique case(op0)
+				OP_MADD, OP_MADDU, OP_MSUB, OP_MSUBU,
+				OP_MUL, OP_MULT, OP_MULTU:
+					cyc_stage_d = 1 << 2;
+				OP_DIV, OP_DIVU:
+					cyc_stage_d = 1 << DIV_CYC;
+				OP_MFHI, OP_MFLO, OP_MTHI, OP_MTLO:
+					cyc_stage_d = 1;
+				default:
+					cyc_stage_d = '0;
+			endcase
+		end
+		WAIT: cyc_stage_d = cyc_stage >> 1;
+		default: cyc_stage_d = '0;
+	endcase
+end
+
+always @(posedge clk) begin
+	if(rst || flush) begin
+		cyc_stage <= 0;
+	end else begin
+		cyc_stage <= cyc_stage_d;
 	end
 end
 
@@ -57,34 +118,27 @@ assign is_signed = (
 	op == OP_MULT ||
 	op == OP_DIV
 );
-assign negate_result = is_signed && (reg1[31] ^ reg2[31]);
 
+assign negate_result = is_signed && (reg1[31] ^ reg2[31]);
 uint32_t abs_reg1, abs_reg2;
 assign abs_reg1 = (is_signed && reg1[31]) ? -reg1 : reg1;
 assign abs_reg2 = (is_signed && reg2[31]) ? -reg2 : reg2;
 
-uint64_t pipe_hilo, pipe_absmul;
-uint32_t pipe_absreg1, pipe_absreg2;
+uint64_t pipe_absmul;
 uint32_t pipe_mul_hi, pipe_mul_lo, pipe_mul_md1, pipe_mul_md2;
 logic [32:0] pipe_mul_md;
 assign pipe_mul_md = pipe_mul_md1 + pipe_mul_md2;
 always_ff @(posedge clk) begin
 	if(rst) begin
-		pipe_hilo <= '0;
-		pipe_absreg1 <= '0;
-		pipe_absreg2 <= '0;
 		pipe_mul_hi  <= '0;
 		pipe_mul_lo  <= '0;
 		pipe_mul_md1 <= '0;
 		pipe_mul_md2 <= '0;
 	end else begin
-		pipe_hilo <= hilo;
-		pipe_absreg1 <= abs_reg1;
-		pipe_absreg2 <= abs_reg2;
-		pipe_mul_hi  <= pipe_absreg1[31:16] * pipe_absreg2[31:16];
-		pipe_mul_md1 <= pipe_absreg1[15:0] * pipe_absreg2[31:16];
-		pipe_mul_md2 <= pipe_absreg1[31:16] * pipe_absreg2[15:0];
-		pipe_mul_lo  <= pipe_absreg1[15:0] * pipe_absreg2[15:0];
+		pipe_mul_hi  <= abs_reg1[31:16] * abs_reg2[31:16];
+		pipe_mul_md1 <= abs_reg1[15:0]  * abs_reg2[31:16];
+		pipe_mul_md2 <= abs_reg1[31:16] * abs_reg2[15:0];
+		pipe_mul_lo  <= abs_reg1[15:0]  * abs_reg2[15:0];
 		pipe_absmul  <= { pipe_mul_hi, pipe_mul_lo } + { 15'b0, pipe_mul_md, 16'b0 };
 	end
 end
@@ -92,7 +146,6 @@ end
 /* multiply */
 uint64_t mul_result;
 assign mul_result = negate_result ? -pipe_absmul : pipe_absmul;
-assign mult_word = mul_result[31:0];
 
 /* division */
 uint32_t abs_quotient, abs_remainder;
@@ -100,7 +153,6 @@ uint32_t div_quotient, div_remainder;
 
 /* Note that the document of MIPS32 says if the divisor is zero,
  * the result is UNDEFINED. */
-generate if(HAS_DIV) begin : gen_divuu
 div_uu #(
 	.z_width(64)
 ) div_uu_instance (
@@ -113,11 +165,6 @@ div_uu #(
 	.div0(),
 	.ovf()
 );
-end else begin
-	assign abs_quotient  = '0;
-	assign abs_remainder = '0;
-end
-endgenerate
 
 /* |b| = |aq| + |r|
  *   1) b > 0, a < 0 ---> b = (-a)(-q) + r
@@ -128,10 +175,22 @@ assign div_remainder = (is_signed && (reg1[31] ^ abs_remainder[31])) ? -abs_rema
 /* set result */
 always_comb begin
 	unique case(op)
-		OP_MADDU, OP_MADD: ret = pipe_hilo + mul_result;
-		OP_MSUBU, OP_MSUB: ret = pipe_hilo - mul_result;
-		OP_DIV, OP_DIVU: ret = { div_remainder, div_quotient };
-		default: ret = mul_result;
+		OP_MADDU, OP_MADD: hilo_ret = hilo + mul_result;
+		OP_MSUBU, OP_MSUB: hilo_ret = hilo - mul_result;
+		OP_MULT, OP_MULTU: hilo_ret = mul_result;
+		OP_DIV, OP_DIVU: hilo_ret = { div_remainder, div_quotient };
+		OP_MTLO: hilo_ret = { hilo[63:32], reg1 };
+		OP_MTHI: hilo_ret = { reg1, hilo[31:0]  };
+		default: hilo_ret = hilo;
+	endcase
+end
+
+always_comb begin
+	unique case(op)
+		OP_MFHI: reg_ret = hilo[63:32];
+		OP_MFLO: reg_ret = hilo[31:0];
+		OP_MUL:  reg_ret = mul_result[31:0];
+		default: reg_ret = '0;
 	endcase
 end
 

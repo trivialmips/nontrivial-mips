@@ -12,15 +12,6 @@ module instr_issue(
 	output logic   stall_req
 );
 
-function logic is_hilo(
-	input uint32_t instr
-);
-	// MFHI, MTHI, MFLO, MTLO, MULT, MULTU, DIV, DIVU
-	return instr[31:26] == 6'b000000 && instr[5:4] == 2'b01 && instr[2] == 1'b0
-	// MADD, MADDU, MSUB, MSUBU
-	    || instr[31:26] == 6'b011100 && instr[5:3] == 3'b000 && instr[1] == 1'b0;
-endfunction
-
 function logic is_ssnop(
 	input fetch_entry_t entry
 );
@@ -67,13 +58,12 @@ endfunction
 logic instr2_not_taken;
 logic priv_executing, nonrw_priv_executing;
 logic [`ISSUE_NUM-1:0] instr_valid;
-logic [`ISSUE_NUM-1:0] ex_load_related, load_related, mem_access, hilo_access, data_delayed;
+logic [`ISSUE_NUM-1:0] ex_load_related, load_related, mem_access, data_delayed;
 logic [`ISSUE_NUM-1:0]allow_delayed;
 
 for(genvar i = 0; i < `ISSUE_NUM; ++i) begin : gen_access
 	assign mem_access[i]    = id_decoded[i].is_load | id_decoded[i].is_store;
 	assign instr_valid[i]   = fetch_entry[i].valid;
-	assign hilo_access[i]   = is_hilo(fetch_entry[i].instr);
 	assign allow_delayed[i] = id_decoded[i].delayed_exec;
 end
 
@@ -150,7 +140,6 @@ assign instr2_not_taken =
       ~instr_valid[1]
    || is_data_related(id_decoded[0], id_decoded[1])
    || (mem_access[0] & mem_access[1])
-   || (hilo_access[0] & hilo_access[1])
       // mispredict but delayslot does not executed
    || delayslot_not_exec
       // branch must be issued on pipeline 1
@@ -158,7 +147,7 @@ assign instr2_not_taken =
    || (is_ssnop(fetch_entry[0]) | is_ssnop(fetch_entry[1]))
    || (id_decoded[0].op == OP_SC || id_decoded[1].op == OP_SC)
    || (id_decoded[0].is_priv | id_decoded[1].is_priv)
-   || (id_decoded[1].op == OP_DIV || id_decoded[1].op == OP_DIVU);
+   || (id_decoded[1].is_multicyc && id_decoded[0].is_multicyc);
 
 assign stall_req =
 	  ex_load_related[0]
