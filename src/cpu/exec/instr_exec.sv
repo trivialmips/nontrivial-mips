@@ -232,6 +232,7 @@ always_comb begin
 			mem_wrdata = mmu_vaddr[1] ? (sw_reg2 << 16) : sw_reg2;
 			mem_sel = mmu_vaddr[1] ? 4'b1100 : 4'b0011;
 		end
+`ifdef COMPILE_FULL_M
 		OP_LWL: begin
 			mem_wrdata = sw_reg2;
 			unique case(mmu_vaddr[1:0])
@@ -270,6 +271,7 @@ always_comb begin
 				2'd3: mem_sel = 4'b1000;
 			endcase
 		end
+`endif
 		default: begin
 			mem_sel    = '0;
 			mem_wrdata = '0;
