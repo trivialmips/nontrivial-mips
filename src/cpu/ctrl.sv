@@ -83,23 +83,6 @@ function logic is_uncached(input pipeline_exec_t pipe);
 	return is_memory(pipe) & pipe.memreq.uncached;
 endfunction
 
-logic uncached_exec, memory_exec;
-logic uncached_accessing, memory_accessing;
-always_comb begin
-	uncached_accessing = 1'b0;
-	memory_accessing = 1'b0;
-	for(int i = 0; i < `DCACHE_PIPE_DEPTH; ++i) begin
-		uncached_accessing |= is_uncached(pipeline_dcache[i][0]) | is_uncached(pipeline_dcache[i][1]);
-		memory_accessing |= is_memory(pipeline_dcache[i][0]) | is_memory(pipeline_dcache[i][1]);
-	end
-	uncached_exec = is_uncached(pipeline_exec[0]) | is_uncached(pipeline_exec[1]);
-	memory_exec = is_memory(pipeline_exec[0]) | is_memory(pipeline_exec[1]);
-end
-
-logic mutex_uncached;
-assign mutex_uncached = uncached_exec & memory_accessing
-	|| memory_exec & uncached_accessing;
-
 always_comb begin
 	flush = '0;
 	if(flush_delayed_mispredict) begin
@@ -116,7 +99,7 @@ always_comb begin
 		stall = 4'b1111;
 	else if(stall_from_mm)
 		stall = 4'b1111;
-	else if(stall_from_ex | wait_delayslot | mutex_uncached)
+	else if(stall_from_ex | wait_delayslot)
 		stall = 4'b1110;
 	else if(stall_from_id)
 		stall = 4'b1100;
