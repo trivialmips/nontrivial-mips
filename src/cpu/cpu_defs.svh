@@ -34,6 +34,7 @@ typedef struct packed {
 typedef struct packed {
 	logic valid;
 	logic [4:0] exc_code;
+	logic tlb_refill;
 	uint32_t extra;
 } exception_t;
 

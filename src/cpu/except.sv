@@ -20,6 +20,8 @@ assign interrupt_occur = (
 	&& (pipe_mm[0].valid || pipe_mm[1].valid)
 );
 
+logic tlb_refill;
+assign tlb_refill = pipe_mm[0].ex.valid ? pipe_mm[0].ex.tlb_refill : pipe_mm[1].ex.tlb_refill;
 assign except_req.eret = pipe_mm[0].eret;
 always_comb begin
 	if(interrupt_occur) begin
@@ -54,7 +56,7 @@ always_comb begin
 	end else begin
 		logic [11:0] offset;
 		if(cp0_regs.status.exl == 1'b0) begin
-			if(except_req.code == `EXCCODE_TLBL || except_req.code == `EXCCODE_TLBS)
+			if(tlb_refill && (except_req.code == `EXCCODE_ADEL || except_req.code == `EXCCODE_ADES))
 				offset = 12'h000;
 			else if(except_req.code == `EXCCODE_INT && cp0_regs.cause.iv)
 				offset = 12'h200;

@@ -340,11 +340,15 @@ assign ex_mm = {
 always_comb begin
 	ex = '0;
 	ex.valid = ((|ex_if) | invalid_instr | (|ex_ex) | (|ex_mm)) & data.valid;
+	ex.tlb_refill = mmu_result.miss & ~mem_addrex;
 	if(|ex_if) begin
 		ex.extra = data.fetch.vaddr;
 		unique casez(ex_if)
 			2'b1?: ex.exc_code = `EXCCODE_ADEL;
-			2'b01: ex.exc_code = `EXCCODE_TLBL;
+			2'b01: begin
+				ex.tlb_refill = data.fetch.iaddr_ex.miss;
+				ex.exc_code   = `EXCCODE_TLBL;
+			end
 			default:;
 		endcase
 	end else if(invalid_instr) begin
@@ -363,8 +367,14 @@ always_comb begin
 		unique casez(ex_mm)
 			5'b1????: ex.exc_code = `EXCCODE_ADEL;
 			5'b01???: ex.exc_code = `EXCCODE_ADES;
-			5'b001??: ex.exc_code = `EXCCODE_TLBL;
-			5'b0001?: ex.exc_code = `EXCCODE_TLBS;
+			5'b001??: begin
+				ex.tlb_refill = mmu_result.miss;
+				ex.exc_code   = `EXCCODE_TLBL;
+			end
+			5'b0001?: begin
+				ex.tlb_refill = mmu_result.miss;
+				ex.exc_code   = `EXCCODE_TLBS;
+			end
 			5'b00001: ex.exc_code = `EXCCODE_MOD;
 			default:;
 		endcase
