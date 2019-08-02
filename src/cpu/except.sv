@@ -4,7 +4,7 @@ module except(
 	input  logic            rst,
 	input  pipeline_exec_t  [1:0] pipe_mm,
 	input  cp0_regs_t       cp0_regs,
-	input  logic [7:0]      interrupt_flag,
+	input  logic [7:0]      interrupt_req,
 	output except_req_t     except_req
 );
 
@@ -16,7 +16,7 @@ assign interrupt_occur = (
 	cp0_regs.status.ie
 	&& ~cp0_regs.status.exl
 	&& ~cp0_regs.status.erl
-	&& (cp0_regs.status.im & interrupt_flag) != 8'b0
+	&& interrupt_req != 8'b0
 	&& (pipe_mm[0].valid || pipe_mm[1].valid)
 );
 

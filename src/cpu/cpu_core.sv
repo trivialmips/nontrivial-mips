@@ -254,7 +254,7 @@ always_ff @(posedge clk) begin
 end
 
 // resolve interrupt requests
-(* mark_debug="true" *) logic [7:0] pipe_interrupt, interrupt_flag;
+(* mark_debug="true" *) logic [7:0] pipe0_interrupt, pipe_interrupt, interrupt_flag, pipe_interrupt_req;
 
 assign interrupt_flag = {
 	cp0_timer_int,
@@ -263,8 +263,14 @@ assign interrupt_flag = {
 };
 
 always_ff @(posedge clk) begin
+	if(rst) pipe0_interrupt <= '0;
+	else    pipe0_interrupt <= interrupt_flag;
+
 	if(rst) pipe_interrupt <= '0;
-	else    pipe_interrupt <= interrupt_flag;
+	else    pipe_interrupt <= pipe0_interrupt;
+
+	if(rst) pipe_interrupt_req <= '0;
+	else    pipe_interrupt_req <= pipe0_interrupt & cp0_regs.status.im;
 end
 
 ll_bit llbit_inst(
@@ -278,8 +284,8 @@ ll_bit llbit_inst(
 except except_inst(
 	.rst,
 	.cp0_regs,
-	.pipe_mm        ( pipeline_exec_d ),
-	.interrupt_flag ( pipe_interrupt  ),
+	.pipe_mm        ( pipeline_exec_d    ),
+	.interrupt_req  ( pipe_interrupt_req ),
 	.except_req
 );
 
@@ -287,6 +293,7 @@ except except_inst(
 cp0 cp0_inst(
 	.clk,
 	.rst,
+	.stall     ( 1'b0          ),
 	.raddr     ( cp0_raddr     ),
 	.rsel      ( cp0_rsel      ),
 	.wreq      ( cp0_reg_wr    ),
