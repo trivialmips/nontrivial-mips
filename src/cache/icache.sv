@@ -231,12 +231,15 @@ always_comb begin
 		FLUSH_WAIT_AXI_READY:
 			if(axi_resp.arready) 
 				state_d = FLUSH_RECEIVING;
-		RECEIVING, FLUSH_RECEIVING:
+		RECEIVING:
 			if(axi_resp.rvalid & axi_resp.rlast & ~pipe_inv) begin
 				state_d = REFILL;
 			end else if(pipe_flush) begin
 				state_d = FLUSH_RECEIVING;
 			end
+		FLUSH_RECEIVING:
+			if(axi_resp.rvalid & axi_resp.rlast)
+				state_d = REFILL;
 		REFILL: state_d = FINISH;
 		INVALIDATING:
 			if(&invalite_cnt) state_d = IDLE;
