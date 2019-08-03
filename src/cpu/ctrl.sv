@@ -32,25 +32,22 @@ logic [3:0] stall, flush;
 assign { stall_if, stall_id, stall_ex, stall_mm } = stall;
 assign { flush_if, flush_id, flush_ex, flush_mm } = flush;
 
-logic [1:0] mispredict, delayed_mispredict;
-for(genvar i = 0; i < 2; ++i) begin : gen_mispredict
-	assign mispredict[i] = ex_resolved_branch[i].valid & ex_resolved_branch[i].mispredict;
-	assign delayed_mispredict[i] = delayed_resolved_branch[i].valid & delayed_resolved_branch[i].mispredict;
-end
+logic mispredict, delayed_mispredict;
+assign mispredict = ex_resolved_branch[0].valid & ex_resolved_branch[0].mispredict;
+assign delayed_mispredict = delayed_resolved_branch[0].valid & delayed_resolved_branch[0].mispredict;
 
-assign hold_resolved_branch = (|mispredict & (stall_ex | stall_mm) & ~flush_id);
+assign hold_resolved_branch = (mispredict & (stall_ex | stall_mm) & ~flush_id);
 
 logic fetch_entry_avail, wait_delayslot, flush_mispredict;
-assign delayslot_not_exec = ex_resolved_branch[1].valid
-	| (ex_resolved_branch[0].valid & ~pipeline_exec[1].valid);
+assign delayslot_not_exec = ex_resolved_branch[0].valid & ~pipeline_exec[1].valid;
 assign wait_delayslot = delayslot_not_exec & ~fetch_entry_avail;
 
 logic mispredict_with_delayslot;
-assign mispredict_with_delayslot = mispredict[0] & pipeline_exec[1].valid;
+assign mispredict_with_delayslot = mispredict & pipeline_exec[1].valid;
 
-assign flush_delayed_mispredict = (|delayed_mispredict);
+assign flush_delayed_mispredict = delayed_mispredict;
 
-assign flush_mispredict = (|mispredict)
+assign flush_mispredict = (mispredict)
 	& ~delayslot_not_exec
 	// when a multi-cycle instruction does not finished, we do not resolve a branch
 	& ~stall_from_ex
@@ -64,12 +61,7 @@ always_comb begin
 end
 
 always_comb begin
-	resolved_branch_o = '0;
-	for(int i = 0; i < 2; ++i) begin
-		if(ex_resolved_branch[i].valid)
-			resolved_branch_o = ex_resolved_branch[i];
-	end
-
+	resolved_branch_o = ex_resolved_branch[0];
 	if(wait_delayslot) resolved_branch_o = '0;
 	if(flush_delayed_mispredict)
 		resolved_branch_o = delayed_resolved_branch[0];
