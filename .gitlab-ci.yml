@@ -22,8 +22,9 @@ cache:
 
 
 stages:
-  - init_project
-  - tests
+  - cpu_test
+  - init_loongson_projects
+  - loongson_tests
   - bitstreams
 
 
@@ -37,7 +38,7 @@ build_ip_loongson_func:
   image: vivado:2018.3
   tags:
     - vivado
-  stage: init_project
+  stage: init_loongson_projects
   script:
     - ${VIVADO_PATH} -mode tcl -source scripts/generate_all_ips.tcl loongson/soc_axi_func/run_vivado/mycpu_prj1/mycpu.xpr
 
@@ -46,7 +47,7 @@ build_ip_loongson_perf:
   image: vivado:2018.3
   tags:
     - vivado
-  stage: init_project
+  stage: init_loongson_projects
   script:
     - ${VIVADO_PATH} -mode tcl -source scripts/generate_all_ips.tcl loongson/soc_axi_perf/run_vivado/mycpu_prj1/mycpu.xpr
 
@@ -55,7 +56,7 @@ cpu_simulation:
   image: vivado:2018.3
   tags:
     - vivado
-  stage: tests
+  stage: cpu_test
   script:
     - export SIMULATION=cpu_test
     - export LOG_PATH=${PROJECT_DIR}/${PROJECT_NAME}.sim/${SIMULATION}/behav/xsim/simulate.log
@@ -72,7 +73,7 @@ func_test_simulation:
   image: vivado:2018.3
   tags:
     - vivado
-  stage: tests
+  stage: loongson_tests
   # run functional test only when specified, for it is too slow
   only:
     variables:
@@ -93,7 +94,7 @@ perf_test_simulation:
   image: vivado:2018.3
   tags:
     - vivado
-  stage: tests
+  stage: loongson_tests
   # run performance test only when specified, for it is also slow
   # the result of performance test will not be checked
   only:
@@ -136,8 +137,7 @@ perf_test_bitstream:
     variables:
       - $CI_COMMIT_MESSAGE =~ /\[bitstream\]/i
   script:
-    - sed -i "s/COMPILE_FULL 1/COMPILE_FULL 0/" src/compile_options.svh
-    - sed -i "s/CPU_PERFORMANCE 0/CPU_PERFORMANCE 1/" src/compile_options.svh
+    - sed -i "s/`define COMPILE_FULL_M//" src/compile_options.svh
     - ${VIVADO_PATH} -mode tcl -source scripts/generate_bitstream.tcl loongson/soc_axi_perf/run_vivado/mycpu_prj1/mycpu.xpr
   artifacts:
     paths:

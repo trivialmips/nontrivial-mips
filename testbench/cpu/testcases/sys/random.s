@@ -5,6 +5,11 @@
 	.set noat
 _start:
 	mfc0  $1, $1   # ans: $1=0x0000000f
+	nop
+	nop
+	nop
+	nop
+	nop
 	tlbwr
 	mfc0  $1, $1   # ans: $1=0x00000000
 	tlbwr
