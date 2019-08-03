@@ -301,9 +301,9 @@ cp0 cp0_inst(
 
 	.tlbp_res  ( tlbp_index    ),
 	.tlbr_res  ( tlbrw_rdata   ),
-	.tlbp_req  ( pipeline_exec_d[0].tlbreq.probe ),
-	.tlbr_req  ( pipeline_exec_d[0].tlbreq.read  ),
-	.tlbwr_req ( pipeline_exec_d[0].tlbreq.tlbwr ),
+	.tlbp_req  ( pipeline_exec_d[0].tlbreq.probe | pipeline_exec_d[1].tlbreq.probe ),
+	.tlbr_req  ( pipeline_exec_d[0].tlbreq.read  | pipeline_exec_d[1].tlbreq.read  ),
+	.tlbwr_req ( pipeline_exec_d[0].tlbreq.tlbwr | pipeline_exec_d[1].tlbreq.tlbwr ),
 
 	.tlbrw_wdata,
 
