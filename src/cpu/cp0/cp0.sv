@@ -164,9 +164,11 @@ assign wdata = wreq.wdata;
 always_comb begin
 	regs_nxt = regs_now;
 	regs_nxt.count  = regs_now.count + 32'b1;
+`ifdef COMPILE_FULL_M
 	regs_nxt.random[TLB_WIDTH-1:0] = regs_now.random[TLB_WIDTH-1:0] + tlbwr_req;
 	if((&regs_now.random[TLB_WIDTH-1:0]) & tlbwr_req)
 		regs_nxt.random = regs_now.wired;
+`endif
 	regs_nxt.cause.ip[7:2] = interrupt_flag[7:2];
 
 	/* write register (WB stage) */
@@ -177,7 +179,6 @@ always_comb begin
 				5'd2:  regs_nxt.entry_lo0 = wdata[29:0];
 				5'd3:  regs_nxt.entry_lo1 = wdata[29:0];
 				5'd4:  regs_nxt.context_[31:23] = wdata[31:23];
-//				5'd5:  regs_nxt.page_mask;
 				5'd6:  begin
 					regs_nxt.random = `TLB_ENTRIES_NUM - 1;
 					regs_nxt.wired[TLB_WIDTH-1:0] = wdata[TLB_WIDTH-1:0];
