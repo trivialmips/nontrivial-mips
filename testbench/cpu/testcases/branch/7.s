@@ -3,8 +3,10 @@
 	.set noat
 	.set noreorder
 _start:
+	lui $21, 0x8000    # ans: skip
 	la $20, j1  # ans: skip
 	            # ans: skip
+	or $20, $20, $21 # ans: skip
 	lui    $5, 0x8000 # ans: $5=0x80000000
 	nop
 	b j2

@@ -56,10 +56,12 @@ _start:
 	lw $1, 0x0($1)     # ans: [exc_code]=0x02
 
 	# ===== Test TLB miss =====
-	ori $1, $0, 0x1000 # ans: $1=0x00001000
+	lui $1, 0x1000     # ans: $1=0x10000000
 	sw $1, 0x0($1)     # ans: [exc_code]=0x03
-	mfc0 $8, $8        # ans: $8=0x00001000
+	                   # ans: $18=0x00000200
+	mfc0 $8, $8        # ans: $8=0x10000000
 	lw $1, 0x0($1)     # ans: [exc_code]=0x02
+	                   # ans: $18=0x00000200
 
 	# ===== Test TLB modification =====
 	mtc0 $0, $0
@@ -83,6 +85,7 @@ _start:
 	mfc0 $29, $13       # skip
 	andi $29, $29, 0x007c  # cause.exc_code, skip
 	srl $29, $29, 2     # check
+	ori $18, $0, 0x200
 	eret
 
 .org 0x380
