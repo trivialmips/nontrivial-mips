@@ -54,8 +54,13 @@ module cache_controller #(
         .clk,
         .rst,
         .ibus(ibus),
+	`ifdef COMPILE_FULL_M
 		.invalidate_icache(dbus.invalidate_icache),
 		.invalidate_addr(dbus.address),
+	`else
+		.invalidate_icache('0),
+		.invalidate_addr('0),
+	`endif
         .axi_req(icache_axi_req),
         .axi_req_arid(icache_arid),
         .axi_req_awid(icache_awid),

@@ -21,7 +21,11 @@ assign interrupt_occur = (
 );
 
 logic tlb_refill;
+`ifdef COMPILE_FULL_M
 assign tlb_refill = pipe_mm[0].ex.valid ? pipe_mm[0].ex.tlb_refill : pipe_mm[1].ex.tlb_refill;
+`else
+assign tlb_refill = 1'b0;
+`endif
 assign except_req.eret = pipe_mm[0].eret;
 always_comb begin
 	if(interrupt_occur) begin
