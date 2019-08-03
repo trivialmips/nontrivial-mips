@@ -316,6 +316,7 @@ cp0 cp0_inst(
 	.timer_int ( cp0_timer_int )
 );
 
+logic [1:0] tlb_access;
 always_comb begin
 	cp0_reg_wr = '0;
 	tlbrw_we = 1'b0;
@@ -323,12 +324,12 @@ always_comb begin
 	if(~except_req.valid) begin
 		if(pipeline_exec_d[0].decoded.is_priv) begin
 			cp0_reg_wr = pipeline_exec_d[0].cp0_req;
-			tlbrw_index = pipeline_exec_d[0].tlbreq.tlbwi ?
-				cp0_regs.index : cp0_regs.random;
+			tlbrw_index = pipeline_exec_d[0].tlbreq.tlbwr ?
+				cp0_regs.random : cp0_regs.index;
 		end else begin
 			cp0_reg_wr = pipeline_exec_d[1].cp0_req;
-			tlbrw_index = pipeline_exec_d[1].tlbreq.tlbwi ?
-				cp0_regs.index : cp0_regs.random;
+			tlbrw_index = pipeline_exec_d[1].tlbreq.tlbwr ?
+				cp0_regs.random : cp0_regs.index;
 		end
 
 		tlbrw_we = pipeline_exec_d[0].tlbreq.tlbwi

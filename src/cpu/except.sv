@@ -60,7 +60,7 @@ always_comb begin
 	end else begin
 		logic [11:0] offset;
 		if(cp0_regs.status.exl == 1'b0) begin
-			if(tlb_refill && (except_req.code == `EXCCODE_ADEL || except_req.code == `EXCCODE_ADES))
+			if(tlb_refill && (except_req.code == `EXCCODE_TLBL || except_req.code == `EXCCODE_TLBS))
 				offset = 12'h000;
 			else if(except_req.code == `EXCCODE_INT && cp0_regs.cause.iv)
 				offset = 12'h200;

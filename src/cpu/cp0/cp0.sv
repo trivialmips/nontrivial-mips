@@ -49,7 +49,7 @@ assign tlbrw_wdata.pfn0 = regs.entry_lo0[29:6];
 assign tlbrw_wdata.c0   = regs.entry_lo0[5:3];
 assign tlbrw_wdata.d0   = regs.entry_lo0[2];
 assign tlbrw_wdata.v0   = regs.entry_lo0[1];
-assign tlbrw_wdata.G    = regs.entry_lo0[0];
+assign tlbrw_wdata.G    = regs.entry_lo0[0] & regs.entry_lo1[0];
 
 uint32_t rdata_d;
 always_comb begin

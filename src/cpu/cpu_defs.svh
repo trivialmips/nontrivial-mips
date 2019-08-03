@@ -280,7 +280,7 @@ typedef struct packed {
 typedef logic [$clog2(`TLB_ENTRIES_NUM)-1:0] tlb_index_t;
 typedef struct packed {
 	phys_t phy_addr;
-	logic [3:0] which;
+	tlb_index_t which;
 	logic miss, dirty, valid;
 	logic [2:0] cache_flag;
 } tlb_result_t;
