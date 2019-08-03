@@ -27,6 +27,8 @@ module cp0(
 	output logic         timer_int
 );
 
+localparam int TLB_WIDTH = $clog2(`TLB_ENTRIES_NUM);
+
 (*mark_debug="true"*) cp0_regs_t regs_now, regs_nxt;
 assign regs = regs_now;
 `ifdef COMPILE_FULL_M
@@ -61,6 +63,7 @@ always_comb begin
 			5'd3:  rdata_d = regs.entry_lo1;
 			5'd4:  rdata_d = regs.context_;
 			5'd5:  rdata_d = regs.page_mask;
+			5'd6:  rdata_d = regs.wired;
 			5'd8:  rdata_d = regs.bad_vaddr;
 			5'd9:  rdata_d = regs.count;
 			5'd10: rdata_d = regs.entry_hi;
@@ -161,18 +164,24 @@ assign wdata = wreq.wdata;
 always_comb begin
 	regs_nxt = regs_now;
 	regs_nxt.count  = regs_now.count + 32'b1;
-	regs_nxt.random = regs_now.random + tlbwr_req;
+	regs_nxt.random[TLB_WIDTH-1:0] = regs_now.random[TLB_WIDTH-1:0] + tlbwr_req;
+	if((&regs_now.random[TLB_WIDTH-1:0]) & tlbwr_req)
+		regs_nxt.random = regs_now.wired;
 	regs_nxt.cause.ip[7:2] = interrupt_flag[7:2];
 
 	/* write register (WB stage) */
 	if(wreq.we && ~stall) begin
 		if(wreq.wsel == 3'b0) begin
 			case(wreq.waddr)
-				5'd0:  regs_nxt.index[$clog2(`TLB_ENTRIES_NUM)-1:0] = wdata[$clog2(`TLB_ENTRIES_NUM)-1:0];
+				5'd0:  regs_nxt.index[TLB_WIDTH-1:0] = wdata[TLB_WIDTH-1:0];
 				5'd2:  regs_nxt.entry_lo0 = wdata[29:0];
 				5'd3:  regs_nxt.entry_lo1 = wdata[29:0];
 				5'd4:  regs_nxt.context_[31:23] = wdata[31:23];
 //				5'd5:  regs_nxt.page_mask;
+				5'd6:  begin
+					regs_nxt.random = `TLB_ENTRIES_NUM - 1;
+					regs_nxt.wired[TLB_WIDTH-1:0] = wdata[TLB_WIDTH-1:0];
+				end
 				5'd9:  regs_nxt.count = wdata;
 				5'd10: begin
 					regs_nxt.entry_hi[31:13] = wdata[31:13];

@@ -204,6 +204,8 @@ begin
 	unittest("delayed-exec/1");
 	unittest("delayed-exec/2");
 	unittest("sys/usermode");
+	unittest("sys/random");
+	unittest("sys/wired");
 	unittest("across_tlb/1");
 	unittest("across_tlb/2");
 	unittest("across_tlb/3");
