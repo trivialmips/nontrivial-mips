@@ -80,12 +80,16 @@ end else begin: generate_disable_cloclz
 end endgenerate
 
 // conditional move
+`ifdef COMPILE_FULL_M
 always_comb begin
 	result.decoded = data.decoded;
 	if(op == OP_MOVZ && reg2 != '0
 		|| op == OP_MOVN && reg2 == '0)
 		result.decoded.rd = '0;
 end
+`else
+assign result.decoded = data.decoded;
+`endif
 
 // setup hilo request
 assign result.hiloreq.we    = (
