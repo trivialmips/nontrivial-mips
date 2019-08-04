@@ -246,7 +246,7 @@ always_comb begin
 
 			if(except_req.code == `EXCCODE_ADEL || except_req.code == `EXCCODE_ADES) begin
 				regs_nxt.bad_vaddr = except_req.extra;
-			end else if(except_req.code == `EXCCODE_TLBL || except_req.code == `EXCCODE_TLBS) begin
+			end else if(except_req.code == `EXCCODE_TLBL || except_req.code == `EXCCODE_TLBS || except_req.code == `EXCCODE_MOD) begin
 				regs_nxt.bad_vaddr = except_req.extra;
 				regs_nxt.context_[22:4] = except_req.extra[31:13];   // context.bad_vpn2
 				regs_nxt.entry_hi[31:13] = except_req.extra[31:13];  // entry_hi.vpn2
