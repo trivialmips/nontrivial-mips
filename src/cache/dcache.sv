@@ -189,6 +189,7 @@ logic found_in_ram;
 trans_t pipe_2_trans;
 
 line_t data_mux_line;
+line_t ram_mux_line;
 logic [DATA_WIDTH-1:0] rdata;
 logic request_refill;
 logic wb_current;
@@ -217,7 +218,7 @@ trans_t pipe_trans;
 logic victim_locked; // Victim is hit in stage 2
 logic [BURST_LIMIT:0][31:0] line_recv;
 logic [$clog2(SET_ASSOC)-1:0] assoc_waddr;
-tag_t [SET_ASSOC-1:0] delayed_tag_rdata;
+tag_t [SET_ASSOC-1:0] delayed_tag_rdata_d, delayed_tag_rdata_q;
 line_t [SET_ASSOC-1:0] delayed_data_rdata;
 logic write_hit;
 
@@ -288,10 +289,6 @@ always_comb begin
 end
 
 // Tag/Data write request
-assign assoc_waddr     = SET_ASSOC == 1 ? 1'b0 : lfsr_val[$clog2(SET_ASSOC)-1:0];
-
-assign ram_addr = state == RST ? invalidate_cnt : get_index(pipe_addr);
-
 assign tag_wdata.valid = state != RST && state != INVALIDATE;
 assign tag_wdata.dirty = pipe_write; // If writing, this must be dirty
 assign tag_wdata.tag = get_tag(pipe_addr);
@@ -342,14 +339,19 @@ assign write_miss = (~(adjacent && pipe_request_refill)) && (~|pipe_2_hit) && ~p
 assign request_refill = read_miss || write_miss; // && ~(pipe_2_write && wb_current); TODO: why?
 
 always_comb begin
+    ram_mux_line = '0;
+    for(int i = 0; i < SET_ASSOC; ++i)
+        ram_mux_line |= {LINE_WIDTH{pipe_2_hit[i]}} & data_rdata[i];
+end
+
+always_comb begin
     data_mux_line = '0;
     found_in_ram = 1'b0;
     if(adjacent && pipe_request_refill) begin
         data_mux_line = data_wdata;
         found_in_ram = 1'b1;
     end else if(|pipe_2_hit) begin
-        for(int i = 0; i < SET_ASSOC; ++i)
-            data_mux_line |= {LINE_WIDTH{pipe_2_hit[i]}} & data_rdata[i];
+        data_mux_line = ram_mux_line;
 
         if(adjacent_exited && exited_write)
             data_mux_line[get_offset(exited_addr)] = mux_byteenable(data_mux_line[get_offset(exited_addr)], exited_wdata, exited_byteenable);
@@ -368,10 +370,25 @@ always_comb begin
         rdata = wb_line[get_offset(pipe_2_addr)];
 end
 
+// Early data
+// assign dbus_uncached.early_valid = 1'b0;
+// assign dbus.early_valid = pipe_2_read && (|pipe_2_hit) && ~(adjacent_exited && exited_write) && ~(adjacent && pipe_write);
+// assign dbus.early_rddata = ram_mux_line[get_offset(pipe_2_addr)];
+
 // Stage 3
 //   - Refill
 //   - Tag/Data overwrite
 
+always_comb begin
+    assoc_waddr = SET_ASSOC == 1 ? 1'b0 : lfsr_val[$clog2(SET_ASSOC)-1:0];
+
+    for(int i = 0; i < SET_ASSOC; ++i) begin
+        if((~(get_index(pipe_2_addr) == get_index(pipe_addr) && pipe_2_hit[i])) && ~delayed_tag_rdata_q[i].valid)
+            assoc_waddr = i;
+    end
+end
+
+assign ram_addr = state == RST ? invalidate_cnt : get_index(pipe_addr);
 assign write_hit = pipe_write && (|pipe_hit);
 
 always_comb begin
@@ -380,8 +397,8 @@ always_comb begin
     
     // FIFO push
     victim_locked = get_index(pipe_2_addr) == get_index(pipe_addr) && pipe_2_hit[assoc_waddr];
-    fifo_push = state == REFILL && ~victim_locked && delayed_tag_rdata[assoc_waddr].valid && delayed_tag_rdata[assoc_waddr].dirty;
-    fifo_ptag = { delayed_tag_rdata[assoc_waddr].tag, get_index(pipe_addr) };
+    fifo_push = state == REFILL && ~victim_locked && delayed_tag_rdata_q[assoc_waddr].valid && delayed_tag_rdata_q[assoc_waddr].dirty;
+    fifo_ptag = { delayed_tag_rdata_q[assoc_waddr].tag, get_index(pipe_addr) };
     fifo_pdata = delayed_data_rdata[assoc_waddr];
 
     lfsr_update = 1'b0;
@@ -477,12 +494,12 @@ always_comb begin
         end
 
         INVALIDATE: begin
-            fifo_push = delayed_tag_rdata[assoc_cnt].valid && delayed_tag_rdata[assoc_cnt].dirty;
-            fifo_ptag = { delayed_tag_rdata[assoc_cnt].tag, get_index(pipe_addr) };
+            fifo_push = delayed_tag_rdata_q[assoc_cnt].valid && delayed_tag_rdata_q[assoc_cnt].dirty;
+            fifo_ptag = { delayed_tag_rdata_q[assoc_cnt].tag, get_index(pipe_addr) };
             fifo_pdata = delayed_data_rdata[assoc_cnt];
 
-            if(delayed_tag_rdata[assoc_cnt].valid
-                && { delayed_tag_rdata[assoc_cnt].tag, get_index(pipe_addr) }== get_fifo_tag(pipe_2_addr)
+            if(delayed_tag_rdata_q[assoc_cnt].valid
+                && { delayed_tag_rdata_q[assoc_cnt].tag, get_index(pipe_addr) }== get_fifo_tag(pipe_2_addr)
                 && pipe_2_write
             ) begin
                 // Stage 2 is writing this one
@@ -545,7 +562,7 @@ always_comb begin
             if(&invalidate_cnt)
                 state_d = FINISH;
         INVALIDATE:
-            if(&assoc_cnt && ~fifo_full)
+            if(&assoc_cnt && ~(fifo_push && fifo_full))
                 state_d = INVALIDATE_WAIT;
         INVALIDATE_WAIT:
             if(wb_state == IDLE && fifo_empty)
@@ -675,6 +692,16 @@ always_ff @(posedge clk) begin
         exited_byteenable <= pipe_byteenable;
         exited_addr <= pipe_addr;
         exited_wdata <= pipe_wdata;
+
+        // Delayed tag_rdata
+        delayed_tag_rdata_q <= delayed_tag_rdata_d;
+    end
+
+    // Delayed tag_rdata
+    if(rst) begin
+        delayed_tag_rdata_q <= '0;
+    end else if(state == IDLE) begin
+        delayed_tag_rdata_q <= delayed_tag_rdata_d; // Only update when idle to stablize assoc_waddr
     end
 end
 
@@ -769,7 +796,7 @@ for(genvar i = 0; i < SET_ASSOC; ++i) begin : gen_dcache_mem
     dual_port_lutram #(
         .SIZE  ( GROUP_NUM ),
         .dtype ( tag_t     ),
-        .LATENCY_A ( 1 ),
+        .LATENCY_A ( 0 ),
         .LATENCY_B ( 0 )
     ) mem_tag (
         .clk,
@@ -780,7 +807,7 @@ for(genvar i = 0; i < SET_ASSOC; ++i) begin : gen_dcache_mem
         .wea   ( tag_we[i] ),
         .addra ( ram_addr  ),
         .dina  ( tag_wdata ),
-        .douta ( delayed_tag_rdata[i] ),
+        .douta ( delayed_tag_rdata_d[i] ),
 
         // Port B, handles tag read, controlled by stage 1
         .enb   ( 1'b1         ),

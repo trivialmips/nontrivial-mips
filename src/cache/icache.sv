@@ -74,6 +74,7 @@ index_t pipe_inv_index;
 // RAM requests of tag
 tag_t [SET_ASSOC-1:0] tag_rdata;
 tag_t tag_wdata;
+tag_t [SET_ASSOC-1:0] delayed_tag_rdata_n, delayed_tag_rdata_q;
 logic [SET_ASSOC-1:0] tag_we;
 
 // RAM requests of line data
@@ -97,7 +98,13 @@ logic [LINE_BYTE_OFFSET-1:0] burst_cnt, burst_cnt_d;
 logic [$clog2(SET_ASSOC)-1:0] assoc_waddr;
 
 // setup write request
-assign assoc_waddr     = lfsr_val[$clog2(SET_ASSOC)-1:0];
+always_comb begin
+    assoc_waddr = lfsr_val[$clog2(SET_ASSOC)-1:0];
+    for(int i = 0; i < SET_ASSOC; ++i) begin
+        if(~delayed_tag_rdata_n[i].valid) assoc_waddr = i;
+    end
+end
+
 assign tag_wdata.valid = state != INVALIDATING && ~pipe_inv;
 assign tag_wdata.tag   = get_tag(pipe_addr);
 always_comb begin
@@ -146,11 +153,13 @@ always_ff @(posedge clk) begin
 		pipe_rddata_extra_valid <= '0;
 		rddata_q <= '0;
 		rddata_extra_q <= '0;
+        delayed_tag_rdata_q <= '0;
 	end else begin
 		pipe_rddata_valid <= pipe_read & ~ibus.stall & ~ibus.flush_2;
 		pipe_rddata_extra_valid <= ~&get_offset(pipe_addr);
 		rddata_q <= rddata_n;
 		rddata_extra_q <= rddata_extra_n;
+        delayed_tag_rdata_q <= delayed_tag_rdata_n;
 	end
 end
 
@@ -300,7 +309,7 @@ for(genvar i = 0; i < SET_ASSOC; ++i) begin : gen_icache_mem
 		.wea   ( tag_we[i]    ),
 		.addra ( ram_waddr    ),
 		.dina  ( tag_wdata    ),
-		.douta (              ),
+		.douta ( delayed_tag_rdata_n[i] ),
 
 		.enb   ( 1'b1         ),
 		.addrb ( ram_raddr    ),
