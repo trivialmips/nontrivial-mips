@@ -282,7 +282,7 @@ ll_bit llbit_inst(
 );
 
 except except_inst(
-	.rst,
+	.rst            ( flush_delayed_mispredict ),
 	.cp0_regs,
 	.pipe_mm        ( pipeline_exec_d    ),
 	.interrupt_req  ( pipe_interrupt_req ),
@@ -340,6 +340,7 @@ always_comb begin
 end
 
 dbus_mux dbus_mux_inst(
+	.flush ( flush_delayed_mispredict ),
 	.except_req,
 	.data  ( pipeline_exec_d ),
 	.dbus,
