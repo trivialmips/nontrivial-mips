@@ -2,10 +2,10 @@
 <Root MajorVersion="0" MinorVersion="36">
   <CompositeFile CompositeFileTopName="bd_soc" CanBeSetAsTop="false" CanDisplayChildGraph="true">
     <Description>Composite Fileset</Description>
-    <Generation Name="SYNTHESIS" State="GENERATED" Timestamp="1564543314"/>
-    <Generation Name="IMPLEMENTATION" State="GENERATED" Timestamp="1564543314"/>
-    <Generation Name="SIMULATION" State="GENERATED" Timestamp="1564543314"/>
-    <Generation Name="HW_HANDOFF" State="GENERATED" Timestamp="1564543314"/>
+    <Generation Name="SYNTHESIS" State="RESET" Timestamp="1564999822"/>
+    <Generation Name="IMPLEMENTATION" State="RESET" Timestamp="1564999822"/>
+    <Generation Name="SIMULATION" State="RESET" Timestamp="1564999822"/>
+    <Generation Name="HW_HANDOFF" State="RESET" Timestamp="1564999822"/>
     <FileCollection Name="SOURCES" Type="SOURCES">
       <File Name="ip/bd_soc_confreg_0_0/bd_soc_confreg_0_0.xci" Type="IP">
         <Instance HierarchyPath="loongson_confrreg"/>
@@ -266,6 +266,41 @@
         <Library Name="xil_defaultlib"/>
         <UsedIn Val="SIMULATION"/>
       </File>
+      <File Name="bd_soc_ooc.xdc" Type="XDC">
+        <Properties IsEditable="false" IsVisible="true" Timestamp="0" IsTrackable="false" IsStatusTracked="false"/>
+        <Library Name="xil_defaultlib"/>
+        <UsedIn Val="SYNTHESIS"/>
+        <UsedIn Val="IMPLEMENTATION"/>
+        <UsedIn Val="OUT_OF_CONTEXT"/>
+      </File>
+      <File Name="hw_handoff/bd_soc.hwh" Type="HwHandoff">
+        <Properties IsEditable="false" IsVisible="true" Timestamp="0" IsTrackable="false" IsStatusTracked="false"/>
+        <Library Name="xil_defaultlib"/>
+        <UsedIn Val="HW_HANDOFF"/>
+      </File>
+      <File Name="hw_handoff/bd_soc_bd.tcl">
+        <Properties IsEditable="false" IsVisible="true" Timestamp="0" IsTrackable="false" IsStatusTracked="false"/>
+        <Library Name="xil_defaultlib"/>
+        <UsedIn Val="HW_HANDOFF"/>
+      </File>
+      <File Name="synth/bd_soc.hwdef">
+        <Properties IsEditable="false" IsVisible="true" Timestamp="0" IsTrackable="false" IsStatusTracked="false"/>
+        <Library Name="xil_defaultlib"/>
+        <UsedIn Val="HW_HANDOFF"/>
+      </File>
+      <File Name="sim/bd_soc.protoinst">
+        <Properties IsEditable="false" IsVisible="true" Timestamp="0" IsTrackable="false" IsStatusTracked="false"/>
+        <Library Name="xil_defaultlib"/>
+        <UsedIn Val="SIMULATION"/>
+      </File>
+      <File Name="ip/bd_soc_utmi_usb_controller_0_1/bd_soc_utmi_usb_controller_0_1.xci" Type="IP">
+        <Instance HierarchyPath="usb_controller"/>
+        <Properties IsEditable="false" IsVisible="true" Timestamp="0" IsTrackable="true" IsStatusTracked="true"/>
+        <Library Name="xil_defaultlib"/>
+        <UsedIn Val="SYNTHESIS"/>
+        <UsedIn Val="IMPLEMENTATION"/>
+        <UsedIn Val="SIMULATION"/>
+      </File>
       <File Name="ip/bd_soc_auto_pc_0/bd_soc_auto_pc_0.xci" Type="IP">
         <Instance HierarchyPath="processor_bus/s00_couplers/auto_pc"/>
         <Properties IsEditable="false" IsVisible="true" Timestamp="0" IsTrackable="true" IsStatusTracked="true"/>
@@ -402,16 +437,16 @@
         <UsedIn Val="IMPLEMENTATION"/>
         <UsedIn Val="SIMULATION"/>
       </File>
-      <File Name="ip/bd_soc_auto_ds_6/bd_soc_auto_ds_6.xci" Type="IP">
-        <Instance HierarchyPath="peripheral_bus/m05_couplers/auto_ds"/>
+      <File Name="ip/bd_soc_auto_cc_0/bd_soc_auto_cc_0.xci" Type="IP">
+        <Instance HierarchyPath="peripheral_bus/m04_couplers/auto_cc"/>
         <Properties IsEditable="false" IsVisible="true" Timestamp="0" IsTrackable="true" IsStatusTracked="true"/>
         <Library Name="xil_defaultlib"/>
         <UsedIn Val="SYNTHESIS"/>
         <UsedIn Val="IMPLEMENTATION"/>
         <UsedIn Val="SIMULATION"/>
       </File>
-      <File Name="ip/bd_soc_auto_ds_7/bd_soc_auto_ds_7.xci" Type="IP">
-        <Instance HierarchyPath="peripheral_bus/m06_couplers/auto_ds"/>
+      <File Name="ip/bd_soc_auto_ds_6/bd_soc_auto_ds_6.xci" Type="IP">
+        <Instance HierarchyPath="peripheral_bus/m04_couplers/auto_ds"/>
         <Properties IsEditable="false" IsVisible="true" Timestamp="0" IsTrackable="true" IsStatusTracked="true"/>
         <Library Name="xil_defaultlib"/>
         <UsedIn Val="SYNTHESIS"/>
@@ -419,7 +454,15 @@
         <UsedIn Val="SIMULATION"/>
       </File>
       <File Name="ip/bd_soc_auto_pc_6/bd_soc_auto_pc_6.xci" Type="IP">
-        <Instance HierarchyPath="peripheral_bus/m06_couplers/auto_pc"/>
+        <Instance HierarchyPath="peripheral_bus/m04_couplers/auto_pc"/>
+        <Properties IsEditable="false" IsVisible="true" Timestamp="0" IsTrackable="true" IsStatusTracked="true"/>
+        <Library Name="xil_defaultlib"/>
+        <UsedIn Val="SYNTHESIS"/>
+        <UsedIn Val="IMPLEMENTATION"/>
+        <UsedIn Val="SIMULATION"/>
+      </File>
+      <File Name="ip/bd_soc_auto_ds_7/bd_soc_auto_ds_7.xci" Type="IP">
+        <Instance HierarchyPath="peripheral_bus/m05_couplers/auto_ds"/>
         <Properties IsEditable="false" IsVisible="true" Timestamp="0" IsTrackable="true" IsStatusTracked="true"/>
         <Library Name="xil_defaultlib"/>
         <UsedIn Val="SYNTHESIS"/>
@@ -427,7 +470,7 @@
         <UsedIn Val="SIMULATION"/>
       </File>
       <File Name="ip/bd_soc_auto_ds_8/bd_soc_auto_ds_8.xci" Type="IP">
-        <Instance HierarchyPath="peripheral_bus/m07_couplers/auto_ds"/>
+        <Instance HierarchyPath="peripheral_bus/m06_couplers/auto_ds"/>
         <Properties IsEditable="false" IsVisible="true" Timestamp="0" IsTrackable="true" IsStatusTracked="true"/>
         <Library Name="xil_defaultlib"/>
         <UsedIn Val="SYNTHESIS"/>
@@ -435,7 +478,7 @@
         <UsedIn Val="SIMULATION"/>
       </File>
       <File Name="ip/bd_soc_auto_pc_7/bd_soc_auto_pc_7.xci" Type="IP">
-        <Instance HierarchyPath="peripheral_bus/m07_couplers/auto_pc"/>
+        <Instance HierarchyPath="peripheral_bus/m06_couplers/auto_pc"/>
         <Properties IsEditable="false" IsVisible="true" Timestamp="0" IsTrackable="true" IsStatusTracked="true"/>
         <Library Name="xil_defaultlib"/>
         <UsedIn Val="SYNTHESIS"/>
@@ -443,7 +486,7 @@
         <UsedIn Val="SIMULATION"/>
       </File>
       <File Name="ip/bd_soc_auto_ds_9/bd_soc_auto_ds_9.xci" Type="IP">
-        <Instance HierarchyPath="peripheral_bus/m08_couplers/auto_ds"/>
+        <Instance HierarchyPath="peripheral_bus/m07_couplers/auto_ds"/>
         <Properties IsEditable="false" IsVisible="true" Timestamp="0" IsTrackable="true" IsStatusTracked="true"/>
         <Library Name="xil_defaultlib"/>
         <UsedIn Val="SYNTHESIS"/>
@@ -451,6 +494,22 @@
         <UsedIn Val="SIMULATION"/>
       </File>
       <File Name="ip/bd_soc_auto_pc_8/bd_soc_auto_pc_8.xci" Type="IP">
+        <Instance HierarchyPath="peripheral_bus/m07_couplers/auto_pc"/>
+        <Properties IsEditable="false" IsVisible="true" Timestamp="0" IsTrackable="true" IsStatusTracked="true"/>
+        <Library Name="xil_defaultlib"/>
+        <UsedIn Val="SYNTHESIS"/>
+        <UsedIn Val="IMPLEMENTATION"/>
+        <UsedIn Val="SIMULATION"/>
+      </File>
+      <File Name="ip/bd_soc_auto_ds_10/bd_soc_auto_ds_10.xci" Type="IP">
+        <Instance HierarchyPath="peripheral_bus/m08_couplers/auto_ds"/>
+        <Properties IsEditable="false" IsVisible="true" Timestamp="0" IsTrackable="true" IsStatusTracked="true"/>
+        <Library Name="xil_defaultlib"/>
+        <UsedIn Val="SYNTHESIS"/>
+        <UsedIn Val="IMPLEMENTATION"/>
+        <UsedIn Val="SIMULATION"/>
+      </File>
+      <File Name="ip/bd_soc_auto_pc_9/bd_soc_auto_pc_9.xci" Type="IP">
         <Instance HierarchyPath="peripheral_bus/m08_couplers/auto_pc"/>
         <Properties IsEditable="false" IsVisible="true" Timestamp="0" IsTrackable="true" IsStatusTracked="true"/>
         <Library Name="xil_defaultlib"/>
@@ -474,7 +533,7 @@
         <UsedIn Val="IMPLEMENTATION"/>
         <UsedIn Val="SIMULATION"/>
       </File>
-      <File Name="ip/bd_soc_auto_cc_0/bd_soc_auto_cc_0.xci" Type="IP">
+      <File Name="ip/bd_soc_auto_cc_1/bd_soc_auto_cc_1.xci" Type="IP">
         <Instance HierarchyPath="memory_bus/m00_couplers/auto_cc"/>
         <Properties IsEditable="false" IsVisible="true" Timestamp="0" IsTrackable="true" IsStatusTracked="true"/>
         <Library Name="xil_defaultlib"/>
@@ -482,39 +541,12 @@
         <UsedIn Val="IMPLEMENTATION"/>
         <UsedIn Val="SIMULATION"/>
       </File>
-      <File Name="ip/bd_soc_auto_ds_10/bd_soc_auto_ds_10.xci" Type="IP">
+      <File Name="ip/bd_soc_auto_ds_11/bd_soc_auto_ds_11.xci" Type="IP">
         <Instance HierarchyPath="memory_bus/m00_couplers/auto_ds"/>
         <Properties IsEditable="false" IsVisible="true" Timestamp="0" IsTrackable="true" IsStatusTracked="true"/>
         <Library Name="xil_defaultlib"/>
         <UsedIn Val="SYNTHESIS"/>
         <UsedIn Val="IMPLEMENTATION"/>
-        <UsedIn Val="SIMULATION"/>
-      </File>
-      <File Name="bd_soc_ooc.xdc" Type="XDC">
-        <Properties IsEditable="false" IsVisible="true" Timestamp="0" IsTrackable="false" IsStatusTracked="false"/>
-        <Library Name="xil_defaultlib"/>
-        <UsedIn Val="SYNTHESIS"/>
-        <UsedIn Val="IMPLEMENTATION"/>
-        <UsedIn Val="OUT_OF_CONTEXT"/>
-      </File>
-      <File Name="hw_handoff/bd_soc.hwh" Type="HwHandoff">
-        <Properties IsEditable="false" IsVisible="true" Timestamp="0" IsTrackable="false" IsStatusTracked="false"/>
-        <Library Name="xil_defaultlib"/>
-        <UsedIn Val="HW_HANDOFF"/>
-      </File>
-      <File Name="hw_handoff/bd_soc_bd.tcl">
-        <Properties IsEditable="false" IsVisible="true" Timestamp="0" IsTrackable="false" IsStatusTracked="false"/>
-        <Library Name="xil_defaultlib"/>
-        <UsedIn Val="HW_HANDOFF"/>
-      </File>
-      <File Name="synth/bd_soc.hwdef">
-        <Properties IsEditable="false" IsVisible="true" Timestamp="0" IsTrackable="false" IsStatusTracked="false"/>
-        <Library Name="xil_defaultlib"/>
-        <UsedIn Val="HW_HANDOFF"/>
-      </File>
-      <File Name="sim/bd_soc.protoinst">
-        <Properties IsEditable="false" IsVisible="true" Timestamp="0" IsTrackable="false" IsStatusTracked="false"/>
-        <Library Name="xil_defaultlib"/>
         <UsedIn Val="SIMULATION"/>
       </File>
     </FileCollection>
