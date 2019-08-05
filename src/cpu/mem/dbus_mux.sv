@@ -1,7 +1,6 @@
 `include "cpu_defs.svh"
 
 module dbus_mux(
-	input  logic           flush,
 	input  except_req_t    except_req,
 	input  pipeline_exec_t [`ISSUE_NUM-1:0] data,
 	cpu_dbus_if.master     dbus,
@@ -19,8 +18,8 @@ for(genvar i = 0; i < `ISSUE_NUM; ++i) begin : gen_flat_memreq
 	assign ce[i] = we[i] | re[i] | inv[i] | inv_icache[i];
 end
 
-assign kill[0] = (except_req.valid & except_req.alpha_taken) | flush;
-assign kill[1] = except_req.valid | flush;
+assign kill[0] = (except_req.valid & except_req.alpha_taken);
+assign kill[1] = except_req.valid;
 
 //assign dbus.icache_inv = 1'b0;
 //assign dbus.dcache_inv = 1'b0;

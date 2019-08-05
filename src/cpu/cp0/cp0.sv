@@ -123,8 +123,7 @@ assign prid_default = {8'b0, 8'b1, 16'h8000};
 
 always @(posedge clk)
 begin
-	if(rst)
-	begin
+	if(rst) begin
 		regs_now.index     <= '0;
 		regs_now.random    <= `TLB_ENTRIES_NUM - 1;
 		regs_now.entry_lo0 <= '0;
@@ -144,7 +143,7 @@ begin
 		regs_now.config0   <= config0_default;
 		regs_now.config1   <= config1_default;
 		regs_now.prid      <= prid_default;
-	end else begin
+	end else if(~stall) begin
 		regs_now <= regs_nxt;
 	end
 end
@@ -172,7 +171,7 @@ always_comb begin
 	regs_nxt.cause.ip[7:2] = interrupt_flag[7:2];
 
 	/* write register (WB stage) */
-	if(wreq.we && ~stall) begin
+	if(wreq.we) begin
 		if(wreq.wsel == 3'b0) begin
 			case(wreq.waddr)
 				5'd0:  regs_nxt.index[TLB_WIDTH-1:0] = wdata[TLB_WIDTH-1:0];
@@ -210,7 +209,7 @@ always_comb begin
 	end
 
 	/* TLBR/TLBP instruction (WB stage) */
-	if(tlbr_req && ~stall) begin
+	if(tlbr_req) begin
 		regs_nxt.entry_hi[31:13] = tlbr_res.vpn2;
 		regs_nxt.entry_hi[7:0]   = tlbr_res.asid;
 		regs_nxt.entry_lo1 = {
@@ -221,7 +220,7 @@ always_comb begin
 			tlbr_res.d0, tlbr_res.v0, tlbr_res.G };
 	end
 
-	if(tlbp_req && ~stall) regs_nxt.index = tlbp_res;
+	if(tlbp_req) regs_nxt.index = tlbp_res;
 
 	/* exception (MEM stage) */
 	if(except_req.valid) begin
