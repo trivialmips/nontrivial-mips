@@ -7,10 +7,12 @@ module ctrl(
 	input  logic stall_from_mm,
 	output logic stall_if,
 	output logic stall_id,
+	output logic stall_ro,
 	output logic stall_ex,
 	output logic stall_mm,
 	output logic flush_if,
 	output logic flush_id,
+	output logic flush_ro,
 	output logic flush_ex,
 	output logic flush_mm,
 	output logic flush_delayed_mispredict,
@@ -28,9 +30,9 @@ module ctrl(
 	output logic   hold_resolved_branch
 );
 
-logic [3:0] stall, flush;
-assign { stall_if, stall_id, stall_ex, stall_mm } = stall;
-assign { flush_if, flush_id, flush_ex, flush_mm } = flush;
+logic [4:0] stall, flush;
+assign { stall_if, stall_id, stall_ro, stall_ex, stall_mm } = stall;
+assign { flush_if, flush_id, flush_ro, flush_ex, flush_mm } = flush;
 
 logic mispredict, delayed_mispredict;
 assign mispredict = ex_resolved_branch[0].valid & ex_resolved_branch[0].mispredict;
@@ -78,23 +80,23 @@ endfunction
 always_comb begin
 	flush = '0;
 	if(flush_delayed_mispredict) begin
-		flush = 4'b1111;
+		flush = 5'b11111;
 	end else if(except_req.valid) begin
-		flush = { 2'b11, {2{except_req.alpha_taken}} };
+		flush = { 3'b111, {2{except_req.alpha_taken}} };
 	end else if(flush_mispredict) begin
-		flush = 4'b1100;
+		flush = 5'b11100;
 	end
 end
 
 always_comb begin
 	if(rst)
-		stall = 4'b1111;
+		stall = 5'b11111;
 	else if(stall_from_mm)
-		stall = 4'b1111;
+		stall = 5'b11111;
 	else if(stall_from_ex | wait_delayslot)
-		stall = 4'b1110;
+		stall = 5'b11110;
 	else if(stall_from_id)
-		stall = 4'b1100;
+		stall = 5'b11000;
 	else stall = '0;
 end
 

@@ -12,6 +12,7 @@ module cpu_core(
 // flush and stall signals
 (* mark_debug = "true" *) logic flush_if, stall_if;
 (* mark_debug = "true" *) logic flush_id, stall_id, stall_from_id;
+(* mark_debug = "true" *) logic flush_ro, stall_ro;
 (* mark_debug = "true" *) logic flush_ex, stall_ex, stall_from_ex;
 (* mark_debug = "true" *) logic flush_mm, stall_mm, stall_from_mm;
 (* mark_debug = "true" *) logic flush_delayed_mispredict;
@@ -163,6 +164,11 @@ instr_fetch #(
 );
 
 decode_and_issue decode_issue_inst(
+	.clk,
+	.rst,
+	.stall_id,
+	.stall_ro,
+	.flush_ro,
 	.fetch_entry  ( if_fetch_entry ),
 	.issue_num    ( if_fetch_ack   ),
 	.delayslot_not_exec,
@@ -173,14 +179,14 @@ decode_and_issue decode_issue_inst(
 	.pipeline_decode,
 	.reg_raddr    ( reg_raddr[3:0] ),
 	.reg_rdata    ( reg_rdata[3:0] ),
-	.stall_req    ( stall_from_id  )
+	.stall_from_id
 );
 
 // pipeline between ID and EX
 always_ff @(posedge clk) begin
-	if(rst || flush_id || (stall_id && ~stall_ex)) begin
+	if(rst || flush_ro || (stall_ro && ~stall_ex)) begin
 		pipeline_decode_d <= '0;
-	end else if(~stall_id) begin
+	end else if(~stall_ro) begin
 		pipeline_decode_d <= pipeline_decode;
 	end
 end
