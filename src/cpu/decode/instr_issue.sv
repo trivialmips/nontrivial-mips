@@ -144,7 +144,7 @@ assign instr2_not_taken =
    || delayslot_not_exec
       // branch must be issued on pipeline 1
    || id_decoded[1].is_controlflow
-   || (is_ssnop(fetch_entry[0]) | is_ssnop(fetch_entry[1]))
+//   || (is_ssnop(fetch_entry[0]) | is_ssnop(fetch_entry[1]))
    || (id_decoded[0].op == OP_SC || id_decoded[1].op == OP_SC)
    || (id_decoded[0].is_priv && id_decoded[1].is_priv)
    || (id_decoded[1].is_multicyc && id_decoded[0].is_multicyc)
