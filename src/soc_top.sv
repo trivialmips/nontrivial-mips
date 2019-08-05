@@ -84,6 +84,29 @@ module nscscc_soc_top(
     output wire        LCD_rs,
     output wire        LCD_wr,
     output wire        LCD_lighton,
+    // USB
+    input  wire       UTMI_clk,
+    inout  wire [7:0] UTMI_data,
+    output wire       UTMI_reset,
+    input  wire       UTMI_txready,
+    input  wire       UTMI_rxvalid,
+    input  wire       UTMI_rxactive,
+    input  wire       UTMI_rxerror,
+    input  wire [1:0] UTMI_linestate,
+    input  wire       UTMI_hostdisc,
+    input  wire       UTMI_iddig,
+    input  wire       UTMI_vbusvalid,
+    input  wire       UTMI_sessend,
+    output wire       UTMI_txvalid,
+    output wire [1:0] UTMI_opmode,
+    output wire [1:0] UTMI_xcvrsel,
+    output wire       UTMI_termsel,
+    output wire       UTMI_dppulldown,
+    output wire       UTMI_dmpulldown,
+    output wire       UTMI_idpullup,
+    output wire       UTMI_chrgvbus,
+    output wire       UTMI_dischrgvbus,
+    output wire       UTMI_suspend_n,
     // EJTAG
     input  wire EJTAG_trst,
     input  wire EJTAG_tck,
@@ -118,6 +141,9 @@ module nscscc_soc_top(
 
     // GPIO
     assign num_a_g_dp = 1'b0; // not provided in confreg IP
+
+    // USB
+    `IOBUF_GEN_VEC_SIMPLE(UTMI_data);
 
     // LCD
     `IOBUF_GEN_VEC(LCD_data, LCD_data_tri);
@@ -240,7 +266,32 @@ module nscscc_soc_top(
         .LCD_rd,
         .LCD_rs,
         .LCD_wr,
-        .LCD_lighton
+        .LCD_lighton,
+        // USB
+        .UTMI_clk,
+        .UTMI_data_i,
+        .UTMI_data_o,
+        .UTMI_data_t,
+        .UTMI_reset,
+        .UTMI_txready,
+        .UTMI_rxvalid,
+        .UTMI_rxactive,
+        .UTMI_rxerror,
+        .UTMI_linestate,
+        .UTMI_hostdisc,
+        .UTMI_iddig,
+        .UTMI_vbusvalid,
+        .UTMI_sessend,
+        .UTMI_txvalid,
+        .UTMI_opmode,
+        .UTMI_xcvrsel,
+        .UTMI_termsel,
+        .UTMI_dppulldown,
+        .UTMI_dmpulldown,
+        .UTMI_idpullup,
+        .UTMI_chrgvbus,
+        .UTMI_dischrgvbus,
+        .UTMI_suspend_n
         // EJTAG
         // .EJTAG_trst,
         // .EJTAG_tck,

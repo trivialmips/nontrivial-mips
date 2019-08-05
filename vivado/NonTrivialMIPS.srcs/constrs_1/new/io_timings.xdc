@@ -31,6 +31,13 @@ set_input_delay -clock MII_rx_clk -max [expr 40-10]  [get_ports [list MII_rx_dv 
 set_output_delay -clock MII_tx_clk -min 0  [get_ports [list MII_tx_en  MII_txd*]]
 set_output_delay -clock MII_tx_clk -max 12  [get_ports [list MII_tx_en  MII_txd*]]
 
+# USB UTMI
+
+create_clock -period 16.667 -name utmi_clk -waveform {0.000 8.333} [get_ports UTMI_clk]
+set_output_delay -clock [get_clocks utmi_clk] -min -add_delay 0.000 [get_ports {UTMI_data[*]}]
+set_output_delay -clock [get_clocks utmi_clk] -max -add_delay 2.000 [get_ports {UTMI_data[*]}]
+set_output_delay -clock [get_clocks utmi_clk] -min -add_delay 0.000 [get_ports UTMI_txvalid]
+set_output_delay -clock [get_clocks utmi_clk] -max -add_delay 2.000 [get_ports UTMI_txvalid]
 
 # GPIO
 
