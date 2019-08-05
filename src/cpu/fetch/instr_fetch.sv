@@ -51,12 +51,14 @@ end
 
 struct packed {
 	logic valid;
+	logic flush_exception;
 	virt_t pc;
 } pipe_s1;
 
 struct packed {
 	logic valid;
 	logic delayslot;
+	logic flush_exception;
 	virt_t pc;
 	branch_predict_t bp;
 	address_exception_t iaddr_ex;
@@ -138,6 +140,15 @@ branch_predictor #(
 assign icache_req.read  = pipe_s1.valid;
 assign icache_req.vaddr = aligned_address(pipe_s1.pc);
 
+always_ff @(posedge clk) begin
+	if(rst) begin
+		pipe_s1.flush_exception <= 1'b0;
+	end else begin
+		pipe_s1.flush_exception <= except_valid
+			& ~(delayed_resolved_branch_i.valid & delayed_resolved_branch_i.mispredict);
+	end
+end
+
 /* pipeline between PCGen and I$ read */
 always_ff @(posedge clk) begin
 	if(rst || flush_s1 || stall_s1 & ~stall_s2) begin
@@ -145,12 +156,14 @@ always_ff @(posedge clk) begin
 		pipe_s2.valid     <= 1'b0;
 		pipe_s2.iaddr_ex  <= '0;
 		pipe_s2.delayslot <= 1'b0;
+		pipe_s2.flush_exception <= 1'b0;
 	end else if(~stall_s1) begin
 		// pipe_s2.bp comes from RAM
 		pipe_s2.pc        <= pipe_s1.pc;
 		pipe_s2.valid     <= pipe_s1.valid;
 		pipe_s2.iaddr_ex  <= icache_res.iaddr_ex;
 		pipe_s2.delayslot <= predict_delayed;
+		pipe_s2.flush_exception <= pipe_s1.flush_exception;
 	end
 end
 
@@ -162,6 +175,8 @@ always_comb begin
 		entry_s2[i].vaddr = { pipe_s2.pc[31:3], 1'b0, pipe_s2.pc[1:0] } + 4 * i;
 		entry_s2[i].iaddr_ex = pipe_s2.iaddr_ex;
 		entry_s2[i].branch_predict = pipe_s2.bp;
+		if(pipe_s2.flush_exception)
+			entry_s2[i].iaddr_ex.illegal = 1'b0;
 	end
 
 	entry_s2[0].branch_predict.valid = pipe_s2.bp.valid & pipe_s2.prediction_sel[0];

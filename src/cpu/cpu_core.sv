@@ -150,7 +150,7 @@ instr_fetch #(
 	.rst,
 	.flush_pc     ( flush_if              ),
 	.stall_pop    ( stall_if              ),
-	.except_valid ( except_req.valid & ~flush_delayed_mispredict ),
+	.except_valid ( except_req.valid      ),
 	.except_vec   ( except_req.except_vec ),
 	.resolved_branch_i ( ex_resolved_branch[0] ),
 	.delayed_resolved_branch_i ( delayed_resolved_branch[0] ),
@@ -297,11 +297,11 @@ except except_inst(
 cp0 cp0_inst(
 	.clk,
 	.rst,
-	.stall     ( flush_delayed_mispredict ),
 	.raddr     ( cp0_raddr     ),
 	.rsel      ( cp0_rsel      ),
 	.wreq      ( cp0_reg_wr    ),
-	.except_req,
+	.flush_delayed_mispredict,
+	.except_req_i ( except_req ),
 
 	.tlbp_res  ( tlbp_index    ),
 	.tlbr_res  ( tlbrw_rdata   ),

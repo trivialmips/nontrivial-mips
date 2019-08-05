@@ -1,14 +1,14 @@
 `include "cpu_defs.svh"
 
 module cp0(
-	input  logic clk,
-	input  logic rst,
-	input  logic stall,
+	input  logic         clk,
+	input  logic         rst,
+	input  logic         flush_delayed_mispredict,
 
 	input  reg_addr_t    raddr,
 	input  logic [2:0]   rsel,
 	input  cp0_req_t     wreq,
-	input  except_req_t  except_req,
+	input  except_req_t  except_req_i,
 	input  logic [7:0]   interrupt_flag,
 
 	input  logic         tlbr_req,
@@ -52,6 +52,14 @@ assign tlbrw_wdata.c0   = regs.entry_lo0[5:3];
 assign tlbrw_wdata.d0   = regs.entry_lo0[2];
 assign tlbrw_wdata.v0   = regs.entry_lo0[1];
 assign tlbrw_wdata.G    = regs.entry_lo0[0] & regs.entry_lo1[0];
+
+/* pipeline exception request */
+except_req_t except_req;
+always_ff @(posedge clk) begin
+	if(rst || flush_delayed_mispredict)
+		except_req <= '0;
+	else except_req <= except_req_i;
+end
 
 uint32_t rdata_d;
 always_comb begin
@@ -143,7 +151,7 @@ begin
 		regs_now.config0   <= config0_default;
 		regs_now.config1   <= config1_default;
 		regs_now.prid      <= prid_default;
-	end else if(~stall) begin
+	end else begin
 		regs_now <= regs_nxt;
 	end
 end
