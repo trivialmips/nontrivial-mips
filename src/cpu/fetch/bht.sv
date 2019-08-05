@@ -57,7 +57,7 @@ assign waddr = get_index(update.pc);
 assign wdata = next_counter(update.counter, update.taken);
 
 for(genvar i = 0; i < 2; ++i) begin : gen_bht_ram
-	dual_port_lutram #(
+	dual_port_ram #(
 		.SIZE  ( CHANNEL_SIZE  ),
 		.dtype ( bht_predict_t )
 	) bht_ram (
@@ -65,12 +65,14 @@ for(genvar i = 0; i < 2; ++i) begin : gen_bht_ram
 		.rst,
 		.ena   ( 1'b1     ),
 		.enb   ( 1'b1     ),
-		.wea   ( we[i]    ),
-		.addra ( waddr    ),
-		.dina  ( wdata    ),
-		.douta (          ),
-		.addrb ( raddr    ),
-		.doutb ( rdata[i] )
+		.wea   ( 1'b0     ),
+		.addra ( raddr    ),
+		.dina  (          ),
+		.douta ( rdata[i] ),
+		.web   ( we[i]    ),
+		.addrb ( waddr    ),
+		.dinb  ( wdata    ),
+		.doutb (          )
 	);
 end
 
