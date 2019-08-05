@@ -1,12 +1,13 @@
 `include "cpu_defs.svh"
 
 module decode_and_issue(
-	input  logic             clk,
-	input  logic             rst,
-	input  logic             flush_ro,
-	input  logic             stall_id,
-	input  logic             stall_ro,
-	input  logic             delayslot_not_exec,
+	input logic clk,
+	input logic rst,
+	input logic stall_id,
+	input logic stall_ro,
+	input logic flush_ro,
+
+	input  logic	     delayslot_not_exec,
 	input  fetch_entry_t     [`ISSUE_NUM-1:0] fetch_entry,
 	input  pipeline_exec_t   [`ISSUE_NUM-1:0] pipeline_exec,
 	input  pipeline_exec_t   [`DCACHE_PIPE_DEPTH-1:0][`ISSUE_NUM-1:0] pipeline_dcache,
@@ -21,12 +22,12 @@ module decode_and_issue(
 	input  uint32_t    [`ISSUE_NUM * 2 - 1:0] reg_rdata
 );
 
-/* Issue Stage */
 pipeline_decode_t [`ISSUE_NUM-1:0] pipeline_issue, pipeline_issue_d;
-decoded_instr_t [`ISSUE_NUM-1:0] id_decoded, ex_decoded;
+decoded_instr_t [`ISSUE_NUM-1:0] ex_decoded, id_decoded;
 decoded_instr_t [`DCACHE_PIPE_DEPTH-1:0][`ISSUE_NUM-1:0] dcache_decoded;
 decoded_instr_t [`ISSUE_NUM-1:0] issue_instr;
-for(genvar i = 0; i < `ISSUE_NUM; ++i) begin : gen_decoder
+
+for(genvar i = 0; i < `ISSUE_NUM; ++i) begin : gen_decoder_info
 	assign id_decoded[i]        = fetch_entry[i].decoded;
 	assign ex_decoded[i]        = pipeline_issue_d[i].decoded;
 	assign dcache_decoded[0][i] = pipeline_exec[i].decoded;
@@ -46,11 +47,11 @@ instr_issue issue_inst(
 );
 
 for(genvar i = 0; i < `ISSUE_NUM; ++i) begin : gen_issue
-	assign pipeline_issue[i].fetch = fetch_entry[i];
-	assign pipeline_issue[i].reg1 = '0;
-	assign pipeline_issue[i].reg2 = '0;
+	assign pipeline_issue[i].fetch   = fetch_entry[i];
+	assign pipeline_issue[i].reg1    = '0;
+	assign pipeline_issue[i].reg2    = '0;
 	assign pipeline_issue[i].decoded = issue_instr[i];
-	assign pipeline_issue[i].valid = (i < issue_num);
+	assign pipeline_issue[i].valid   = (i < issue_num);
 end
 
 /* Pipeline between IS and RO */
@@ -68,8 +69,7 @@ uint32_t   [`DCACHE_PIPE_DEPTH-1:0][`ISSUE_NUM-1:0] dcache_wdata;
 reg_addr_t [`ISSUE_NUM - 1:0] ex_waddr, mm_waddr, wb_waddr;
 uint32_t   [`ISSUE_NUM - 1:0] ex_wdata, mm_wdata, wb_wdata;
 uint32_t   [`ISSUE_NUM * 2 - 1:0] reg_forward;
-
-for(genvar i = 0; i < `ISSUE_NUM; ++i) begin : gen_roaddr
+for(genvar i = 0; i < `ISSUE_NUM; ++i) begin : gen_ro_info
 	assign reg_raddr[i * 2]     = pipeline_issue_d[i].decoded.rs1;
 	assign reg_raddr[i * 2 + 1] = pipeline_issue_d[i].decoded.rs2;
 	assign ex_waddr[i] = pipeline_exec[i].decoded.rd;
@@ -81,7 +81,6 @@ for(genvar i = 0; i < `ISSUE_NUM; ++i) begin : gen_roaddr
 	for(genvar j = 0; j < `DCACHE_PIPE_DEPTH; ++j) begin : gen_dcache_reg
 		assign dcache_waddr[j][i] = pipeline_dcache[j][i].decoded.rd;
 		assign dcache_wdata[j][i] = pipeline_dcache[j][i].result;
-		assign dcache_decoded[j][i] = pipeline_dcache[j][i].decoded;
 	end
 
 	register_forward reg_forward_inst(
@@ -96,11 +95,11 @@ for(genvar i = 0; i < `ISSUE_NUM; ++i) begin : gen_roaddr
 end
 
 for(genvar i = 0; i < `ISSUE_NUM; ++i) begin : gen_ro
-	assign pipeline_decode[i].valid   = pipeline_issue_d[i].valid;
-	assign pipeline_decode[i].fetch   = pipeline_issue_d[i].fetch;
-	assign pipeline_decode[i].decoded = pipeline_issue_d[i].decoded;
 	assign pipeline_decode[i].reg1    = reg_forward[i * 2];
 	assign pipeline_decode[i].reg2    = reg_forward[i * 2 + 1];
+	assign pipeline_decode[i].fetch   = pipeline_issue_d[i].fetch;
+	assign pipeline_decode[i].decoded = pipeline_issue_d[i].decoded;
+	assign pipeline_decode[i].valid   = pipeline_issue_d[i].valid;
 end
 
 endmodule
