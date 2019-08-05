@@ -21,6 +21,9 @@ module instr_fetch #(
 	// mispredict
 	input  branch_resolved_t    resolved_branch_i,
 
+	// delayed mispredict
+	input  branch_resolved_t    delayed_resolved_branch_i,
+
 	// memory request
 	input  instr_fetch_memres_t icache_res,
 	output instr_fetch_memreq_t icache_req,
@@ -42,6 +45,8 @@ branch_resolved_t resolved_branch;
 always_comb begin
 	resolved_branch = resolved_branch_i;
 	resolved_branch.valid &= ~hold_resolved_branch;
+	if(delayed_resolved_branch_i.valid & delayed_resolved_branch_i.mispredict)
+		resolved_branch = delayed_resolved_branch_i;
 end
 
 struct packed {
@@ -102,7 +107,9 @@ pc_generator pc_gen(
 	.predict_delayed,
 	.predict_valid ( pipe_s2.bp.valid & pipe_s2.bp.taken ),
 	.predict_vaddr ( pipe_s2.bp.target ),
-	.resolved_branch,
+	.hold_resolved_branch,
+	.resolved_branch ( resolved_branch_i ),
+	.delayed_resolved_branch ( delayed_resolved_branch_i ),
 	.presolved_branch,
 	.pc    ( pipe_s1.pc    ),
 	.pc_en ( pipe_s1.valid )

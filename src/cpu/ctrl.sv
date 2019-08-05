@@ -20,11 +20,9 @@ module ctrl(
 	input  pipeline_exec_t   [`DCACHE_PIPE_DEPTH-1:0][1:0] pipeline_dcache,
 
 	input  except_req_t      except_req,
-	input  fetch_entry_t     [`FETCH_NUM-1:0] fetch_entry,
 	input  pipeline_exec_t   [1:0] pipeline_exec,
 	input  branch_resolved_t [1:0] ex_resolved_branch,
 	input  branch_resolved_t [1:0] delayed_resolved_branch,
-	output branch_resolved_t resolved_branch_o,
 	// mispredict but delayslot does not executed
 	output logic   delayslot_not_exec,
 	output logic   hold_resolved_branch
@@ -40,9 +38,8 @@ assign delayed_mispredict = delayed_resolved_branch[0].valid & delayed_resolved_
 
 assign hold_resolved_branch = (mispredict & (stall_ex | stall_mm) & ~flush_id);
 
-logic fetch_entry_avail, wait_delayslot, flush_mispredict;
+logic flush_mispredict;
 assign delayslot_not_exec = ex_resolved_branch[0].valid & ~pipeline_exec[1].valid;
-assign wait_delayslot = delayslot_not_exec & ~fetch_entry_avail;
 
 logic mispredict_with_delayslot;
 assign mispredict_with_delayslot = mispredict & pipeline_exec[1].valid;
@@ -55,19 +52,6 @@ assign flush_mispredict = (mispredict)
 	& ~stall_from_ex
 	// delayslot cannot pass
 	& ~(mispredict_with_delayslot & stall_ex);
-
-always_comb begin
-	fetch_entry_avail = 1'b0;
-	for(int i = 0; i < `FETCH_NUM; ++i)
-		fetch_entry_avail |= fetch_entry[i].valid;
-end
-
-always_comb begin
-	resolved_branch_o = ex_resolved_branch[0];
-	if(wait_delayslot) resolved_branch_o = '0;
-	if(flush_delayed_mispredict)
-		resolved_branch_o = delayed_resolved_branch[0];
-end
 
 function logic is_memory(input pipeline_exec_t pipe);
 	return pipe.memreq.read | pipe.memreq.write;
@@ -93,7 +77,7 @@ always_comb begin
 		stall = 5'b11111;
 	else if(stall_from_mm)
 		stall = 5'b11111;
-	else if(stall_from_ex | wait_delayslot)
+	else if(stall_from_ex)
 		stall = 5'b11110;
 	else if(stall_from_id)
 		stall = 5'b11000;

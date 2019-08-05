@@ -19,7 +19,11 @@ module pc_generator(
 	input  presolved_branch_t presolved_branch,
 	
 	// branch misprediction
+	input  logic             hold_resolved_branch,
 	input  branch_resolved_t resolved_branch,
+
+	// delayed branch misprediction
+	input  branch_resolved_t delayed_resolved_branch,
 
 	// replay
 	input  logic   replay_valid,
@@ -54,11 +58,15 @@ always_comb begin
 		npc = replay_vaddr;
 
 	// branch misprediction
-	if(resolved_branch.valid & resolved_branch.mispredict)
+	if(resolved_branch.valid & resolved_branch.mispredict & ~hold_resolved_branch)
 		npc = resolved_branch.taken ? resolved_branch.target : resolved_branch.pc + 32'd8;
 
 	// exception
 	if(except_valid) npc = except_vec;
+
+	// delayed branch misprediction
+	if(delayed_resolved_branch.valid & delayed_resolved_branch.mispredict)
+		npc = delayed_resolved_branch.taken ? delayed_resolved_branch.target : delayed_resolved_branch.pc + 32'd8;
 end
 
 assign pc_en = ready;

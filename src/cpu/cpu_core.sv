@@ -51,7 +51,6 @@ assign pipeline_wb = pipeline_mem_d;
 (* mark_debug = "true" *) fetch_entry_t [1:0]  if_fetch_entry;
 instr_fetch_memres_t icache_res;
 instr_fetch_memreq_t icache_req;
-(* mark_debug = "true" *) branch_resolved_t resolved_branch;
 branch_resolved_t [`ISSUE_NUM-1:0] ex_resolved_branch, delayed_resolved_branch;
 branch_early_resolved_t [`ISSUE_NUM-1:0] delayed_early_resolved_ro, delayed_early_resolved_ro_d;
 
@@ -95,9 +94,7 @@ assign icache_res.iaddr_ex.illegal = mmu_inst_result.illegal;
 assign icache_res.iaddr_ex.invalid = mmu_inst_result.invalid;
 
 ctrl ctrl_inst(
-	.*,
-	.fetch_entry       ( if_fetch_entry     ),
-	.resolved_branch_o ( resolved_branch    )
+	.*
 );
 
 regfile #(
@@ -155,7 +152,8 @@ instr_fetch #(
 	.stall_pop    ( stall_if              ),
 	.except_valid ( except_req.valid & ~flush_delayed_mispredict ),
 	.except_vec   ( except_req.except_vec ),
-	.resolved_branch_i ( resolved_branch  ),
+	.resolved_branch_i ( ex_resolved_branch[0] ),
+	.delayed_resolved_branch_i ( delayed_resolved_branch[0] ),
 	.hold_resolved_branch,
 	.icache_res,
 	.icache_req,
