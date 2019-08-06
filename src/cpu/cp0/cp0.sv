@@ -168,9 +168,15 @@ end
 uint32_t wdata;
 assign wdata = wreq.wdata;
 
+logic count_switch;
+always_ff @(posedge clk) begin
+	if(rst) count_switch <= 1'b0;
+	else count_switch <= ~count_switch;
+end
+
 always_comb begin
 	regs_nxt = regs_now;
-	regs_nxt.count  = regs_now.count + 32'b1;
+	regs_nxt.count  = regs_now.count + count_switch;
 `ifdef COMPILE_FULL_M
 	regs_nxt.random[TLB_WIDTH-1:0] = regs_now.random[TLB_WIDTH-1:0] + tlbwr_req;
 	if((&regs_now.random[TLB_WIDTH-1:0]) & tlbwr_req)
