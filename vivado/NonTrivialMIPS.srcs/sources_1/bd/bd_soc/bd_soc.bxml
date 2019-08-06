@@ -2,10 +2,10 @@
 <Root MajorVersion="0" MinorVersion="36">
   <CompositeFile CompositeFileTopName="bd_soc" CanBeSetAsTop="false" CanDisplayChildGraph="true">
     <Description>Composite Fileset</Description>
-    <Generation Name="SYNTHESIS" State="RESET" Timestamp="1564999822"/>
-    <Generation Name="IMPLEMENTATION" State="RESET" Timestamp="1564999822"/>
-    <Generation Name="SIMULATION" State="RESET" Timestamp="1564999822"/>
-    <Generation Name="HW_HANDOFF" State="RESET" Timestamp="1564999822"/>
+    <Generation Name="SYNTHESIS" State="STALE" Timestamp="1565101513"/>
+    <Generation Name="IMPLEMENTATION" State="STALE" Timestamp="1565101513"/>
+    <Generation Name="SIMULATION" State="STALE" Timestamp="1565101513"/>
+    <Generation Name="HW_HANDOFF" State="STALE" Timestamp="1565101513"/>
     <FileCollection Name="SOURCES" Type="SOURCES">
       <File Name="ip/bd_soc_confreg_0_0/bd_soc_confreg_0_0.xci" Type="IP">
         <Instance HierarchyPath="loongson_confrreg"/>
@@ -266,6 +266,14 @@
         <Library Name="xil_defaultlib"/>
         <UsedIn Val="SIMULATION"/>
       </File>
+      <File Name="ip/bd_soc_utmi_usb_controller_0_1/bd_soc_utmi_usb_controller_0_1.xci" Type="IP">
+        <Instance HierarchyPath="usb_controller"/>
+        <Properties IsEditable="false" IsVisible="true" Timestamp="0" IsTrackable="true" IsStatusTracked="true"/>
+        <Library Name="xil_defaultlib"/>
+        <UsedIn Val="SYNTHESIS"/>
+        <UsedIn Val="IMPLEMENTATION"/>
+        <UsedIn Val="SIMULATION"/>
+      </File>
       <File Name="bd_soc_ooc.xdc" Type="XDC">
         <Properties IsEditable="false" IsVisible="true" Timestamp="0" IsTrackable="false" IsStatusTracked="false"/>
         <Library Name="xil_defaultlib"/>
@@ -291,14 +299,6 @@
       <File Name="sim/bd_soc.protoinst">
         <Properties IsEditable="false" IsVisible="true" Timestamp="0" IsTrackable="false" IsStatusTracked="false"/>
         <Library Name="xil_defaultlib"/>
-        <UsedIn Val="SIMULATION"/>
-      </File>
-      <File Name="ip/bd_soc_utmi_usb_controller_0_1/bd_soc_utmi_usb_controller_0_1.xci" Type="IP">
-        <Instance HierarchyPath="usb_controller"/>
-        <Properties IsEditable="false" IsVisible="true" Timestamp="0" IsTrackable="true" IsStatusTracked="true"/>
-        <Library Name="xil_defaultlib"/>
-        <UsedIn Val="SYNTHESIS"/>
-        <UsedIn Val="IMPLEMENTATION"/>
         <UsedIn Val="SIMULATION"/>
       </File>
       <File Name="ip/bd_soc_auto_pc_0/bd_soc_auto_pc_0.xci" Type="IP">
