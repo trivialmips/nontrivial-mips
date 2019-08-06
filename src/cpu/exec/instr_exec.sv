@@ -35,7 +35,7 @@ assign result.valid  = data.valid;
 assign result.ex     = ex;
 assign result.result = exec_ret;
 assign result.pc     = data.fetch.vaddr;
-assign result.eret   = (op == OP_ERET);
+assign result.eret   = (op == OP_ERET) & ~(|data.fetch.iaddr_ex);
 assign result.delayed_reg[0] = reg1;
 assign result.delayed_reg[1] = reg2;
 assign result.branch_predict = data.fetch.branch_predict;
