@@ -73,6 +73,98 @@
 		</LockPrevVersions>
 	</IP>
 	<IP>
+		<VLNV value="harrychen.xyz:user:video_stream_modifier:1.0">
+		</VLNV>
+		<DisplayName value="Video Stream Modifier">
+		</DisplayName>
+		<Description value="Modify the AXI 4 Stream vIdeo data of Xilinx Framebuffer Read/Write IP">
+		</Description>
+		<CoreRevision value="1">
+		</CoreRevision>
+		<ComponentPath value="video_stream_modifier/component.xml">
+		</ComponentPath>
+		<Families>
+			<Family name="aartix7">
+				<Part status="Production" name="ALL">
+				</Part>
+			</Family>
+			<Family name="artix7">
+				<Part status="Production" name="ALL">
+				</Part>
+			</Family>
+			<Family name="artix7l">
+				<Part status="Production" name="ALL">
+				</Part>
+			</Family>
+			<Family name="aspartan7">
+				<Part status="Production" name="ALL">
+				</Part>
+			</Family>
+			<Family name="azynq">
+				<Part status="Production" name="ALL">
+				</Part>
+			</Family>
+			<Family name="kintex7">
+				<Part status="Production" name="ALL">
+				</Part>
+			</Family>
+			<Family name="kintex7l">
+				<Part status="Production" name="ALL">
+				</Part>
+			</Family>
+			<Family name="qartix7">
+				<Part status="Production" name="ALL">
+				</Part>
+			</Family>
+			<Family name="qkintex7">
+				<Part status="Production" name="ALL">
+				</Part>
+			</Family>
+			<Family name="qkintex7l">
+				<Part status="Production" name="ALL">
+				</Part>
+			</Family>
+			<Family name="qvirtex7">
+				<Part status="Production" name="ALL">
+				</Part>
+			</Family>
+			<Family name="qzynq">
+				<Part status="Production" name="ALL">
+				</Part>
+			</Family>
+			<Family name="spartan7">
+				<Part status="Production" name="ALL">
+				</Part>
+			</Family>
+			<Family name="virtex7">
+				<Part status="Production" name="ALL">
+				</Part>
+			</Family>
+			<Family name="zynq">
+				<Part status="Production" name="ALL">
+				</Part>
+			</Family>
+			<Family name="zynquplus">
+				<Part status="Production" name="ALL">
+				</Part>
+			</Family>
+		</Families>
+		<Taxonomies>
+			<Taxonomy value="/UserIP">
+			</Taxonomy>
+		</Taxonomies>
+		<UpgradesFrom>
+			<Upgrade value="user.org:user:stream_ctl:1.0">
+			</Upgrade>
+		</UpgradesFrom>
+		<LockPrevVersions value="false">
+		</LockPrevVersions>
+		<Interfaces>
+			<Interface value="AXI4-Stream">
+			</Interface>
+		</Interfaces>
+	</IP>
+	<IP>
 		<VLNV value="jiege.ch:user:utmi_usb_controller:1.0">
 		</VLNV>
 		<DisplayName value="UTMI USB 1.1 Controller">
@@ -249,7 +341,7 @@
 		</DisplayName>
 		<Description value="Control module of GPIO, timer and so on">
 		</Description>
-		<CoreRevision value="1">
+		<CoreRevision value="2">
 		</CoreRevision>
 		<ComponentPath value="loongson_conf_reg/component.xml">
 		</ComponentPath>
