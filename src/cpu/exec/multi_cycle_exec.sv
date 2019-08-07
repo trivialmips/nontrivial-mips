@@ -107,10 +107,10 @@ always_comb begin
 			unique case(op0)
 				OP_MADD, OP_MADDU, OP_MSUB, OP_MSUBU,
 				OP_MUL, OP_MULT, OP_MULTU:
-					cyc_stage_d = 1 << 2;
+					cyc_stage_d = 1 << 1;
 				OP_DIV, OP_DIVU:
 					cyc_stage_d = 1 << DIV_CYC;
-				OP_MFHI, OP_MFLO, OP_MTHI, OP_MTLO:
+				OP_MTHI, OP_MTLO:
 					cyc_stage_d = 1;
 				OP_MFC0:
 					cyc_stage_d = 1;
@@ -147,21 +147,11 @@ assign abs_reg1 = (is_signed && reg1[31]) ? -reg1 : reg1;
 assign abs_reg2 = (is_signed && reg2[31]) ? -reg2 : reg2;
 
 uint64_t pipe_absmul;
-uint32_t pipe_mul_hi, pipe_mul_lo, pipe_mul_md1, pipe_mul_md2;
-logic [32:0] pipe_mul_md;
-assign pipe_mul_md = pipe_mul_md1 + pipe_mul_md2;
 always_ff @(posedge clk) begin
 	if(rst) begin
-		pipe_mul_hi  <= '0;
-		pipe_mul_lo  <= '0;
-		pipe_mul_md1 <= '0;
-		pipe_mul_md2 <= '0;
+		pipe_absmul <= '0;
 	end else begin
-		pipe_mul_hi  <= abs_reg1[31:16] * abs_reg2[31:16];
-		pipe_mul_md1 <= abs_reg1[15:0]  * abs_reg2[31:16];
-		pipe_mul_md2 <= abs_reg1[31:16] * abs_reg2[15:0];
-		pipe_mul_lo  <= abs_reg1[15:0]  * abs_reg2[15:0];
-		pipe_absmul  <= { pipe_mul_hi, pipe_mul_lo } + { 15'b0, pipe_mul_md, 16'b0 };
+		pipe_absmul <= abs_reg1 * abs_reg2;
 	end
 end
 
@@ -209,8 +199,6 @@ end
 
 always_comb begin
 	unique case(op)
-		OP_MFHI: reg_ret = hilo[63:32];
-		OP_MFLO: reg_ret = hilo[31:0];
 		OP_MUL:  reg_ret = mul_result[31:0];
 		/* result of OP_MFC0 is computed in CP0 */
 		default: reg_ret = '0;

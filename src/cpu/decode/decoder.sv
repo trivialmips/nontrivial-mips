@@ -74,7 +74,8 @@ always_comb begin
 				default: decoded_instr.delayed_exec = 1'b0;
 			endcase
 			unique casez(funct)
-				6'b01?0??: decoded_instr.is_multicyc = 1'b1;
+				6'b0110??: decoded_instr.is_multicyc = 1'b1;
+				6'b0100?1: decoded_instr.is_multicyc = 1'b1;
 				default:   decoded_instr.is_multicyc = 1'b0;
 			endcase
 			unique case(funct)

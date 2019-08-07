@@ -11,7 +11,6 @@ oper_t op;
 uint32_t data_rd;
 assign op = data.decoded.op;
 assign data_rd = data.memreq.uncached ? uncached_rddata : cached_rddata;
-assign result.hiloreq = data.hiloreq;
 assign result.pc = data.pc;
 assign result.valid = data.valid;
 

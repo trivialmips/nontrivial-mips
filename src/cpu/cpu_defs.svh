@@ -273,7 +273,6 @@ typedef struct packed {
 	virt_t         pc;
 	reg_addr_t     rd;
 	uint32_t       wdata;
-	hilo_req_t     hiloreq;
 } pipeline_memwb_t;
 
 // MMU/TLB

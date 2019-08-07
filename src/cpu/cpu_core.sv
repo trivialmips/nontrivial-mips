@@ -191,10 +191,9 @@ end
 
 uint64_t hilo_forward;
 hilo_forward hilo_forward_inst(
-	.pipe_dcache ( pipeline_dcache ),
-	.pipe_wb     ( pipeline_wb     ),
-	.hilo_i      ( hilo_rddata     ),
-	.hilo_o      ( hilo_forward    )
+	.pipe_dcache ( pipeline_dcache[1:0] ),
+	.hilo_i      ( hilo_rddata          ),
+	.hilo_o      ( hilo_forward         )
 );
 
 logic [`ISSUE_NUM-1:0] resolved_delayslot;
@@ -229,6 +228,7 @@ for(genvar i = 0; i < `ISSUE_NUM; ++i) begin : gen_exec
 		.result      ( pipeline_exec[i]           ),
 		.reg_raddr   ( reg_raddr[4 + i]           ),
 		.reg_rdata   ( reg_rdata[4 + i]           ),
+		.hilo_i      ( hilo_forward               ),
 		.pipeline_dcache ( pipeline_dcache[1:0]   ),
 		.pipeline_mem,
 		.pipeline_wb,
@@ -392,6 +392,14 @@ for(genvar i = 0; i < `ISSUE_NUM; ++i) begin: gen_delayed_exec
 	);
 end
 
+always_comb begin
+	hilo_req = '0;
+	for(int i = 0; i < `ISSUE_NUM; ++i) begin
+		if(pipeline_dcache[1][i].hiloreq.we)
+			hilo_req = pipeline_dcache[1][i].hiloreq;
+	end
+end
+
 always_ff @(posedge clk) begin
 	if(rst) begin
 		pipeline_dcache[2] <= '0;
@@ -423,14 +431,6 @@ end
 for(genvar i = 0; i < `ISSUE_NUM; ++i) begin : gen_write_back
 	assign reg_waddr[i] = pipeline_wb[i].rd;
 	assign reg_wdata[i] = pipeline_wb[i].wdata;
-end
-
-always_comb begin
-	hilo_req = '0;
-	for(int i = 0; i < `ISSUE_NUM; ++i) begin
-		if(pipeline_wb[i].hiloreq.we)
-			hilo_req = pipeline_wb[i].hiloreq;
-	end
 end
 
 endmodule

@@ -4,6 +4,7 @@ module instr_exec (
 	input  logic             delayslot,
 	input  logic             llbit_value,
 	input  uint64_t          multicyc_hilo,
+	input  uint64_t          hilo_i,
 	input  uint32_t          multicyc_reg,
 	input  pipeline_decode_t data,
 	output pipeline_exec_t   result,
@@ -125,10 +126,11 @@ always_comb begin
 
 		/* move instructions */
 		OP_MOVZ, OP_MOVN: exec_ret = reg1;
+		OP_MFHI: exec_ret = hilo_i[63:32];
+		OP_MFLO: exec_ret = hilo_i[31:0];
 
 		/* multi-cycle */
-		OP_MFHI, OP_MFLO, OP_MUL:
-			exec_ret = multicyc_reg;
+		OP_MUL: exec_ret = multicyc_reg;
 
 		/* jump instructions */
 		OP_JAL, OP_BLTZAL, OP_BGEZAL, OP_JALR:
