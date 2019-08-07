@@ -44,11 +44,11 @@ always_comb begin
 		end
 		OP_JAL:  begin
 			resolved_branch.target = data.decoded.default_jump_j;
-			resolved_branch.mispredict = (branch_sbt.target != resolved_branch.target) | ~branch_sbt.valid;
+			resolved_branch.mispredict = (branch_sbt.target != resolved_branch.target) | ~branch_sbt.valid | ~branch_sbt.taken;
 		end
 		OP_JALR: begin
 			resolved_branch.target = reg1;
-			resolved_branch.mispredict = (branch_sbt.target != resolved_branch.target) | ~branch_sbt.valid;
+			resolved_branch.mispredict = (branch_sbt.target != resolved_branch.target) | ~branch_sbt.valid | ~branch_sbt.taken;
 		end
 		default: begin
 			resolved_branch.target     = '0;
