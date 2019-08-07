@@ -1,7 +1,7 @@
-module #(
+module reset_synchronizer #(
     parameter RESET_STAGE = 3,
     parameter RESET_POSEDGE = 0
-) reset_synchronizer (
+) (
     input wire clk,
     input wire rst_i,
     output wire rst_o
