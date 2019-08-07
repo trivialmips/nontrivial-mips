@@ -111,6 +111,10 @@ always_comb begin
 	end
 end
 
+logic [1:0] hilo_read;
+assign hilo_read[0] = id_decoded[0].op == OP_MFHI || id_decoded[0].op == OP_MFLO;
+assign hilo_read[1] = id_decoded[1].op == OP_MFHI || id_decoded[1].op == OP_MFLO;
+
 // logic delayslot_load_related;
 // always_comb begin
 // 	delayslot_load_related = id_decoded[0].is_load;
@@ -147,7 +151,8 @@ assign instr2_not_taken =
 //   || (is_ssnop(fetch_entry[0]) | is_ssnop(fetch_entry[1]))
    || (id_decoded[0].op == OP_SC || id_decoded[1].op == OP_SC)
    || (id_decoded[0].is_priv && id_decoded[1].is_priv)
-   || (id_decoded[1].is_multicyc && id_decoded[0].is_multicyc)
+   || (id_decoded[0].is_multicyc && id_decoded[1].is_multicyc)
+   || (id_decoded[0].is_multicyc && hilo_read[1])
    || (id_decoded[1].op == OP_ERET);
 
 assign stall_req =
