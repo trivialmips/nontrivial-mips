@@ -56,7 +56,7 @@ wire [7 :0] switch;
 wire [3 :0] btn_key_col;
 wire [3 :0] btn_key_row;
 wire [1 :0] btn_step;
-assign switch      = 8'hff;
+assign switch      = 8'hFF;
 assign btn_key_row = 4'd0;
 assign btn_step    = 2'd3;
 
@@ -201,7 +201,7 @@ begin
 		dcache_access_counter <= dcache_access_counter + soc_lite.u_cpu.nontrivial_mips_inst.cache_controller_inst.dcache_inst.debug_uncache_access;
 		stall_mm_counter <= stall_mm_counter + soc_lite.u_cpu.nontrivial_mips_inst.cpu_core_inst.stall_from_mm;
 		dcache_counter <= dcache_counter + soc_lite.u_cpu.nontrivial_mips_inst.cache_controller_inst.dcache_inst.debug_cache_miss;
-		uncache_counter <= uncache_counter + soc_lite.u_cpu.nontrivial_mips_inst.cache_controller_inst.uncached_inst.uncache_access;
+		//uncache_counter <= uncache_counter + soc_lite.u_cpu.nontrivial_mips_inst.cache_controller_inst.uncached_inst.uncache_access;
 		branch_counter <= branch_counter + resolved_branch.valid;
 		mispredict_counter <= mispredict_counter + (resolved_branch.valid & resolved_branch.mispredict);
 		//if(resolved_branch.valid)
@@ -290,7 +290,7 @@ end
 //test end
 wire global_err = debug_wb_err || (err_count!=8'd0);
 wire test_end = (debug_wb_pc==`END_PC) || (uart_display && uart_data==8'hff);
-always @(posedge cpu_clk)
+always @(posedge sys_clk)
 begin
     if (!resetn)
     begin

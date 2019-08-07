@@ -243,7 +243,7 @@ end
 //test end
 wire global_err = debug_wb_err || (err_count!=8'd0);
 wire test_end = (debug_wb_pc==`END_PC) || (uart_display && uart_data==8'hff);
-always @(posedge cpu_clk)
+always @(posedge sys_clk)
 begin
     if (!resetn)
     begin

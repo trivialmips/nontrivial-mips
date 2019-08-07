@@ -59,7 +59,7 @@ wire [7 :0] switch;
 wire [3 :0] btn_key_col;
 wire [3 :0] btn_key_row;
 wire [1 :0] btn_step;
-assign switch      = 8'hff;
+assign switch      = 8'hf7;
 assign btn_key_row = 4'd0;
 assign btn_step    = 2'd3;
 
