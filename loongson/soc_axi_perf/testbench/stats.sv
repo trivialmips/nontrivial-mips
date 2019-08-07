@@ -213,7 +213,7 @@ end
 wire test_end = (debug_wb_pc==`END_PC) || (uart_display && uart_data==8'hff);
 wire perf_test_pass = (confreg_led_rg0 == 2'b01) && (confreg_led_rg1 == 2'b01);
 
-always @(posedge cpu_clk)
+always @(posedge sys_clk)
 begin
     if (!resetn)
     begin
