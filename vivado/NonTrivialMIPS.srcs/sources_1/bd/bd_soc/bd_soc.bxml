@@ -2,10 +2,10 @@
 <Root MajorVersion="0" MinorVersion="36">
   <CompositeFile CompositeFileTopName="bd_soc" CanBeSetAsTop="false" CanDisplayChildGraph="true">
     <Description>Composite Fileset</Description>
-    <Generation Name="SYNTHESIS" State="STALE" Timestamp="1565155064"/>
-    <Generation Name="IMPLEMENTATION" State="STALE" Timestamp="1565155064"/>
-    <Generation Name="SIMULATION" State="STALE" Timestamp="1565155064"/>
-    <Generation Name="HW_HANDOFF" State="STALE" Timestamp="1565155064"/>
+    <Generation Name="SYNTHESIS" State="STALE" Timestamp="1565177990"/>
+    <Generation Name="IMPLEMENTATION" State="STALE" Timestamp="1565177990"/>
+    <Generation Name="SIMULATION" State="STALE" Timestamp="1565177990"/>
+    <Generation Name="HW_HANDOFF" State="STALE" Timestamp="1565177990"/>
     <FileCollection Name="SOURCES" Type="SOURCES">
       <File Name="ip/bd_soc_confreg_0_0/bd_soc_confreg_0_0.xci" Type="IP">
         <Instance HierarchyPath="loongson_confrreg"/>
@@ -274,6 +274,22 @@
         <UsedIn Val="IMPLEMENTATION"/>
         <UsedIn Val="SIMULATION"/>
       </File>
+      <File Name="ip/bd_soc_reset_synchronizer_0_0/bd_soc_reset_synchronizer_0_0.xci" Type="IP">
+        <Instance HierarchyPath="usb_reset_synchronizer"/>
+        <Properties IsEditable="false" IsVisible="true" Timestamp="0" IsTrackable="true" IsStatusTracked="true"/>
+        <Library Name="xil_defaultlib"/>
+        <UsedIn Val="SYNTHESIS"/>
+        <UsedIn Val="IMPLEMENTATION"/>
+        <UsedIn Val="SIMULATION"/>
+      </File>
+      <File Name="ip/bd_soc_reset_synchronizer_0_1/bd_soc_reset_synchronizer_0_1.xci" Type="IP">
+        <Instance HierarchyPath="ddr_reset_synchronizer"/>
+        <Properties IsEditable="false" IsVisible="true" Timestamp="0" IsTrackable="true" IsStatusTracked="true"/>
+        <Library Name="xil_defaultlib"/>
+        <UsedIn Val="SYNTHESIS"/>
+        <UsedIn Val="IMPLEMENTATION"/>
+        <UsedIn Val="SIMULATION"/>
+      </File>
       <File Name="bd_soc_ooc.xdc" Type="XDC">
         <Properties IsEditable="false" IsVisible="true" Timestamp="0" IsTrackable="false" IsStatusTracked="false"/>
         <Library Name="xil_defaultlib"/>
@@ -301,16 +317,24 @@
         <Library Name="xil_defaultlib"/>
         <UsedIn Val="SIMULATION"/>
       </File>
-      <File Name="ip/bd_soc_reset_synchronizer_0_0/bd_soc_reset_synchronizer_0_0.xci" Type="IP">
-        <Instance HierarchyPath="usb_reset_synchronizer"/>
+      <File Name="ip/bd_soc_video_stream_modifier_0_0/bd_soc_video_stream_modifier_0_0.xci" Type="IP">
+        <Instance HierarchyPath="frame_buffer_modifier"/>
         <Properties IsEditable="false" IsVisible="true" Timestamp="0" IsTrackable="true" IsStatusTracked="true"/>
         <Library Name="xil_defaultlib"/>
         <UsedIn Val="SYNTHESIS"/>
         <UsedIn Val="IMPLEMENTATION"/>
         <UsedIn Val="SIMULATION"/>
       </File>
-      <File Name="ip/bd_soc_reset_synchronizer_0_1/bd_soc_reset_synchronizer_0_1.xci" Type="IP">
-        <Instance HierarchyPath="ddr_reset_synchronizer"/>
+      <File Name="ip/bd_soc_v_frmbuf_rd_0_0/bd_soc_v_frmbuf_rd_0_0.xci" Type="IP">
+        <Instance HierarchyPath="frambuffer_reader"/>
+        <Properties IsEditable="false" IsVisible="true" Timestamp="0" IsTrackable="true" IsStatusTracked="true"/>
+        <Library Name="xil_defaultlib"/>
+        <UsedIn Val="SYNTHESIS"/>
+        <UsedIn Val="IMPLEMENTATION"/>
+        <UsedIn Val="SIMULATION"/>
+      </File>
+      <File Name="ip/bd_soc_v_frmbuf_wr_0_0/bd_soc_v_frmbuf_wr_0_0.xci" Type="IP">
+        <Instance HierarchyPath="framebuffer_writer"/>
         <Properties IsEditable="false" IsVisible="true" Timestamp="0" IsTrackable="true" IsStatusTracked="true"/>
         <Library Name="xil_defaultlib"/>
         <UsedIn Val="SYNTHESIS"/>
@@ -533,6 +557,38 @@
         <UsedIn Val="IMPLEMENTATION"/>
         <UsedIn Val="SIMULATION"/>
       </File>
+      <File Name="ip/bd_soc_auto_ds_11/bd_soc_auto_ds_11.xci" Type="IP">
+        <Instance HierarchyPath="peripheral_bus/m09_couplers/auto_ds"/>
+        <Properties IsEditable="false" IsVisible="true" Timestamp="0" IsTrackable="true" IsStatusTracked="true"/>
+        <Library Name="xil_defaultlib"/>
+        <UsedIn Val="SYNTHESIS"/>
+        <UsedIn Val="IMPLEMENTATION"/>
+        <UsedIn Val="SIMULATION"/>
+      </File>
+      <File Name="ip/bd_soc_auto_pc_10/bd_soc_auto_pc_10.xci" Type="IP">
+        <Instance HierarchyPath="peripheral_bus/m09_couplers/auto_pc"/>
+        <Properties IsEditable="false" IsVisible="true" Timestamp="0" IsTrackable="true" IsStatusTracked="true"/>
+        <Library Name="xil_defaultlib"/>
+        <UsedIn Val="SYNTHESIS"/>
+        <UsedIn Val="IMPLEMENTATION"/>
+        <UsedIn Val="SIMULATION"/>
+      </File>
+      <File Name="ip/bd_soc_auto_ds_12/bd_soc_auto_ds_12.xci" Type="IP">
+        <Instance HierarchyPath="peripheral_bus/m10_couplers/auto_ds"/>
+        <Properties IsEditable="false" IsVisible="true" Timestamp="0" IsTrackable="true" IsStatusTracked="true"/>
+        <Library Name="xil_defaultlib"/>
+        <UsedIn Val="SYNTHESIS"/>
+        <UsedIn Val="IMPLEMENTATION"/>
+        <UsedIn Val="SIMULATION"/>
+      </File>
+      <File Name="ip/bd_soc_auto_pc_11/bd_soc_auto_pc_11.xci" Type="IP">
+        <Instance HierarchyPath="peripheral_bus/m10_couplers/auto_pc"/>
+        <Properties IsEditable="false" IsVisible="true" Timestamp="0" IsTrackable="true" IsStatusTracked="true"/>
+        <Library Name="xil_defaultlib"/>
+        <UsedIn Val="SYNTHESIS"/>
+        <UsedIn Val="IMPLEMENTATION"/>
+        <UsedIn Val="SIMULATION"/>
+      </File>
       <File Name="ip/bd_soc_s00_data_fifo_0/bd_soc_s00_data_fifo_0.xci" Type="IP">
         <Instance HierarchyPath="memory_bus/s00_couplers/s00_data_fifo"/>
         <Properties IsEditable="false" IsVisible="true" Timestamp="0" IsTrackable="true" IsStatusTracked="true"/>
@@ -549,6 +605,22 @@
         <UsedIn Val="IMPLEMENTATION"/>
         <UsedIn Val="SIMULATION"/>
       </File>
+      <File Name="ip/bd_soc_s02_data_fifo_0/bd_soc_s02_data_fifo_0.xci" Type="IP">
+        <Instance HierarchyPath="memory_bus/s02_couplers/s02_data_fifo"/>
+        <Properties IsEditable="false" IsVisible="true" Timestamp="0" IsTrackable="true" IsStatusTracked="true"/>
+        <Library Name="xil_defaultlib"/>
+        <UsedIn Val="SYNTHESIS"/>
+        <UsedIn Val="IMPLEMENTATION"/>
+        <UsedIn Val="SIMULATION"/>
+      </File>
+      <File Name="ip/bd_soc_s03_data_fifo_0/bd_soc_s03_data_fifo_0.xci" Type="IP">
+        <Instance HierarchyPath="memory_bus/s03_couplers/s03_data_fifo"/>
+        <Properties IsEditable="false" IsVisible="true" Timestamp="0" IsTrackable="true" IsStatusTracked="true"/>
+        <Library Name="xil_defaultlib"/>
+        <UsedIn Val="SYNTHESIS"/>
+        <UsedIn Val="IMPLEMENTATION"/>
+        <UsedIn Val="SIMULATION"/>
+      </File>
       <File Name="ip/bd_soc_auto_cc_1/bd_soc_auto_cc_1.xci" Type="IP">
         <Instance HierarchyPath="memory_bus/m00_couplers/auto_cc"/>
         <Properties IsEditable="false" IsVisible="true" Timestamp="0" IsTrackable="true" IsStatusTracked="true"/>
@@ -557,7 +629,7 @@
         <UsedIn Val="IMPLEMENTATION"/>
         <UsedIn Val="SIMULATION"/>
       </File>
-      <File Name="ip/bd_soc_auto_ds_11/bd_soc_auto_ds_11.xci" Type="IP">
+      <File Name="ip/bd_soc_auto_ds_13/bd_soc_auto_ds_13.xci" Type="IP">
         <Instance HierarchyPath="memory_bus/m00_couplers/auto_ds"/>
         <Properties IsEditable="false" IsVisible="true" Timestamp="0" IsTrackable="true" IsStatusTracked="true"/>
         <Library Name="xil_defaultlib"/>

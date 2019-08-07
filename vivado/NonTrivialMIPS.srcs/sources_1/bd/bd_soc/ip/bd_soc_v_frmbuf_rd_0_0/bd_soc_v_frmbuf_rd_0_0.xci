@@ -1,0 +1,256 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<spirit:design xmlns:xilinx="http://www.xilinx.com" xmlns:spirit="http://www.spiritconsortium.org/XMLSchema/SPIRIT/1685-2009" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+  <spirit:vendor>xilinx.com</spirit:vendor>
+  <spirit:library>xci</spirit:library>
+  <spirit:name>unknown</spirit:name>
+  <spirit:version>1.0</spirit:version>
+  <spirit:componentInstances>
+    <spirit:componentInstance>
+      <spirit:instanceName>bd_soc_v_frmbuf_rd_0_0</spirit:instanceName>
+      <spirit:componentRef spirit:vendor="xilinx.com" spirit:library="ip" spirit:name="v_frmbuf_rd" spirit:version="2.1"/>
+      <spirit:configurableElementValues>
+        <spirit:configurableElementValue spirit:referenceId="ADDRBLOCK_RANGE.S_AXI_CTRL.Reg">65536</spirit:configurableElementValue>
+        <spirit:configurableElementValue spirit:referenceId="BUSIFPARAM_VALUE.AP_CLK.CLK_DOMAIN">/main_mmcm_clk_out1</spirit:configurableElementValue>
+        <spirit:configurableElementValue spirit:referenceId="BUSIFPARAM_VALUE.AP_CLK.FREQ_HZ">100000000</spirit:configurableElementValue>
+        <spirit:configurableElementValue spirit:referenceId="BUSIFPARAM_VALUE.AP_CLK.INSERT_VIP">0</spirit:configurableElementValue>
+        <spirit:configurableElementValue spirit:referenceId="BUSIFPARAM_VALUE.AP_CLK.PHASE">0.0</spirit:configurableElementValue>
+        <spirit:configurableElementValue spirit:referenceId="BUSIFPARAM_VALUE.AP_RST_N.INSERT_VIP">0</spirit:configurableElementValue>
+        <spirit:configurableElementValue spirit:referenceId="BUSIFPARAM_VALUE.FIELD_ID.LAYERED_METADATA">undef</spirit:configurableElementValue>
+        <spirit:configurableElementValue spirit:referenceId="BUSIFPARAM_VALUE.INTERRUPT.PortWidth">1</spirit:configurableElementValue>
+        <spirit:configurableElementValue spirit:referenceId="BUSIFPARAM_VALUE.M_AXIS_VIDEO.CLK_DOMAIN">/main_mmcm_clk_out1</spirit:configurableElementValue>
+        <spirit:configurableElementValue spirit:referenceId="BUSIFPARAM_VALUE.M_AXIS_VIDEO.FREQ_HZ">100000000</spirit:configurableElementValue>
+        <spirit:configurableElementValue spirit:referenceId="BUSIFPARAM_VALUE.M_AXIS_VIDEO.HAS_TKEEP">1</spirit:configurableElementValue>
+        <spirit:configurableElementValue spirit:referenceId="BUSIFPARAM_VALUE.M_AXIS_VIDEO.HAS_TLAST">1</spirit:configurableElementValue>
+        <spirit:configurableElementValue spirit:referenceId="BUSIFPARAM_VALUE.M_AXIS_VIDEO.HAS_TREADY">1</spirit:configurableElementValue>
+        <spirit:configurableElementValue spirit:referenceId="BUSIFPARAM_VALUE.M_AXIS_VIDEO.HAS_TSTRB">1</spirit:configurableElementValue>
+        <spirit:configurableElementValue spirit:referenceId="BUSIFPARAM_VALUE.M_AXIS_VIDEO.INSERT_VIP">0</spirit:configurableElementValue>
+        <spirit:configurableElementValue spirit:referenceId="BUSIFPARAM_VALUE.M_AXIS_VIDEO.LAYERED_METADATA">undef</spirit:configurableElementValue>
+        <spirit:configurableElementValue spirit:referenceId="BUSIFPARAM_VALUE.M_AXIS_VIDEO.PHASE">0.0</spirit:configurableElementValue>
+        <spirit:configurableElementValue spirit:referenceId="BUSIFPARAM_VALUE.M_AXIS_VIDEO.TDATA_NUM_BYTES">3</spirit:configurableElementValue>
+        <spirit:configurableElementValue spirit:referenceId="BUSIFPARAM_VALUE.M_AXIS_VIDEO.TDEST_WIDTH">1</spirit:configurableElementValue>
+        <spirit:configurableElementValue spirit:referenceId="BUSIFPARAM_VALUE.M_AXIS_VIDEO.TID_WIDTH">1</spirit:configurableElementValue>
+        <spirit:configurableElementValue spirit:referenceId="BUSIFPARAM_VALUE.M_AXIS_VIDEO.TUSER_WIDTH">1</spirit:configurableElementValue>
+        <spirit:configurableElementValue spirit:referenceId="BUSIFPARAM_VALUE.M_AXI_MM_VIDEO.ADDR_WIDTH">32</spirit:configurableElementValue>
+        <spirit:configurableElementValue spirit:referenceId="BUSIFPARAM_VALUE.M_AXI_MM_VIDEO.ARUSER_WIDTH">0</spirit:configurableElementValue>
+        <spirit:configurableElementValue spirit:referenceId="BUSIFPARAM_VALUE.M_AXI_MM_VIDEO.AWUSER_WIDTH">0</spirit:configurableElementValue>
+        <spirit:configurableElementValue spirit:referenceId="BUSIFPARAM_VALUE.M_AXI_MM_VIDEO.BUSER_WIDTH">0</spirit:configurableElementValue>
+        <spirit:configurableElementValue spirit:referenceId="BUSIFPARAM_VALUE.M_AXI_MM_VIDEO.CLK_DOMAIN">/main_mmcm_clk_out1</spirit:configurableElementValue>
+        <spirit:configurableElementValue spirit:referenceId="BUSIFPARAM_VALUE.M_AXI_MM_VIDEO.DATA_WIDTH">64</spirit:configurableElementValue>
+        <spirit:configurableElementValue spirit:referenceId="BUSIFPARAM_VALUE.M_AXI_MM_VIDEO.FREQ_HZ">100000000</spirit:configurableElementValue>
+        <spirit:configurableElementValue spirit:referenceId="BUSIFPARAM_VALUE.M_AXI_MM_VIDEO.HAS_BRESP">1</spirit:configurableElementValue>
+        <spirit:configurableElementValue spirit:referenceId="BUSIFPARAM_VALUE.M_AXI_MM_VIDEO.HAS_BURST">0</spirit:configurableElementValue>
+        <spirit:configurableElementValue spirit:referenceId="BUSIFPARAM_VALUE.M_AXI_MM_VIDEO.HAS_CACHE">1</spirit:configurableElementValue>
+        <spirit:configurableElementValue spirit:referenceId="BUSIFPARAM_VALUE.M_AXI_MM_VIDEO.HAS_LOCK">1</spirit:configurableElementValue>
+        <spirit:configurableElementValue spirit:referenceId="BUSIFPARAM_VALUE.M_AXI_MM_VIDEO.HAS_PROT">1</spirit:configurableElementValue>
+        <spirit:configurableElementValue spirit:referenceId="BUSIFPARAM_VALUE.M_AXI_MM_VIDEO.HAS_QOS">1</spirit:configurableElementValue>
+        <spirit:configurableElementValue spirit:referenceId="BUSIFPARAM_VALUE.M_AXI_MM_VIDEO.HAS_REGION">1</spirit:configurableElementValue>
+        <spirit:configurableElementValue spirit:referenceId="BUSIFPARAM_VALUE.M_AXI_MM_VIDEO.HAS_RRESP">1</spirit:configurableElementValue>
+        <spirit:configurableElementValue spirit:referenceId="BUSIFPARAM_VALUE.M_AXI_MM_VIDEO.HAS_WSTRB">1</spirit:configurableElementValue>
+        <spirit:configurableElementValue spirit:referenceId="BUSIFPARAM_VALUE.M_AXI_MM_VIDEO.ID_WIDTH">0</spirit:configurableElementValue>
+        <spirit:configurableElementValue spirit:referenceId="BUSIFPARAM_VALUE.M_AXI_MM_VIDEO.INSERT_VIP">0</spirit:configurableElementValue>
+        <spirit:configurableElementValue spirit:referenceId="BUSIFPARAM_VALUE.M_AXI_MM_VIDEO.MAX_BURST_LENGTH">16</spirit:configurableElementValue>
+        <spirit:configurableElementValue spirit:referenceId="BUSIFPARAM_VALUE.M_AXI_MM_VIDEO.NUM_READ_OUTSTANDING">4</spirit:configurableElementValue>
+        <spirit:configurableElementValue spirit:referenceId="BUSIFPARAM_VALUE.M_AXI_MM_VIDEO.NUM_READ_THREADS">1</spirit:configurableElementValue>
+        <spirit:configurableElementValue spirit:referenceId="BUSIFPARAM_VALUE.M_AXI_MM_VIDEO.NUM_WRITE_OUTSTANDING">2</spirit:configurableElementValue>
+        <spirit:configurableElementValue spirit:referenceId="BUSIFPARAM_VALUE.M_AXI_MM_VIDEO.NUM_WRITE_THREADS">1</spirit:configurableElementValue>
+        <spirit:configurableElementValue spirit:referenceId="BUSIFPARAM_VALUE.M_AXI_MM_VIDEO.PHASE">0.0</spirit:configurableElementValue>
+        <spirit:configurableElementValue spirit:referenceId="BUSIFPARAM_VALUE.M_AXI_MM_VIDEO.PROTOCOL">AXI4</spirit:configurableElementValue>
+        <spirit:configurableElementValue spirit:referenceId="BUSIFPARAM_VALUE.M_AXI_MM_VIDEO.READ_WRITE_MODE">READ_WRITE</spirit:configurableElementValue>
+        <spirit:configurableElementValue spirit:referenceId="BUSIFPARAM_VALUE.M_AXI_MM_VIDEO.RUSER_BITS_PER_BYTE">0</spirit:configurableElementValue>
+        <spirit:configurableElementValue spirit:referenceId="BUSIFPARAM_VALUE.M_AXI_MM_VIDEO.RUSER_WIDTH">0</spirit:configurableElementValue>
+        <spirit:configurableElementValue spirit:referenceId="BUSIFPARAM_VALUE.M_AXI_MM_VIDEO.SUPPORTS_NARROW_BURST">0</spirit:configurableElementValue>
+        <spirit:configurableElementValue spirit:referenceId="BUSIFPARAM_VALUE.M_AXI_MM_VIDEO.WUSER_BITS_PER_BYTE">0</spirit:configurableElementValue>
+        <spirit:configurableElementValue spirit:referenceId="BUSIFPARAM_VALUE.M_AXI_MM_VIDEO.WUSER_WIDTH">0</spirit:configurableElementValue>
+        <spirit:configurableElementValue spirit:referenceId="BUSIFPARAM_VALUE.S_AXI_CTRL.ADDR_WIDTH">7</spirit:configurableElementValue>
+        <spirit:configurableElementValue spirit:referenceId="BUSIFPARAM_VALUE.S_AXI_CTRL.ARUSER_WIDTH">0</spirit:configurableElementValue>
+        <spirit:configurableElementValue spirit:referenceId="BUSIFPARAM_VALUE.S_AXI_CTRL.AWUSER_WIDTH">0</spirit:configurableElementValue>
+        <spirit:configurableElementValue spirit:referenceId="BUSIFPARAM_VALUE.S_AXI_CTRL.BUSER_WIDTH">0</spirit:configurableElementValue>
+        <spirit:configurableElementValue spirit:referenceId="BUSIFPARAM_VALUE.S_AXI_CTRL.CLK_DOMAIN">/main_mmcm_clk_out1</spirit:configurableElementValue>
+        <spirit:configurableElementValue spirit:referenceId="BUSIFPARAM_VALUE.S_AXI_CTRL.DATA_WIDTH">32</spirit:configurableElementValue>
+        <spirit:configurableElementValue spirit:referenceId="BUSIFPARAM_VALUE.S_AXI_CTRL.FREQ_HZ">100000000</spirit:configurableElementValue>
+        <spirit:configurableElementValue spirit:referenceId="BUSIFPARAM_VALUE.S_AXI_CTRL.HAS_BRESP">1</spirit:configurableElementValue>
+        <spirit:configurableElementValue spirit:referenceId="BUSIFPARAM_VALUE.S_AXI_CTRL.HAS_BURST">0</spirit:configurableElementValue>
+        <spirit:configurableElementValue spirit:referenceId="BUSIFPARAM_VALUE.S_AXI_CTRL.HAS_CACHE">0</spirit:configurableElementValue>
+        <spirit:configurableElementValue spirit:referenceId="BUSIFPARAM_VALUE.S_AXI_CTRL.HAS_LOCK">0</spirit:configurableElementValue>
+        <spirit:configurableElementValue spirit:referenceId="BUSIFPARAM_VALUE.S_AXI_CTRL.HAS_PROT">0</spirit:configurableElementValue>
+        <spirit:configurableElementValue spirit:referenceId="BUSIFPARAM_VALUE.S_AXI_CTRL.HAS_QOS">0</spirit:configurableElementValue>
+        <spirit:configurableElementValue spirit:referenceId="BUSIFPARAM_VALUE.S_AXI_CTRL.HAS_REGION">0</spirit:configurableElementValue>
+        <spirit:configurableElementValue spirit:referenceId="BUSIFPARAM_VALUE.S_AXI_CTRL.HAS_RRESP">1</spirit:configurableElementValue>
+        <spirit:configurableElementValue spirit:referenceId="BUSIFPARAM_VALUE.S_AXI_CTRL.HAS_WSTRB">1</spirit:configurableElementValue>
+        <spirit:configurableElementValue spirit:referenceId="BUSIFPARAM_VALUE.S_AXI_CTRL.ID_WIDTH">0</spirit:configurableElementValue>
+        <spirit:configurableElementValue spirit:referenceId="BUSIFPARAM_VALUE.S_AXI_CTRL.INSERT_VIP">0</spirit:configurableElementValue>
+        <spirit:configurableElementValue spirit:referenceId="BUSIFPARAM_VALUE.S_AXI_CTRL.MAX_BURST_LENGTH">1</spirit:configurableElementValue>
+        <spirit:configurableElementValue spirit:referenceId="BUSIFPARAM_VALUE.S_AXI_CTRL.NUM_READ_OUTSTANDING">2</spirit:configurableElementValue>
+        <spirit:configurableElementValue spirit:referenceId="BUSIFPARAM_VALUE.S_AXI_CTRL.NUM_READ_THREADS">1</spirit:configurableElementValue>
+        <spirit:configurableElementValue spirit:referenceId="BUSIFPARAM_VALUE.S_AXI_CTRL.NUM_WRITE_OUTSTANDING">2</spirit:configurableElementValue>
+        <spirit:configurableElementValue spirit:referenceId="BUSIFPARAM_VALUE.S_AXI_CTRL.NUM_WRITE_THREADS">1</spirit:configurableElementValue>
+        <spirit:configurableElementValue spirit:referenceId="BUSIFPARAM_VALUE.S_AXI_CTRL.PHASE">0.0</spirit:configurableElementValue>
+        <spirit:configurableElementValue spirit:referenceId="BUSIFPARAM_VALUE.S_AXI_CTRL.PROTOCOL">AXI4LITE</spirit:configurableElementValue>
+        <spirit:configurableElementValue spirit:referenceId="BUSIFPARAM_VALUE.S_AXI_CTRL.READ_WRITE_MODE">READ_WRITE</spirit:configurableElementValue>
+        <spirit:configurableElementValue spirit:referenceId="BUSIFPARAM_VALUE.S_AXI_CTRL.RUSER_BITS_PER_BYTE">0</spirit:configurableElementValue>
+        <spirit:configurableElementValue spirit:referenceId="BUSIFPARAM_VALUE.S_AXI_CTRL.RUSER_WIDTH">0</spirit:configurableElementValue>
+        <spirit:configurableElementValue spirit:referenceId="BUSIFPARAM_VALUE.S_AXI_CTRL.SUPPORTS_NARROW_BURST">0</spirit:configurableElementValue>
+        <spirit:configurableElementValue spirit:referenceId="BUSIFPARAM_VALUE.S_AXI_CTRL.WUSER_BITS_PER_BYTE">0</spirit:configurableElementValue>
+        <spirit:configurableElementValue spirit:referenceId="BUSIFPARAM_VALUE.S_AXI_CTRL.WUSER_WIDTH">0</spirit:configurableElementValue>
+        <spirit:configurableElementValue spirit:referenceId="MODELPARAM_VALUE.C_M_AXI_MM_VIDEO_ARUSER_WIDTH">1</spirit:configurableElementValue>
+        <spirit:configurableElementValue spirit:referenceId="MODELPARAM_VALUE.C_M_AXI_MM_VIDEO_AWUSER_WIDTH">1</spirit:configurableElementValue>
+        <spirit:configurableElementValue spirit:referenceId="MODELPARAM_VALUE.C_M_AXI_MM_VIDEO_BUSER_WIDTH">1</spirit:configurableElementValue>
+        <spirit:configurableElementValue spirit:referenceId="MODELPARAM_VALUE.C_M_AXI_MM_VIDEO_CACHE_VALUE">0x3</spirit:configurableElementValue>
+        <spirit:configurableElementValue spirit:referenceId="MODELPARAM_VALUE.C_M_AXI_MM_VIDEO_ID_WIDTH">1</spirit:configurableElementValue>
+        <spirit:configurableElementValue spirit:referenceId="MODELPARAM_VALUE.C_M_AXI_MM_VIDEO_PROT_VALUE">0x0</spirit:configurableElementValue>
+        <spirit:configurableElementValue spirit:referenceId="MODELPARAM_VALUE.C_M_AXI_MM_VIDEO_RUSER_WIDTH">1</spirit:configurableElementValue>
+        <spirit:configurableElementValue spirit:referenceId="MODELPARAM_VALUE.C_M_AXI_MM_VIDEO_USER_VALUE">0x00000000</spirit:configurableElementValue>
+        <spirit:configurableElementValue spirit:referenceId="MODELPARAM_VALUE.C_M_AXI_MM_VIDEO_WUSER_WIDTH">1</spirit:configurableElementValue>
+        <spirit:configurableElementValue spirit:referenceId="MODELPARAM_VALUE.C_S_AXI_CTRL_ADDR_WIDTH">7</spirit:configurableElementValue>
+        <spirit:configurableElementValue spirit:referenceId="MODELPARAM_VALUE.C_S_AXI_CTRL_DATA_WIDTH">32</spirit:configurableElementValue>
+        <spirit:configurableElementValue spirit:referenceId="PARAM_VALUE.AXIMM_ADDR_WIDTH">32</spirit:configurableElementValue>
+        <spirit:configurableElementValue spirit:referenceId="PARAM_VALUE.AXIMM_BURST_LENGTH">16</spirit:configurableElementValue>
+        <spirit:configurableElementValue spirit:referenceId="PARAM_VALUE.AXIMM_DATA_WIDTH">64</spirit:configurableElementValue>
+        <spirit:configurableElementValue spirit:referenceId="PARAM_VALUE.AXIMM_NUM_OUTSTANDING">4</spirit:configurableElementValue>
+        <spirit:configurableElementValue spirit:referenceId="PARAM_VALUE.C_M_AXI_MM_VIDEO_ARUSER_WIDTH">1</spirit:configurableElementValue>
+        <spirit:configurableElementValue spirit:referenceId="PARAM_VALUE.C_M_AXI_MM_VIDEO_AWUSER_WIDTH">1</spirit:configurableElementValue>
+        <spirit:configurableElementValue spirit:referenceId="PARAM_VALUE.C_M_AXI_MM_VIDEO_BUSER_WIDTH">1</spirit:configurableElementValue>
+        <spirit:configurableElementValue spirit:referenceId="PARAM_VALUE.C_M_AXI_MM_VIDEO_CACHE_VALUE">0x3</spirit:configurableElementValue>
+        <spirit:configurableElementValue spirit:referenceId="PARAM_VALUE.C_M_AXI_MM_VIDEO_DATA_WIDTH">64</spirit:configurableElementValue>
+        <spirit:configurableElementValue spirit:referenceId="PARAM_VALUE.C_M_AXI_MM_VIDEO_ENABLE_ID_PORTS">false</spirit:configurableElementValue>
+        <spirit:configurableElementValue spirit:referenceId="PARAM_VALUE.C_M_AXI_MM_VIDEO_ENABLE_USER_PORTS">false</spirit:configurableElementValue>
+        <spirit:configurableElementValue spirit:referenceId="PARAM_VALUE.C_M_AXI_MM_VIDEO_ID_WIDTH">1</spirit:configurableElementValue>
+        <spirit:configurableElementValue spirit:referenceId="PARAM_VALUE.C_M_AXI_MM_VIDEO_PROT_VALUE">0x0</spirit:configurableElementValue>
+        <spirit:configurableElementValue spirit:referenceId="PARAM_VALUE.C_M_AXI_MM_VIDEO_RUSER_WIDTH">1</spirit:configurableElementValue>
+        <spirit:configurableElementValue spirit:referenceId="PARAM_VALUE.C_M_AXI_MM_VIDEO_USER_VALUE">0x00000000</spirit:configurableElementValue>
+        <spirit:configurableElementValue spirit:referenceId="PARAM_VALUE.C_M_AXI_MM_VIDEO_WUSER_WIDTH">1</spirit:configurableElementValue>
+        <spirit:configurableElementValue spirit:referenceId="PARAM_VALUE.Component_Name">bd_soc_v_frmbuf_rd_0_0</spirit:configurableElementValue>
+        <spirit:configurableElementValue spirit:referenceId="PARAM_VALUE.HAS_ALPHA">0</spirit:configurableElementValue>
+        <spirit:configurableElementValue spirit:referenceId="PARAM_VALUE.HAS_BGR8">0</spirit:configurableElementValue>
+        <spirit:configurableElementValue spirit:referenceId="PARAM_VALUE.HAS_BGRA8">0</spirit:configurableElementValue>
+        <spirit:configurableElementValue spirit:referenceId="PARAM_VALUE.HAS_BGRX8">0</spirit:configurableElementValue>
+        <spirit:configurableElementValue spirit:referenceId="PARAM_VALUE.HAS_INTERLACED">0</spirit:configurableElementValue>
+        <spirit:configurableElementValue spirit:referenceId="PARAM_VALUE.HAS_RGB8">0</spirit:configurableElementValue>
+        <spirit:configurableElementValue spirit:referenceId="PARAM_VALUE.HAS_RGBA8">0</spirit:configurableElementValue>
+        <spirit:configurableElementValue spirit:referenceId="PARAM_VALUE.HAS_RGBX10">0</spirit:configurableElementValue>
+        <spirit:configurableElementValue spirit:referenceId="PARAM_VALUE.HAS_RGBX8">1</spirit:configurableElementValue>
+        <spirit:configurableElementValue spirit:referenceId="PARAM_VALUE.HAS_UYVY8">0</spirit:configurableElementValue>
+        <spirit:configurableElementValue spirit:referenceId="PARAM_VALUE.HAS_Y10">0</spirit:configurableElementValue>
+        <spirit:configurableElementValue spirit:referenceId="PARAM_VALUE.HAS_Y8">0</spirit:configurableElementValue>
+        <spirit:configurableElementValue spirit:referenceId="PARAM_VALUE.HAS_YUV8">0</spirit:configurableElementValue>
+        <spirit:configurableElementValue spirit:referenceId="PARAM_VALUE.HAS_YUVA8">0</spirit:configurableElementValue>
+        <spirit:configurableElementValue spirit:referenceId="PARAM_VALUE.HAS_YUVX10">0</spirit:configurableElementValue>
+        <spirit:configurableElementValue spirit:referenceId="PARAM_VALUE.HAS_YUVX8">0</spirit:configurableElementValue>
+        <spirit:configurableElementValue spirit:referenceId="PARAM_VALUE.HAS_YUYV8">0</spirit:configurableElementValue>
+        <spirit:configurableElementValue spirit:referenceId="PARAM_VALUE.HAS_Y_UV10">0</spirit:configurableElementValue>
+        <spirit:configurableElementValue spirit:referenceId="PARAM_VALUE.HAS_Y_UV10_420">0</spirit:configurableElementValue>
+        <spirit:configurableElementValue spirit:referenceId="PARAM_VALUE.HAS_Y_UV8">0</spirit:configurableElementValue>
+        <spirit:configurableElementValue spirit:referenceId="PARAM_VALUE.HAS_Y_UV8_420">0</spirit:configurableElementValue>
+        <spirit:configurableElementValue spirit:referenceId="PARAM_VALUE.MAX_COLS">1024</spirit:configurableElementValue>
+        <spirit:configurableElementValue spirit:referenceId="PARAM_VALUE.MAX_DATA_WIDTH">8</spirit:configurableElementValue>
+        <spirit:configurableElementValue spirit:referenceId="PARAM_VALUE.MAX_NR_PLANES">1</spirit:configurableElementValue>
+        <spirit:configurableElementValue spirit:referenceId="PARAM_VALUE.MAX_ROWS">768</spirit:configurableElementValue>
+        <spirit:configurableElementValue spirit:referenceId="PARAM_VALUE.NUM_VIDEO_COMPONENTS">3</spirit:configurableElementValue>
+        <spirit:configurableElementValue spirit:referenceId="PARAM_VALUE.SAMPLES_PER_CLOCK">1</spirit:configurableElementValue>
+        <spirit:configurableElementValue spirit:referenceId="PROJECT_PARAM.ARCHITECTURE">artix7</spirit:configurableElementValue>
+        <spirit:configurableElementValue spirit:referenceId="PROJECT_PARAM.BASE_BOARD_PART"/>
+        <spirit:configurableElementValue spirit:referenceId="PROJECT_PARAM.BOARD_CONNECTIONS"/>
+        <spirit:configurableElementValue spirit:referenceId="PROJECT_PARAM.DEVICE">xc7a200t</spirit:configurableElementValue>
+        <spirit:configurableElementValue spirit:referenceId="PROJECT_PARAM.PACKAGE">fbg676</spirit:configurableElementValue>
+        <spirit:configurableElementValue spirit:referenceId="PROJECT_PARAM.PREFHDL">VERILOG</spirit:configurableElementValue>
+        <spirit:configurableElementValue spirit:referenceId="PROJECT_PARAM.SILICON_REVISION"/>
+        <spirit:configurableElementValue spirit:referenceId="PROJECT_PARAM.SIMULATOR_LANGUAGE">MIXED</spirit:configurableElementValue>
+        <spirit:configurableElementValue spirit:referenceId="PROJECT_PARAM.SPEEDGRADE">-2</spirit:configurableElementValue>
+        <spirit:configurableElementValue spirit:referenceId="PROJECT_PARAM.TEMPERATURE_GRADE"/>
+        <spirit:configurableElementValue spirit:referenceId="PROJECT_PARAM.USE_RDI_CUSTOMIZATION">TRUE</spirit:configurableElementValue>
+        <spirit:configurableElementValue spirit:referenceId="PROJECT_PARAM.USE_RDI_GENERATION">TRUE</spirit:configurableElementValue>
+        <spirit:configurableElementValue spirit:referenceId="RUNTIME_PARAM.IPCONTEXT">IP_Integrator</spirit:configurableElementValue>
+        <spirit:configurableElementValue spirit:referenceId="RUNTIME_PARAM.IPREVISION">1</spirit:configurableElementValue>
+        <spirit:configurableElementValue spirit:referenceId="RUNTIME_PARAM.MANAGED">TRUE</spirit:configurableElementValue>
+        <spirit:configurableElementValue spirit:referenceId="RUNTIME_PARAM.OUTPUTDIR">.</spirit:configurableElementValue>
+        <spirit:configurableElementValue spirit:referenceId="RUNTIME_PARAM.SELECTEDSIMMODEL"/>
+        <spirit:configurableElementValue spirit:referenceId="RUNTIME_PARAM.SHAREDDIR">.</spirit:configurableElementValue>
+        <spirit:configurableElementValue spirit:referenceId="RUNTIME_PARAM.SWVERSION">2018.3</spirit:configurableElementValue>
+        <spirit:configurableElementValue spirit:referenceId="RUNTIME_PARAM.SYNTHESISFLOW">OUT_OF_CONTEXT</spirit:configurableElementValue>
+      </spirit:configurableElementValues>
+      <spirit:vendorExtensions>
+        <xilinx:componentInstanceExtensions>
+          <xilinx:configElementInfos>
+            <xilinx:configElementInfo xilinx:referenceId="BUSIFPARAM_VALUE.AP_CLK.CLK_DOMAIN" xilinx:valueSource="ip_propagated" xilinx:valuePermission="bd"/>
+            <xilinx:configElementInfo xilinx:referenceId="BUSIFPARAM_VALUE.AP_CLK.FREQ_HZ" xilinx:valueSource="ip_propagated" xilinx:valuePermission="bd"/>
+            <xilinx:configElementInfo xilinx:referenceId="BUSIFPARAM_VALUE.AP_CLK.PHASE" xilinx:valueSource="ip_propagated" xilinx:valuePermission="bd"/>
+            <xilinx:configElementInfo xilinx:referenceId="BUSIFPARAM_VALUE.M_AXIS_VIDEO.CLK_DOMAIN" xilinx:valueSource="ip_propagated" xilinx:valuePermission="bd"/>
+            <xilinx:configElementInfo xilinx:referenceId="BUSIFPARAM_VALUE.M_AXIS_VIDEO.FREQ_HZ" xilinx:valueSource="ip_propagated" xilinx:valuePermission="bd"/>
+            <xilinx:configElementInfo xilinx:referenceId="BUSIFPARAM_VALUE.M_AXIS_VIDEO.HAS_TKEEP" xilinx:valueSource="auto" xilinx:valuePermission="bd"/>
+            <xilinx:configElementInfo xilinx:referenceId="BUSIFPARAM_VALUE.M_AXIS_VIDEO.HAS_TLAST" xilinx:valueSource="constant" xilinx:valuePermission="bd"/>
+            <xilinx:configElementInfo xilinx:referenceId="BUSIFPARAM_VALUE.M_AXIS_VIDEO.HAS_TREADY" xilinx:valueSource="constant" xilinx:valuePermission="bd"/>
+            <xilinx:configElementInfo xilinx:referenceId="BUSIFPARAM_VALUE.M_AXIS_VIDEO.HAS_TSTRB" xilinx:valueSource="auto" xilinx:valuePermission="bd"/>
+            <xilinx:configElementInfo xilinx:referenceId="BUSIFPARAM_VALUE.M_AXIS_VIDEO.PHASE" xilinx:valueSource="ip_propagated" xilinx:valuePermission="bd"/>
+            <xilinx:configElementInfo xilinx:referenceId="BUSIFPARAM_VALUE.M_AXIS_VIDEO.TDATA_NUM_BYTES" xilinx:valueSource="auto" xilinx:valuePermission="bd"/>
+            <xilinx:configElementInfo xilinx:referenceId="BUSIFPARAM_VALUE.M_AXIS_VIDEO.TDEST_WIDTH" xilinx:valueSource="constant" xilinx:valuePermission="bd"/>
+            <xilinx:configElementInfo xilinx:referenceId="BUSIFPARAM_VALUE.M_AXIS_VIDEO.TID_WIDTH" xilinx:valueSource="constant" xilinx:valuePermission="bd"/>
+            <xilinx:configElementInfo xilinx:referenceId="BUSIFPARAM_VALUE.M_AXIS_VIDEO.TUSER_WIDTH" xilinx:valueSource="constant" xilinx:valuePermission="bd"/>
+            <xilinx:configElementInfo xilinx:referenceId="BUSIFPARAM_VALUE.M_AXI_MM_VIDEO.ADDR_WIDTH" xilinx:valueSource="auto" xilinx:valuePermission="bd"/>
+            <xilinx:configElementInfo xilinx:referenceId="BUSIFPARAM_VALUE.M_AXI_MM_VIDEO.ARUSER_WIDTH" xilinx:valueSource="auto" xilinx:valuePermission="bd"/>
+            <xilinx:configElementInfo xilinx:referenceId="BUSIFPARAM_VALUE.M_AXI_MM_VIDEO.AWUSER_WIDTH" xilinx:valueSource="auto" xilinx:valuePermission="bd"/>
+            <xilinx:configElementInfo xilinx:referenceId="BUSIFPARAM_VALUE.M_AXI_MM_VIDEO.BUSER_WIDTH" xilinx:valueSource="auto" xilinx:valuePermission="bd"/>
+            <xilinx:configElementInfo xilinx:referenceId="BUSIFPARAM_VALUE.M_AXI_MM_VIDEO.CLK_DOMAIN" xilinx:valueSource="ip_propagated" xilinx:valuePermission="bd"/>
+            <xilinx:configElementInfo xilinx:referenceId="BUSIFPARAM_VALUE.M_AXI_MM_VIDEO.DATA_WIDTH" xilinx:valueSource="auto" xilinx:valuePermission="bd"/>
+            <xilinx:configElementInfo xilinx:referenceId="BUSIFPARAM_VALUE.M_AXI_MM_VIDEO.FREQ_HZ" xilinx:valueSource="ip_propagated" xilinx:valuePermission="bd"/>
+            <xilinx:configElementInfo xilinx:referenceId="BUSIFPARAM_VALUE.M_AXI_MM_VIDEO.HAS_BRESP" xilinx:valueSource="constant" xilinx:valuePermission="bd"/>
+            <xilinx:configElementInfo xilinx:referenceId="BUSIFPARAM_VALUE.M_AXI_MM_VIDEO.HAS_BURST" xilinx:valueSource="constant" xilinx:valuePermission="bd"/>
+            <xilinx:configElementInfo xilinx:referenceId="BUSIFPARAM_VALUE.M_AXI_MM_VIDEO.HAS_CACHE" xilinx:valueSource="constant" xilinx:valuePermission="bd"/>
+            <xilinx:configElementInfo xilinx:referenceId="BUSIFPARAM_VALUE.M_AXI_MM_VIDEO.HAS_LOCK" xilinx:valueSource="constant" xilinx:valuePermission="bd"/>
+            <xilinx:configElementInfo xilinx:referenceId="BUSIFPARAM_VALUE.M_AXI_MM_VIDEO.HAS_PROT" xilinx:valueSource="constant" xilinx:valuePermission="bd"/>
+            <xilinx:configElementInfo xilinx:referenceId="BUSIFPARAM_VALUE.M_AXI_MM_VIDEO.HAS_QOS" xilinx:valueSource="constant" xilinx:valuePermission="bd"/>
+            <xilinx:configElementInfo xilinx:referenceId="BUSIFPARAM_VALUE.M_AXI_MM_VIDEO.HAS_REGION" xilinx:valueSource="constant" xilinx:valuePermission="bd"/>
+            <xilinx:configElementInfo xilinx:referenceId="BUSIFPARAM_VALUE.M_AXI_MM_VIDEO.HAS_RRESP" xilinx:valueSource="constant" xilinx:valuePermission="bd"/>
+            <xilinx:configElementInfo xilinx:referenceId="BUSIFPARAM_VALUE.M_AXI_MM_VIDEO.HAS_WSTRB" xilinx:valueSource="constant" xilinx:valuePermission="bd"/>
+            <xilinx:configElementInfo xilinx:referenceId="BUSIFPARAM_VALUE.M_AXI_MM_VIDEO.ID_WIDTH" xilinx:valueSource="auto" xilinx:valuePermission="bd"/>
+            <xilinx:configElementInfo xilinx:referenceId="BUSIFPARAM_VALUE.M_AXI_MM_VIDEO.MAX_BURST_LENGTH" xilinx:valueSource="user" xilinx:valuePermission="bd"/>
+            <xilinx:configElementInfo xilinx:referenceId="BUSIFPARAM_VALUE.M_AXI_MM_VIDEO.NUM_READ_OUTSTANDING" xilinx:valueSource="user" xilinx:valuePermission="bd"/>
+            <xilinx:configElementInfo xilinx:referenceId="BUSIFPARAM_VALUE.M_AXI_MM_VIDEO.NUM_READ_THREADS" xilinx:valuePermission="bd"/>
+            <xilinx:configElementInfo xilinx:referenceId="BUSIFPARAM_VALUE.M_AXI_MM_VIDEO.NUM_WRITE_OUTSTANDING" xilinx:valuePermission="bd"/>
+            <xilinx:configElementInfo xilinx:referenceId="BUSIFPARAM_VALUE.M_AXI_MM_VIDEO.NUM_WRITE_THREADS" xilinx:valuePermission="bd"/>
+            <xilinx:configElementInfo xilinx:referenceId="BUSIFPARAM_VALUE.M_AXI_MM_VIDEO.PHASE" xilinx:valueSource="ip_propagated" xilinx:valuePermission="bd"/>
+            <xilinx:configElementInfo xilinx:referenceId="BUSIFPARAM_VALUE.M_AXI_MM_VIDEO.PROTOCOL" xilinx:valueSource="constant" xilinx:valuePermission="bd"/>
+            <xilinx:configElementInfo xilinx:referenceId="BUSIFPARAM_VALUE.M_AXI_MM_VIDEO.READ_WRITE_MODE" xilinx:valueSource="constant" xilinx:valuePermission="bd"/>
+            <xilinx:configElementInfo xilinx:referenceId="BUSIFPARAM_VALUE.M_AXI_MM_VIDEO.RUSER_BITS_PER_BYTE" xilinx:valuePermission="bd"/>
+            <xilinx:configElementInfo xilinx:referenceId="BUSIFPARAM_VALUE.M_AXI_MM_VIDEO.RUSER_WIDTH" xilinx:valueSource="auto" xilinx:valuePermission="bd"/>
+            <xilinx:configElementInfo xilinx:referenceId="BUSIFPARAM_VALUE.M_AXI_MM_VIDEO.SUPPORTS_NARROW_BURST" xilinx:valueSource="constant" xilinx:valuePermission="bd"/>
+            <xilinx:configElementInfo xilinx:referenceId="BUSIFPARAM_VALUE.M_AXI_MM_VIDEO.WUSER_BITS_PER_BYTE" xilinx:valuePermission="bd"/>
+            <xilinx:configElementInfo xilinx:referenceId="BUSIFPARAM_VALUE.M_AXI_MM_VIDEO.WUSER_WIDTH" xilinx:valueSource="auto" xilinx:valuePermission="bd"/>
+            <xilinx:configElementInfo xilinx:referenceId="BUSIFPARAM_VALUE.S_AXI_CTRL.ADDR_WIDTH" xilinx:valueSource="auto" xilinx:valuePermission="bd"/>
+            <xilinx:configElementInfo xilinx:referenceId="BUSIFPARAM_VALUE.S_AXI_CTRL.ARUSER_WIDTH" xilinx:valueSource="constant" xilinx:valuePermission="bd"/>
+            <xilinx:configElementInfo xilinx:referenceId="BUSIFPARAM_VALUE.S_AXI_CTRL.AWUSER_WIDTH" xilinx:valueSource="constant" xilinx:valuePermission="bd"/>
+            <xilinx:configElementInfo xilinx:referenceId="BUSIFPARAM_VALUE.S_AXI_CTRL.BUSER_WIDTH" xilinx:valueSource="constant" xilinx:valuePermission="bd"/>
+            <xilinx:configElementInfo xilinx:referenceId="BUSIFPARAM_VALUE.S_AXI_CTRL.CLK_DOMAIN" xilinx:valueSource="ip_propagated" xilinx:valuePermission="bd"/>
+            <xilinx:configElementInfo xilinx:referenceId="BUSIFPARAM_VALUE.S_AXI_CTRL.DATA_WIDTH" xilinx:valueSource="auto" xilinx:valuePermission="bd"/>
+            <xilinx:configElementInfo xilinx:referenceId="BUSIFPARAM_VALUE.S_AXI_CTRL.FREQ_HZ" xilinx:valueSource="ip_propagated" xilinx:valuePermission="bd"/>
+            <xilinx:configElementInfo xilinx:referenceId="BUSIFPARAM_VALUE.S_AXI_CTRL.HAS_BRESP" xilinx:valueSource="constant" xilinx:valuePermission="bd"/>
+            <xilinx:configElementInfo xilinx:referenceId="BUSIFPARAM_VALUE.S_AXI_CTRL.HAS_BURST" xilinx:valueSource="constant" xilinx:valuePermission="bd"/>
+            <xilinx:configElementInfo xilinx:referenceId="BUSIFPARAM_VALUE.S_AXI_CTRL.HAS_CACHE" xilinx:valueSource="constant" xilinx:valuePermission="bd"/>
+            <xilinx:configElementInfo xilinx:referenceId="BUSIFPARAM_VALUE.S_AXI_CTRL.HAS_LOCK" xilinx:valueSource="constant" xilinx:valuePermission="bd"/>
+            <xilinx:configElementInfo xilinx:referenceId="BUSIFPARAM_VALUE.S_AXI_CTRL.HAS_PROT" xilinx:valueSource="constant" xilinx:valuePermission="bd"/>
+            <xilinx:configElementInfo xilinx:referenceId="BUSIFPARAM_VALUE.S_AXI_CTRL.HAS_QOS" xilinx:valueSource="constant" xilinx:valuePermission="bd"/>
+            <xilinx:configElementInfo xilinx:referenceId="BUSIFPARAM_VALUE.S_AXI_CTRL.HAS_REGION" xilinx:valueSource="constant" xilinx:valuePermission="bd"/>
+            <xilinx:configElementInfo xilinx:referenceId="BUSIFPARAM_VALUE.S_AXI_CTRL.HAS_RRESP" xilinx:valueSource="constant" xilinx:valuePermission="bd"/>
+            <xilinx:configElementInfo xilinx:referenceId="BUSIFPARAM_VALUE.S_AXI_CTRL.HAS_WSTRB" xilinx:valueSource="constant" xilinx:valuePermission="bd"/>
+            <xilinx:configElementInfo xilinx:referenceId="BUSIFPARAM_VALUE.S_AXI_CTRL.ID_WIDTH" xilinx:valueSource="constant" xilinx:valuePermission="bd"/>
+            <xilinx:configElementInfo xilinx:referenceId="BUSIFPARAM_VALUE.S_AXI_CTRL.MAX_BURST_LENGTH" xilinx:valueSource="ip_propagated" xilinx:valuePermission="bd"/>
+            <xilinx:configElementInfo xilinx:referenceId="BUSIFPARAM_VALUE.S_AXI_CTRL.NUM_READ_OUTSTANDING" xilinx:valueSource="ip_propagated" xilinx:valuePermission="bd"/>
+            <xilinx:configElementInfo xilinx:referenceId="BUSIFPARAM_VALUE.S_AXI_CTRL.NUM_WRITE_OUTSTANDING" xilinx:valueSource="ip_propagated" xilinx:valuePermission="bd"/>
+            <xilinx:configElementInfo xilinx:referenceId="BUSIFPARAM_VALUE.S_AXI_CTRL.PHASE" xilinx:valueSource="ip_propagated" xilinx:valuePermission="bd"/>
+            <xilinx:configElementInfo xilinx:referenceId="BUSIFPARAM_VALUE.S_AXI_CTRL.PROTOCOL" xilinx:valueSource="constant" xilinx:valuePermission="bd"/>
+            <xilinx:configElementInfo xilinx:referenceId="BUSIFPARAM_VALUE.S_AXI_CTRL.READ_WRITE_MODE" xilinx:valueSource="constant" xilinx:valuePermission="bd"/>
+            <xilinx:configElementInfo xilinx:referenceId="BUSIFPARAM_VALUE.S_AXI_CTRL.RUSER_WIDTH" xilinx:valueSource="constant" xilinx:valuePermission="bd"/>
+            <xilinx:configElementInfo xilinx:referenceId="BUSIFPARAM_VALUE.S_AXI_CTRL.SUPPORTS_NARROW_BURST" xilinx:valueSource="ip_propagated" xilinx:valuePermission="bd"/>
+            <xilinx:configElementInfo xilinx:referenceId="BUSIFPARAM_VALUE.S_AXI_CTRL.WUSER_WIDTH" xilinx:valueSource="constant" xilinx:valuePermission="bd"/>
+            <xilinx:configElementInfo xilinx:referenceId="PARAM_VALUE.AXIMM_DATA_WIDTH" xilinx:valueSource="user"/>
+            <xilinx:configElementInfo xilinx:referenceId="PARAM_VALUE.C_M_AXI_MM_VIDEO_DATA_WIDTH" xilinx:valueSource="user"/>
+            <xilinx:configElementInfo xilinx:referenceId="PARAM_VALUE.HAS_RGB8" xilinx:valueSource="user"/>
+            <xilinx:configElementInfo xilinx:referenceId="PARAM_VALUE.HAS_RGBX8" xilinx:valueSource="user"/>
+            <xilinx:configElementInfo xilinx:referenceId="PARAM_VALUE.MAX_COLS" xilinx:valueSource="user"/>
+            <xilinx:configElementInfo xilinx:referenceId="PARAM_VALUE.MAX_ROWS" xilinx:valueSource="user"/>
+            <xilinx:configElementInfo xilinx:referenceId="PARAM_VALUE.SAMPLES_PER_CLOCK" xilinx:valueSource="user"/>
+          </xilinx:configElementInfos>
+        </xilinx:componentInstanceExtensions>
+      </spirit:vendorExtensions>
+    </spirit:componentInstance>
+  </spirit:componentInstances>
+</spirit:design>
