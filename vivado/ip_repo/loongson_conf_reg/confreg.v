@@ -44,7 +44,7 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 //   > Author      : LOONGSON
 //   > Date        : 2017-08-04
 //   > Author      : Harry Chen
-//   > Date        : 2019-07
+//   > Date        : 2019-08
 //*************************************************************************
 `define RANDOM_SEED {7'b1010101,16'h00FF}
 
@@ -135,7 +135,11 @@ module confreg #(
     input      [7 :0] switch,       
     output     [3 :0] btn_key_col,  
     input      [3 :0] btn_key_row,  
-    input      [1 :0] btn_step      
+    input      [1 :0] btn_step,
+
+    // user-defined contents
+    output     [31:0] user_cr0,
+    output     [31:0] user_cr1
 );
     reg  [31:0] cr0;
     reg  [31:0] cr1;
@@ -160,6 +164,10 @@ module confreg #(
     reg  [7 :0] virtual_uart_data;
     reg         open_trace;
     reg         num_monitor;
+
+    // user-defined contents
+    assign user_cr0 = cr0;
+    assign user_cr1 = cr1;
                         
 //--------------------------{axi interface}begin-------------------------//
     reg busy,write,R_or_W;
