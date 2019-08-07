@@ -1,20 +1,20 @@
 
 # CFG Flash
 
-#set_max_delay -datapath_only -from [get_pins -hier *SCK_O_reg_reg/C] -to [get_pins -hier *USRCCLKO] 1.500
-#set_min_delay -from [get_pins -hier *SCK_O_reg_reg/C] -to [get_pins -hier *USRCCLKO] 0.100
+set_max_delay -datapath_only -from [get_pins -hier *SCK_O_reg_reg/C] -to [get_pins -hier *USRCCLKO] 1.500
+set_min_delay -from [get_pins -hier *SCK_O_reg_reg/C] -to [get_pins -hier *USRCCLKO] 0.100
 
-set spi_clk clk_spi_bd_soc_clk_wiz_0_0
+create_generated_clock -name clk_sck -source [get_pins -hierarchical *cfg_flash_controller/ext_spi_clk] -edges {3 5 7} -edge_shift {7.500 7.500 7.500} [get_pins -hierarchical *USRCCLKO]
 
-set_input_delay -clock $spi_clk -clock_fall -max 8.100 [get_ports CFG_FLASH_*]
-set_input_delay -clock $spi_clk -clock_fall -min 2.450 [get_ports CFG_FLASH_*]
-set_multicycle_path -setup -from $spi_clk -to [get_clocks -of_objects [get_pins -hierarchical *cfg_flash_controller/ext_spi_clk]] 2
-set_multicycle_path -hold -end -from $spi_clk -to [get_clocks -of_objects [get_pins -hierarchical *cfg_flash_controller/ext_spi_clk]] 1
+set_input_delay -clock clk_sck -clock_fall -max 8.100 [get_ports CFG_FLASH_*]
+set_input_delay -clock clk_sck -clock_fall -min 2.450 [get_ports CFG_FLASH_*]
+set_multicycle_path -setup -from clk_sck -to [get_clocks -of_objects [get_pins -hierarchical */ext_spi_clk]] 2
+set_multicycle_path -hold -end -from clk_sck -to [get_clocks -of_objects [get_pins -hierarchical */ext_spi_clk]] 1
 
-set_output_delay -clock $spi_clk -max 3.050 [get_ports CFG_FLASH_*]
-set_output_delay -clock $spi_clk -min -2.950 [get_ports CFG_FLASH_*]
-set_multicycle_path -setup -start -from [get_clocks -of_objects [get_pins -hierarchical *cfg_flash_controller/ext_spi_clk]] -to clk_sck 2
-set_multicycle_path -hold -from [get_clocks -of_objects [get_pins -hierarchical *cfg_flash_controller/ext_spi_clk]] -to clk_sck 1
+set_output_delay -clock clk_sck -max 3.050 [get_ports CFG_FLASH_*]
+set_output_delay -clock clk_sck -min -2.950 [get_ports CFG_FLASH_*]
+set_multicycle_path -setup -start -from [get_clocks -of_objects [get_pins -hierarchical */ext_spi_clk]] -to clk_sck 2
+set_multicycle_path -hold -from [get_clocks -of_objects [get_pins -hierarchical */ext_spi_clk]] -to clk_sck 1
 
 
 # VGA
