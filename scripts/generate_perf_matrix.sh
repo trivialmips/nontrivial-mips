@@ -46,6 +46,7 @@ function apply_parameters {
   sed -i "s/ICACHE_SET_ASSOC.*$/ICACHE_SET_ASSOC $ICACHE_SET_ASSOC/" src/compile_options.svh
   sed -i "s/DCACHE_SET_ASSOC.*$/DCACHE_SET_ASSOC $DCACHE_SET_ASSOC/" src/compile_options.svh
   sed -i "s/DCACHE_WB_FIFO_DEPTH.*$/DCACHE_WB_FIFO_DEPTH $DCACHE_WB_FIFO_DEPTH/" src/compile_options.svh
+  sed -i "s/BPU_SIZE.*$/BPU_SIZE $BPU_SIZE/" src/compile_options.svh
 }
 
 # Execute
