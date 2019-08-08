@@ -68,7 +68,7 @@ function offset_t get_offset( input logic [31:0] addr );
 endfunction
 
 // index invalidation signals
-(* mark_debug = "true" *) logic pipe_inv;
+logic pipe_inv;
 index_t pipe_inv_index;
 
 // RAM requests of tag

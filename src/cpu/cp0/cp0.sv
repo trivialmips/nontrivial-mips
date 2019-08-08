@@ -29,7 +29,7 @@ module cp0(
 
 localparam int TLB_WIDTH = $clog2(`TLB_ENTRIES_NUM);
 
-(*mark_debug="true"*) cp0_regs_t regs_now, regs_nxt;
+cp0_regs_t regs_now, regs_nxt;
 assign regs = regs_now;
 `ifdef COMPILE_FULL_M
 assign asid = regs.entry_hi[7:0];

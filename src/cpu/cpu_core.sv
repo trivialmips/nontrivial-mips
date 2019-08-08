@@ -4,18 +4,18 @@ module cpu_core(
 	input  logic           clk,
 	input  logic           rst,
 	input  cpu_interrupt_t intr,
-	(* mark_debug = "true" *) cpu_ibus_if.master     ibus,
-	(* mark_debug = "true" *) cpu_dbus_if.master     dbus,
-	(* mark_debug = "true" *) cpu_dbus_if.master     dbus_uncached
+	cpu_ibus_if.master     ibus,
+	cpu_dbus_if.master     dbus,
+	cpu_dbus_if.master     dbus_uncached
 );
 
 // flush and stall signals
-(* mark_debug = "true" *) logic flush_if, stall_if;
-(* mark_debug = "true" *) logic flush_id, stall_id, stall_from_id;
-(* mark_debug = "true" *) logic flush_ro, stall_ro;
-(* mark_debug = "true" *) logic flush_ex, stall_ex, stall_from_ex;
-(* mark_debug = "true" *) logic flush_mm, stall_mm, stall_from_mm;
-(* mark_debug = "true" *) logic flush_delayed_mispredict;
+logic flush_if, stall_if;
+logic flush_id, stall_id, stall_from_id;
+logic flush_ro, stall_ro;
+logic flush_ex, stall_ex, stall_from_ex;
+logic flush_mm, stall_mm, stall_from_mm;
+logic flush_delayed_mispredict;
 logic delayslot_not_exec, hold_resolved_branch;
 
 // register file
@@ -38,17 +38,17 @@ logic llbit_value;
 
 // pipeline data
 pipeline_decode_t [1:0] pipeline_decode, pipeline_decode_d;
-(* mark_debug = "true" *) pipeline_exec_t   [1:0] pipeline_exec, pipeline_exec_d;
+pipeline_exec_t   [1:0] pipeline_exec, pipeline_exec_d;
 pipeline_exec_t   [2:0][1:0] pipeline_dcache;
 pipeline_exec_t   [1:0] pipeline_delayed_ro_d;
 pipeline_exec_t   [1:0] pipeline_dcache_last;
-(* mark_debug = "true" *) pipeline_memwb_t  [1:0] pipeline_mem, pipeline_mem_d;
+pipeline_memwb_t  [1:0] pipeline_mem, pipeline_mem_d;
 pipeline_memwb_t  [1:0] pipeline_wb;
 assign pipeline_dcache_last = pipeline_dcache[`DCACHE_PIPE_DEPTH-1];
 assign pipeline_wb = pipeline_mem_d;
 
-(* mark_debug = "true" *) fetch_ack_t          if_fetch_ack;
-(* mark_debug = "true" *) fetch_entry_t [1:0]  if_fetch_entry;
+fetch_ack_t          if_fetch_ack;
+fetch_entry_t [1:0]  if_fetch_entry;
 instr_fetch_memres_t icache_res;
 instr_fetch_memreq_t icache_req;
 branch_resolved_t [`ISSUE_NUM-1:0] ex_resolved_branch, delayed_resolved_branch;
@@ -258,7 +258,7 @@ always_ff @(posedge clk) begin
 end
 
 // resolve interrupt requests
-(* mark_debug="true" *) logic [7:0] pipe0_interrupt, pipe_interrupt, interrupt_flag, pipe_interrupt_req;
+logic [7:0] pipe0_interrupt, pipe_interrupt, interrupt_flag, pipe_interrupt_req;
 
 assign interrupt_flag = {
 	cp0_timer_int,
