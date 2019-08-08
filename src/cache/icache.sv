@@ -95,11 +95,14 @@ logic [SET_ASSOC-1:0] hit;
 logic [LINE_WIDTH/32-1:0][31:0] line_recv;
 state_t state_d, state;
 logic [LINE_BYTE_OFFSET-1:0] burst_cnt, burst_cnt_d;
-logic [$clog2(SET_ASSOC)-1:0] assoc_waddr;
+logic [$clog2(SET_ASSOC)-1:0] assoc_waddr, lru_waddr;
+logic [GROUP_NUM-1:0][$clog2(SET_ASSOC)-1:0] lru;
 
 // setup write request
+assign lru_waddr = lru[get_index(pipe_addr)];
+
 always_comb begin
-    assoc_waddr = lfsr_val[$clog2(SET_ASSOC)-1:0];
+    assoc_waddr = lru_waddr;
     for(int i = 0; i < SET_ASSOC; ++i) begin
         if(~delayed_tag_rdata_n[i].valid) assoc_waddr = i;
     end
@@ -337,12 +340,19 @@ for(genvar i = 0; i < SET_ASSOC; ++i) begin : gen_icache_mem
 	);
 end
 
-// generate random number
-lfsr_8bits lfsr_inst(
-	.clk,
-	.rst,
-	.update ( lfsr_update ),
-	.val    ( lfsr_val    )
-);
+// generate PLRU
+for(genvar i = 0; i < GROUP_NUM; ++i) begin: gen_plru
+    plru #(
+        .SET_ASSOC (SET_ASSOC)
+    ) plru_inst (
+        .clk,
+        .rst,
+        .access (hit),
+        .update ((~ibus.stall) && (~pipe_inv) && i[INDEX_WIDTH-1:0] == get_index(pipe_addr)),
+
+        .lru    (lru[i])
+    );
+end
+
 
 endmodule

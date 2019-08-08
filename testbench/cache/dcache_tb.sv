@@ -94,6 +94,14 @@ always_ff @(negedge clk) begin
 			$stop;
 		end
 
+        // if(dbus.early_valid) begin
+        //     $display("[%0d] early: req = %0d, data = %08x", cycle, req-1, dbus.early_rddata);
+        //     if(~(dbus.early_rddata == data[req-1])) begin
+        //         $display("[Error] expected early_rddata = %08x, got", data[req-1]);
+        //         $stop;
+        //     end
+        // end
+
         if(req == REQ_COUNT+1) begin
             $display("[pass]");
             $display("  Stall count: %d", stall_counter);

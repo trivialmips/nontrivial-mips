@@ -7,6 +7,8 @@
 //
 //   - Victimized in stage 3, but hit in stage 2:
 //   Reselect victim. Search for `victim_locked`
+//   When using LRU, we simply negate LRU addr to get one not being hit.
+//   This is not necessarily the MRU entry
 //
 //   - Two successive requests points to the same line, both causing a refill
 //   Do not cause a refill for the second request, and use assoc_waddr to determine
@@ -147,9 +149,6 @@ line_t data_wdata;
 we_t data_we;
 
 // Rand
-logic lfsr_update;
-logic [7:0] lfsr_val;
-
 logic [LINE_BYTE_OFFSET-1:0] burst_cnt, burst_cnt_d;
 
 // FIFO
@@ -215,9 +214,9 @@ logic [DATA_WIDTH-1:0] pipe_wdata, pipe_rdata;
 line_t pipe_data_mux_line;
 trans_t pipe_trans;
 
-logic victim_locked; // Victim is hit in stage 2
 logic [BURST_LIMIT:0][31:0] line_recv;
-logic [$clog2(SET_ASSOC)-1:0] assoc_waddr;
+logic [$clog2(SET_ASSOC)-1:0] assoc_waddr, lru_waddr;
+logic [GROUP_NUM-1:0][$clog2(SET_ASSOC)-1:0] lru;
 tag_t [SET_ASSOC-1:0] delayed_tag_rdata_d, delayed_tag_rdata_q;
 line_t [SET_ASSOC-1:0] delayed_data_rdata;
 logic write_hit;
@@ -379,8 +378,10 @@ end
 //   - Refill
 //   - Tag/Data overwrite
 
+assign lru_waddr = lru[get_index(pipe_addr)];
+
 always_comb begin
-    assoc_waddr = SET_ASSOC == 1 ? 1'b0 : lfsr_val[$clog2(SET_ASSOC)-1:0];
+    assoc_waddr = pipe_2_hit[lru_waddr] ? ~lru_waddr : lru_waddr;
 
     for(int i = 0; i < SET_ASSOC; ++i) begin
         if((~(get_index(pipe_2_addr) == get_index(pipe_addr) && pipe_2_hit[i])) && ~delayed_tag_rdata_q[i].valid)
@@ -396,12 +397,10 @@ always_comb begin
     data_we     = '0;
     
     // FIFO push
-    victim_locked = get_index(pipe_2_addr) == get_index(pipe_addr) && pipe_2_hit[assoc_waddr];
-    fifo_push = state == REFILL && ~victim_locked && delayed_tag_rdata_q[assoc_waddr].valid && delayed_tag_rdata_q[assoc_waddr].dirty;
+    fifo_push = state == REFILL && delayed_tag_rdata_q[assoc_waddr].valid && delayed_tag_rdata_q[assoc_waddr].dirty;
     fifo_ptag = { delayed_tag_rdata_q[assoc_waddr].tag, get_index(pipe_addr) };
     fifo_pdata = delayed_data_rdata[assoc_waddr];
 
-    lfsr_update = 1'b0;
     burst_cnt_d = burst_cnt;
 
     invalidate_cnt_d = invalidate_cnt;
@@ -443,10 +442,6 @@ always_comb begin
 
     case(state)
         IDLE: begin
-            if(pipe_request_refill) begin
-                lfsr_update = 1'b1; // Shuffles at least once
-            end
-
             if(pipe_invalidate) begin
                 assoc_cnt_d = '0;
             end
@@ -464,10 +459,7 @@ always_comb begin
             axi_req.arvalid = 1'b1;
         end
         REFILL: begin
-            if(victim_locked) begin
-                // Victim hit in stage 2. Re-select victim
-                lfsr_update = 1'b1;
-            end else if(~(fifo_full && fifo_push)) begin
+            if(~(fifo_full && fifo_push)) begin
                 // See state transfer for detailed comments
                 if(wb_state != WB_IDLE && get_fifo_tag(wb_addr) == get_fifo_tag(pipe_addr)) begin
                     tag_we[assoc_waddr] = 1'b1;
@@ -535,10 +527,7 @@ always_comb begin
             if(pipe_uncached_write) state_d = axi_resp_uncached.awready ? UNCACHED_WRITE : UNCACHED_WRITE_WAIT_AXI;
         end
         REFILL: begin
-            if(victim_locked) begin
-                // Change victim
-                state_d = REFILL;
-            end else if(~(fifo_full && fifo_push)) begin
+            if(~(fifo_full && fifo_push)) begin
                 // We are not targeting a dirty victim, or
                 // victim will be pushed into FIFO on the next clock tick
                 //
@@ -838,13 +827,19 @@ for(genvar i = 0; i < SET_ASSOC; ++i) begin : gen_dcache_mem
     );
 end
 
-// generate random number
-lfsr_8bits lfsr_inst(
-    .clk,
-    .rst,
-    .update ( lfsr_update ),
-    .val    ( lfsr_val    )
-);
+// generate PLRU
+for(genvar i = 0; i < GROUP_NUM; ++i) begin: gen_plru
+    plru #(
+        .SET_ASSOC (SET_ASSOC)
+    ) plru_inst (
+        .clk,
+        .rst,
+        .access (pipe_hit),
+        .update ((~dbus.stall) && (~pipe_invalidate) && i[INDEX_WIDTH-1:0] == get_index(pipe_addr)),
+
+        .lru    (lru[i])
+    );
+end
 
 dcache_fifo #(
     .TAG_WIDTH (TAG_WIDTH + INDEX_WIDTH),
