@@ -143,7 +143,7 @@ module nscscc_soc_top(
     assign num_a_g_dp = 1'b0; // not provided in confreg IP
 
     // USB
-    `IOBUF_GEN_VEC_SIMPLE(UTMI_data);
+    `IOBUF_GEN_VEC_UNIFORM_SIMPLE(UTMI_data);
 
     // LCD
     `IOBUF_GEN_VEC(LCD_data, LCD_data_tri);
