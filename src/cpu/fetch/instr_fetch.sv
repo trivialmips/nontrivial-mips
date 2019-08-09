@@ -45,7 +45,7 @@ branch_resolved_t resolved_branch;
 always_comb begin
 	resolved_branch = resolved_branch_i;
 	resolved_branch.valid &= ~hold_resolved_branch;
-	if(delayed_resolved_branch_i.valid & delayed_resolved_branch_i.mispredict)
+	if(delayed_resolved_branch_i.valid)
 		resolved_branch = delayed_resolved_branch_i;
 end
 
