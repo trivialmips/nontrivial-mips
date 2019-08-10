@@ -344,7 +344,7 @@ cp0 cp0_inst(
 );
 
 `ifdef ENABLE_ASIC
-	assign asic_we    = pipeline_exec_d[0].asic_req.we & ~except_req.valid;
+	assign asic_we    = pipeline_exec_d[0].asic_req.we & ~except_req.valid & ~stall_mm;
 	assign asic_waddr = pipeline_exec_d[0].asic_req.waddr;
 	assign asic_wdata = pipeline_exec_d[0].asic_req.wdata;
 `endif
