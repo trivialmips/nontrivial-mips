@@ -69,90 +69,90 @@ preplace inst loongson_confrreg -pg 1 -lvl 12 -y 1940 -defaultsOSRD
 preplace inst framebuffer_ila -pg 1 -lvl 11 -y 1490 -defaultsOSRD
 preplace inst frame_buffer_modifier -pg 1 -lvl 9 -y 1220 -defaultsOSRD
 preplace netloc mig_7series_0_DDR3 1 12 1 NJ
-preplace netloc v_frmbuf_rd_0_m_axis_video 1 8 3 2550 1460 NJ 1460 NJ
+preplace netloc v_frmbuf_rd_0_m_axis_video 1 8 3 2700 1460 NJ 1460 NJ
 preplace netloc btn_key_row_1 1 0 12 NJ 1980 NJ 1980 NJ 1980 NJ 1980 NJ 1980 NJ 1980 NJ 1980 NJ 1980 NJ 1980 NJ 1980 NJ 1980 NJ
-preplace netloc apb_peripheral_bridge_APB_M2 1 11 1 3760
+preplace netloc apb_peripheral_bridge_APB_M2 1 11 1 3900
 preplace netloc btn_step_1 1 0 12 NJ 2000 NJ 2000 NJ 2000 NJ 2000 NJ 2000 NJ 2000 NJ 2000 NJ 2000 NJ 2000 NJ 2000 NJ 2000 NJ
-preplace netloc processor_bus_M00_AXI 1 6 5 N 1130 2170J 820 NJ 820 NJ 820 3390J
+preplace netloc processor_bus_M00_AXI 1 6 5 N 1130 2230J 1110 2650J 1090 3030J 1000 3460J
 preplace netloc sys_reset_controller_mb_reset 1 3 1 NJ
-preplace netloc processor_bus_M02_AXI 1 6 1 1740
-preplace netloc peripheral_bus_M08_AXI 1 7 5 NJ 500 NJ 500 NJ 500 NJ 500 3860
+preplace netloc processor_bus_M02_AXI 1 6 1 1850
+preplace netloc peripheral_bus_M08_AXI 1 7 5 NJ 500 NJ 500 NJ 500 NJ 500 3970
 preplace netloc nontrivial_mips_cpu_icache 1 5 1 N
 preplace netloc nt35510_controller_0_LCD_rd 1 12 1 NJ
-preplace netloc spi_flash_controller_ip2intc_irpt 1 6 7 1790 110 NJ 110 NJ 110 NJ 110 NJ 110 3800J 530 4300
-preplace netloc peripheral_bus_M09_AXI 1 7 1 2140
-preplace netloc proc_sys_reset_0_interconnect_aresetn 1 3 8 710J 1050 NJ 1050 1330 690 1760 800 NJ 800 NJ 800 NJ 800 3350
+preplace netloc spi_flash_controller_ip2intc_irpt 1 6 7 1910 810 NJ 810 NJ 810 NJ 810 3490J 770 NJ 770 4430
+preplace netloc peripheral_bus_M09_AXI 1 7 1 2260
+preplace netloc proc_sys_reset_0_interconnect_aresetn 1 3 8 NJ 1600 NJ 1600 1510 890 1860 1290 2230J 1230 2660J 1100 3030J 1150 3550
 preplace netloc constant_true_dout 1 12 1 NJ
-preplace netloc main_mmcm_clk_spi 1 1 11 60J 680 NJ 680 NJ 680 NJ 680 NJ 680 1720J 780 2100J 720 NJ 720 NJ 720 NJ 720 3920
-preplace netloc main_mmcm_clk_vga 1 1 11 70 700 NJ 700 NJ 700 NJ 700 NJ 700 1700J 790 2130J 770 NJ 770 NJ 770 NJ 770 3820J
-preplace netloc ethernet_controller_ip2intc_irpt 1 6 7 1780 90 NJ 90 NJ 90 NJ 90 NJ 90 3750J 360 4300
-preplace netloc v_frmbuf_rd_0_m_axi_mm_video 1 8 3 NJ 1310 NJ 1310 3340
+preplace netloc main_mmcm_clk_spi 1 1 11 NJ 1460 NJ 1460 NJ 1460 NJ 1460 NJ 1460 NJ 1460 2220J 1590 2710J 1440 NJ 1440 3560J 1390 3990
+preplace netloc main_mmcm_clk_vga 1 1 11 250 1050 NJ 1050 NJ 1050 NJ 1050 1480J 880 1830J 1310 2250J 1240 2670J 1110 3010J 1160 3510J 1200 3910J
+preplace netloc ethernet_controller_ip2intc_irpt 1 6 7 1890 760 NJ 760 NJ 760 NJ 760 3440J 720 3880J 360 4430
+preplace netloc v_frmbuf_rd_0_m_axi_mm_video 1 8 3 NJ 1310 NJ 1310 3520
 preplace netloc vga_controller_VGA_INTF 1 12 1 NJ
 preplace netloc nt35510_controller_0_LCD_nrst 1 12 1 NJ
 preplace netloc confreg_0_led 1 12 1 NJ
-preplace netloc ddr_controller_ui_clk 1 1 11 80 1460 330 1460 NJ 1460 1070 1070 1320 890 1730 1290 2170 1250 2530 920 2840 790 3360 730 3870
-preplace netloc reset_negate_Res 1 4 2 1060 1250 1360
-preplace netloc reset_synchronizer_0_rst_o 1 6 6 1660 100 NJ 100 NJ 100 NJ 100 NJ 100 3910
-preplace netloc peripheral_bus_M06_AXI 1 7 1 2150
+preplace netloc ddr_controller_ui_clk 1 1 11 260 1580 480 1480 NJ 1480 1230 1210 1470 1430 1840 1430 2280 1570 2680 1120 3040 1170 3530 1590 4000
+preplace netloc reset_negate_Res 1 4 2 1220 1070 1480
+preplace netloc reset_synchronizer_0_rst_o 1 6 6 1850 790 NJ 790 NJ 790 NJ 790 3470J 750 3910
+preplace netloc peripheral_bus_M06_AXI 1 7 1 2270
 preplace netloc spi_flash_controller_SPI_0 1 12 1 NJ
 preplace netloc confreg_0_num_a_g 1 12 1 NJ
 preplace netloc utmi_usb_controller_0_utmi 1 12 1 NJ
-preplace netloc ocm_controller_BRAM_PORTA 1 7 1 2170J
+preplace netloc ocm_controller_BRAM_PORTA 1 7 1 2230J
 preplace netloc ethernet_controller_MII 1 12 1 NJ
 preplace netloc nt35510_controller_0_LCD_data 1 12 1 NJ
-preplace netloc jtag_sys_M_AXI 1 5 1 1340
-preplace netloc proc_sys_reset_0_peripheral_aresetn 1 3 9 730 1470 1090 1240 1350 870 1750 1300 2160 1230 2540 1080 2860 810 3370 740 3850
+preplace netloc jtag_sys_M_AXI 1 5 1 1520
+preplace netloc proc_sys_reset_0_peripheral_aresetn 1 3 9 880 1440 1240 1370 1490 860 1870 1300 2290 1250 2690 1130 3050 1470 3540 1600 3960
 preplace netloc axi_bram_ctrl_0_BRAM_PORTA 1 7 1 NJ
-preplace netloc apb_peripheral_bridge_APB_M 1 11 1 3750
-preplace netloc mig_7series_0_init_calib_complete 1 2 11 340 1470 720J 1480 NJ 1480 1340J 1570 NJ 1570 NJ 1570 2550J 1480 NJ 1480 3330J 1400 3910J 1360 4290
+preplace netloc apb_peripheral_bridge_APB_M 1 11 1 3920
+preplace netloc mig_7series_0_init_calib_complete 1 2 11 520 1680 890J 1610 NJ 1610 NJ 1610 NJ 1610 NJ 1610 NJ 1610 NJ 1610 NJ 1610 4050J 1370 4410
 preplace netloc nt35510_controller_0_LCD_rs 1 12 1 NJ
-preplace netloc usb_controller_intr 1 6 7 1770 120 NJ 120 NJ 120 NJ 120 NJ 120 3900J 520 4300
+preplace netloc usb_controller_intr 1 6 7 1880 780 NJ 780 NJ 780 NJ 780 3460J 740 3920J 520 4430
 preplace netloc nontrivial_mips_cpu_uncached 1 5 1 N
-preplace netloc cfg_flash_controller_ip2intc_irpt 1 6 7 1800 810 2120J 710 NJ 710 NJ 710 NJ 710 3840J 770 4290
-preplace netloc processor_bus_M01_AXI 1 6 1 1680
+preplace netloc cfg_flash_controller_ip2intc_irpt 1 6 7 1900 800 NJ 800 NJ 800 NJ 800 3480J 760 3930J 530 4430
+preplace netloc processor_bus_M01_AXI 1 6 1 1820
 preplace netloc ethernet_controller_MDIO 1 12 1 NJ
-preplace netloc peripheral_bus_M02_AXI 1 7 5 NJ 380 NJ 380 NJ 380 NJ 380 3880
-preplace netloc main_mmcm_locked 1 1 11 60J 1580 310 730 NJ 730 NJ 730 1320J 710 1710J 760 NJ 760 NJ 760 NJ 760 NJ 760 3800
-preplace netloc peripheral_bus_M10_AXI 1 7 3 NJ 540 NJ 540 2850
-preplace netloc reset_synchronizer_0_rst_o1 1 10 2 3400 1210 3770J
-preplace netloc frame_buffer_modifier_m_axis_video 1 9 1 2850
+preplace netloc peripheral_bus_M02_AXI 1 7 5 NJ 380 NJ 380 NJ 380 NJ 380 4020
+preplace netloc main_mmcm_locked 1 1 11 240J 1590 500 1470 NJ 1470 NJ 1470 NJ 1470 NJ 1470 2210J 1600 2720J 1450 NJ 1450 3570J 1400 4020
+preplace netloc peripheral_bus_M10_AXI 1 7 3 NJ 540 NJ 540 3060
+preplace netloc reset_synchronizer_0_rst_o1 1 10 2 3570 1380 4030J
+preplace netloc frame_buffer_modifier_m_axis_video 1 9 1 3020
 preplace netloc altera_ps2_0_PS2_clk 1 12 1 NJ
 preplace netloc nt35510_controller_0_LCD_csel 1 12 1 NJ
-preplace netloc peripheral_bus_M05_AXI 1 7 5 NJ 440 NJ 440 NJ 440 NJ 440 3890
+preplace netloc peripheral_bus_M05_AXI 1 7 5 NJ 440 NJ 440 NJ 440 NJ 440 3870
 preplace netloc v_frmbuf_wr_0_m_axi_mm_video 1 10 1 N
-preplace netloc memory_bus_M00_AXI 1 11 1 3780
+preplace netloc memory_bus_M00_AXI 1 11 1 3930
 preplace netloc confreg_0_num_csn 1 12 1 NJ
 preplace netloc altera_ps2_0_PS2_dat 1 12 1 NJ
 preplace netloc processor_bus_M03_AXI 1 6 1 N
 preplace netloc nt35510_controller_0_LCD_wr 1 12 1 NJ
-preplace netloc interrupt_concat_dout 1 7 1 2120
-preplace netloc vio_reset_probe_out0 1 2 1 300
-preplace netloc ps2_contoller_irq 1 3 10 740 1600 NJ 1600 NJ 1600 NJ 1600 NJ 1600 2540J 1470 NJ 1470 3400J 1390 3920J 1370 4290
+preplace netloc interrupt_concat_dout 1 7 1 2240
+preplace netloc vio_reset_probe_out0 1 2 1 490
+preplace netloc ps2_contoller_irq 1 3 10 920 1640 NJ 1640 NJ 1640 NJ 1640 NJ 1640 NJ 1640 NJ 1640 NJ 1640 3880J 1540 4420
 preplace netloc confreg_0_btn_key_col 1 12 1 NJ
 preplace netloc cfg_flash_controller_SPI_0 1 12 1 NJ
-preplace netloc vga_controller_M_AXI_MM 1 10 3 3400 780 NJ 780 4290
-preplace netloc mig_7series_0_ui_clk 1 9 4 2870 1000 3390 1200 3840J 1160 4290
-preplace netloc peripheral_bus_M01_AXI 1 7 5 2100J 330 NJ 330 NJ 330 NJ 330 3830
-preplace netloc axi_intc_0_irq 1 3 6 750 1840 NJ 1840 NJ 1840 NJ 1840 NJ 1840 2530
-preplace netloc peripheral_bus_M03_AXI 1 7 5 NJ 400 NJ 400 NJ 400 NJ 400 3790
-preplace netloc peripheral_bus_M00_AXI 1 7 5 NJ 340 NJ 340 NJ 340 NJ 340 3830
+preplace netloc vga_controller_M_AXI_MM 1 10 3 3540 780 NJ 780 4410
+preplace netloc mig_7series_0_ui_clk 1 9 4 3060 1140 3490 1210 3950J 1160 4410
+preplace netloc peripheral_bus_M01_AXI 1 7 5 NJ 360 NJ 360 NJ 360 NJ 360 3870
+preplace netloc axi_intc_0_irq 1 3 6 900 1630 NJ 1630 NJ 1630 NJ 1630 NJ 1630 2650
+preplace netloc peripheral_bus_M03_AXI 1 7 5 NJ 400 NJ 400 NJ 400 NJ 400 3940
+preplace netloc peripheral_bus_M00_AXI 1 7 5 NJ 340 NJ 340 NJ 340 NJ 340 3980
 preplace netloc rst_n_1 1 0 1 NJ
-preplace netloc UTMI_clk_1 1 0 12 NJ 720 50J 710 NJ 710 NJ 710 NJ 710 1310 440 1670 80 NJ 80 NJ 80 NJ 80 NJ 80 3920J
-preplace netloc clk_wiz_0_clk_cpu 1 1 5 N 1400 NJ 1400 NJ 1400 1050 1060 1330
-preplace netloc loongson_confrreg_user_cr0 1 8 5 2560 1580 NJ 1580 NJ 1580 3910J 1530 4300
+preplace netloc UTMI_clk_1 1 0 12 NJ 720 NJ 720 NJ 720 NJ 720 NJ 720 1520 720 1880 770 NJ 770 NJ 770 NJ 770 3450J 730 3890J
+preplace netloc clk_wiz_0_clk_cpu 1 1 5 240 1040 NJ 1040 NJ 1040 1230 1060 1500
+preplace netloc loongson_confrreg_user_cr0 1 8 5 2730 1580 NJ 1580 NJ 1580 4040J 1360 4430
 preplace netloc uart_controller_UART 1 12 1 NJ
-preplace netloc peripheral_bus_M07_AXI 1 7 4 NJ 480 NJ 480 NJ 480 3380
-preplace netloc xlconstant_0_dout 1 2 10 320 1480 700 1640 NJ 1640 NJ 1640 NJ 1640 NJ 1640 NJ 1640 NJ 1640 NJ 1640 3750J
-preplace netloc uart_controller_ip2intc_irpt 1 3 10 750 1610 NJ 1610 NJ 1610 NJ 1610 NJ 1610 NJ 1610 NJ 1610 NJ 1610 3920J 1540 4290
+preplace netloc peripheral_bus_M07_AXI 1 7 4 NJ 480 NJ 480 NJ 480 3500
+preplace netloc xlconstant_0_dout 1 2 10 510 1740 880 1840 NJ 1840 NJ 1840 NJ 1840 NJ 1840 NJ 1840 NJ 1840 NJ 1840 4050J
+preplace netloc uart_controller_ip2intc_irpt 1 3 10 910 1620 NJ 1620 NJ 1620 NJ 1620 NJ 1620 NJ 1620 NJ 1620 NJ 1620 3990J 1530 4410
 preplace netloc peripheral_bus_M04_AXI 1 7 5 NJ 420 NJ 420 NJ 420 NJ 420 N
 preplace netloc switch_1 1 0 12 NJ 1960 NJ 1960 NJ 1960 NJ 1960 NJ 1960 NJ 1960 NJ 1960 NJ 1960 NJ 1960 NJ 1960 NJ 1960 NJ
 preplace netloc nontrivial_mips_cpu_dcache 1 5 1 N
 preplace netloc confreg_0_led_rg0 1 12 1 NJ
 preplace netloc confreg_0_led_rg1 1 12 1 NJ
-preplace netloc main_mmcm_clk_ddr_ref 1 1 11 80 720 NJ 720 NJ 720 NJ 720 NJ 720 1690J 770 2110J 750 NJ 750 NJ 750 NJ 750 3810J
+preplace netloc main_mmcm_clk_ddr_ref 1 1 11 260 1450 NJ 1450 NJ 1450 NJ 1450 NJ 1450 NJ 1450 2230J 1580 2690J 1430 NJ 1430 3550J 1370 4010J
 preplace netloc clk_1 1 0 1 NJ
-preplace netloc interrupt_signals_dout 1 4 1 1080
-levelinfo -pg 1 -190 -60 190 520 900 1200 1510 1950 2350 2700 3140 3600 4110 4320 -top 0 -bot 2670
+preplace netloc interrupt_signals_dout 1 4 1 1250
+levelinfo -pg 1 0 130 370 700 1070 1360 1670 2060 2470 2870 3250 3720 4230 4450 -top 0 -bot 2080
 "
 }
 0
