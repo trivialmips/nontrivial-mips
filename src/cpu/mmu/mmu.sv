@@ -57,7 +57,7 @@ begin: generate_mmu_enabled_code
 	// note that dirty = 1 when writable
 	for(genvar i = 0; i < `ISSUE_NUM; ++i) begin : gen_data_result
 		assign data_mapped[i]          = is_vaddr_mapped(data_vaddr[i]);
-		assign data_result[i].uncached = is_vaddr_uncached(data_vaddr[i]);
+		assign data_result[i].uncached = is_vaddr_uncached(data_vaddr[i]) | (data_tlb_result[i].cache_flag == 3'd2);
 		assign data_result[i].dirty    = (~data_mapped[i] | data_tlb_result[i].dirty);
 		assign data_result[i].miss     = (data_mapped[i] & data_tlb_result[i].miss);
 		assign data_result[i].illegal  = (is_user_mode & data_vaddr[i][31]);
