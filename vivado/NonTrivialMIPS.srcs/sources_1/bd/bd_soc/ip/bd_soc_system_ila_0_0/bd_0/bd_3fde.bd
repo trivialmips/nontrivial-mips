@@ -697,16 +697,16 @@
       }
     },
     "interface_nets": {
-      "Conn": {
-        "interface_ports": [
-          "SLOT_0_AXIS",
-          "g_inst/slot_0_axis"
-        ]
-      },
       "Conn1": {
         "interface_ports": [
           "SLOT_1_AXI",
           "g_inst/slot_1_axi"
+        ]
+      },
+      "Conn": {
+        "interface_ports": [
+          "SLOT_0_AXIS",
+          "g_inst/slot_0_axis"
         ]
       }
     },
