@@ -17,7 +17,7 @@ logic [31:0] rdata_n;
 logic [31:0] aes_rdata;
 
 always_comb begin
-	unique case(address)
+	unique case(chip)
 		AES_CHIP: rdata_n = aes_rdata;
 		default:  rdata_n = '0;
 	endcase
