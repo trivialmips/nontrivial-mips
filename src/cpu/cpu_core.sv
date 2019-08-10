@@ -206,6 +206,23 @@ resolve_delayslot resolve_delayslot_inst(
 	.resolved_delayslot
 );
 
+// ASIC
+`ifdef ENABLE_ASIC
+logic asic_we;
+logic [15:0] asic_address, asic_raddr, asic_waddr;
+uint32_t asic_wdata, asic_rdata;
+assign asic_address = asic_we ? asic_waddr : asic_raddr;
+asic asic_inst(
+	.clk,
+	.rst,
+	.we      ( asic_we            ),
+	.chip    ( asic_address[15:8] ),
+	.address ( asic_address[7:0]  ),
+	.wdata   ( asic_wdata         ),
+	.rdata   ( asic_rdata         )
+);
+`endif
+
 uint32_t multicyc_reg;
 uint64_t multicyc_hilo;
 multi_cycle_exec multi_cycle_exec_inst(
@@ -218,6 +235,9 @@ multi_cycle_exec multi_cycle_exec_inst(
 	.hilo_i    ( hilo_forward      ),
 	.hilo_o    ( multicyc_hilo     ),
 	.reg_o     ( multicyc_reg      ),
+	`ifdef ENABLE_ASIC
+		.asic_raddr,
+	`endif
 	.cp0_rsel,
 	.cp0_raddr
 );
@@ -239,6 +259,9 @@ for(genvar i = 0; i < `ISSUE_NUM; ++i) begin : gen_exec
 		.mmu_result  ( mmu_data_result[i]         ),
 		.is_usermode ( cp0_user_mode              ),
 		.cp0_rdata   ( cp0_rdata                  ),
+		`ifdef ENABLE_ASIC
+			.asic_rdata,
+		`endif
 		.delayslot   ( resolved_delayslot[i]      ),
 		.resolved_branch ( ex_resolved_branch[i]  )
 	);
@@ -319,6 +342,12 @@ cp0 cp0_inst(
 	.user_mode ( cp0_user_mode ),
 	.timer_int ( cp0_timer_int )
 );
+
+`ifdef ENABLE_ASIC
+	assign asic_we    = pipeline_exec_d[0].asic_req.we & ~except_req.valid;
+	assign asic_waddr = pipeline_exec_d[0].asic_req.waddr;
+	assign asic_wdata = pipeline_exec_d[0].asic_req.wdata;
+`endif
 
 logic [1:0] tlb_access;
 always_comb begin

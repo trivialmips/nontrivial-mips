@@ -20,6 +20,10 @@
 `define CPU_MUTEX_PRIV       `COMPILE_FULL
 `define CPU_LWLR_ENABLED     `COMPILE_FULL
 
+`ifdef COMPILE_FULL_M
+	`define ENABLE_ASIC
+`endif
+
 `define CPU_PERFORMANCE      1
 `define CPU_DELAYED_BRANCH   `CPU_PERFORMANCE
 

@@ -19,6 +19,10 @@ module instr_exec (
 	input  logic        is_usermode,
 	input  uint32_t     cp0_rdata,
 
+	`ifdef ENABLE_ASIC
+	input  uint32_t     asic_rdata,
+	`endif
+
 	output virt_t       mmu_vaddr,
 	input  mmu_result_t mmu_result
 );
@@ -105,6 +109,12 @@ assign result.cp0_req.wdata = reg1;
 assign result.cp0_req.waddr = instr[15:11];
 assign result.cp0_req.wsel  = instr[2:0];
 
+`ifdef ENABLE_ASIC
+assign result.asic_req.we    = (op == OP_MTC2);
+assign result.asic_req.waddr = instr[15:0];
+assign result.asic_req.wdata = reg1;
+`endif
+
 // setup execution result
 always_comb begin
 	exec_ret = '0;
@@ -155,6 +165,9 @@ always_comb begin
 
 		/* read coprocessers */
 		OP_MFC0: exec_ret = cp0_rdata;
+`ifdef ENABLE_ASIC
+		OP_MFC2: exec_ret = asic_rdata;
+`endif
 		default: exec_ret = '0;
 	endcase
 end

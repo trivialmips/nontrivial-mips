@@ -295,6 +295,23 @@ always_comb begin
 			endcase
 		end
 
+`ifdef ENABLE_ASIC
+		6'b010010: begin // COP2
+			unique case(instr[25:21])
+				5'b00000: begin
+					decoded_instr.op = OP_MFC2;
+					decoded_instr.rd = rt;
+					decoded_instr.is_multicyc = 1'b1;
+				end
+				5'b00100: begin
+					decoded_instr.op  = OP_MTC2;
+					decoded_instr.rs1 = rt;
+				end
+				default: decoded_instr.op = OP_INVALID;
+			endcase
+		end
+`endif
+
 		default: decoded_instr.op = OP_INVALID;
 	endcase
 end

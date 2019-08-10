@@ -11,7 +11,10 @@ module multi_cycle_exec(
 
 	output reg_addr_t    cp0_raddr,
 	output logic [2:0]   cp0_rsel,
-	input  uint32_t      cp0_rdata,
+
+	`ifdef ENABLE_ASIC
+	output logic [15:0]  asic_raddr,
+	`endif
 
 	input  uint64_t hilo_i,
 	output uint64_t hilo_o,
@@ -97,6 +100,13 @@ always_ff @(posedge clk) begin
 	end
 end
 
+`ifdef ENABLE_ASIC
+	always_ff @(posedge clk) begin
+		if(rst) asic_raddr <= '0;
+		else    asic_raddr <= request[0].fetch.instr[15:0];
+	end
+`endif
+
 /* cycle control */
 logic [DIV_CYC:0] cyc_stage, cyc_stage_d;
 assign data_ready = cyc_stage[0];
@@ -114,6 +124,10 @@ always_comb begin
 					cyc_stage_d = 1;
 				OP_MFC0:
 					cyc_stage_d = 1;
+				`ifdef ENABLE_ASIC
+				OP_MFC2:
+					cyc_stage_d = 1;
+				`endif
 				default:
 					cyc_stage_d = '0;
 			endcase

@@ -162,6 +162,10 @@ typedef enum logic [6:0] {
 	/* privileged instructions */
 	OP_CACHE, OP_ERET, OP_MFC0, OP_MTC0,
 	OP_TLBP, OP_TLBR, OP_TLBWI, OP_TLBWR, OP_WAIT,
+	/* ASIC */
+	`ifdef ENABLE_ASIC
+		OP_MFC2, OP_MTC2,
+	`endif
 	/* invalid */
 	OP_INVALID
 } oper_t;
@@ -235,6 +239,13 @@ typedef struct packed {
 	uint32_t    wdata;
 } cp0_req_t;
 
+// ASIC request
+typedef struct packed {
+	logic        we;
+	logic [15:0] waddr;
+	uint32_t     wdata;
+} asic_req_t;
+
 // TLB requests
 typedef struct packed {
 	logic probe, read, tlbwr, tlbwi;
@@ -264,6 +275,9 @@ typedef struct packed {
 	decoded_instr_t decoded;
 	tlb_request_t   tlbreq;
 	cp0_req_t       cp0_req;
+	`ifdef ENABLE_ASIC
+		asic_req_t asic_req;
+	`endif
 	branch_predict_t branch_predict;
 } pipeline_exec_t;
 
@@ -273,6 +287,7 @@ typedef struct packed {
 	virt_t         pc;
 	reg_addr_t     rd;
 	uint32_t       wdata;
+	hilo_req_t     hiloreq;
 } pipeline_memwb_t;
 
 // MMU/TLB

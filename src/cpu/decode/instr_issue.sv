@@ -153,6 +153,10 @@ assign instr2_not_taken =
    || (id_decoded[0].is_priv && id_decoded[1].is_priv)
    || (id_decoded[0].is_multicyc && id_decoded[1].is_multicyc)
    || (id_decoded[0].is_multicyc && hilo_read[1])
+   `ifdef ENABLE_ASIC
+	   || (id_decoded[0].op == OP_MFC2 || id_decoded[1].op == OP_MFC2)
+	   || (id_decoded[0].op == OP_MTC2 || id_decoded[1].op == OP_MTC2)
+   `endif
    || (id_decoded[1].op == OP_ERET);
 
 assign stall_req =
@@ -165,6 +169,9 @@ assign stall_req =
 	| (id_decoded[0].is_nonrw_priv && priv_executing) & `CPU_MUTEX_PRIV
 	| nonrw_priv_executing & `CPU_MUTEX_PRIV
 	| (ex_decoded[0].is_priv | ex_decoded[1].is_priv)
+   `ifdef ENABLE_ASIC
+	   | (ex_decoded[0].op == OP_MTC2 && id_decoded[0].op == OP_MFC2)
+   `endif
 	| delayslot_not_loaded
 	| (speculative_branch & speculative_branch_conflict)
 	| (instr_valid == '0);
