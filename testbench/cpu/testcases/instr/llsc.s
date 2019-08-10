@@ -19,6 +19,7 @@ _start:
 	ll  $2, 0x0($5)       # ans: $2=0x00001234
 	addi $2, $2, 1        # ans: $2=0x00001235
 	ori $3, $2, 0x0000    # ans: $3=0x00001235
+	nop
 	sc  $2, 0x0($5)       # ans: skip
 	                      # ans: skip
 	ori $9, $2, 0         # ans: $9=0x00000001
