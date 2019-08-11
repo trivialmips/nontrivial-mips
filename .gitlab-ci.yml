@@ -166,5 +166,5 @@ soc_bitstream:
     paths:
       - ${PROJECT_DIR}/${PROJECT_NAME}.runs/impl_1/*.bit
       - ${PROJECT_DIR}/${PROJECT_NAME}.runs/impl_1/*.ltx
-      - ${PROJECT_DIR}/${PROJECT_NAME}.runs/impl_1/runme.log
+      - ${PROJECT_DIR}/${PROJECT_NAME}.runs/*/runme.log
     when: always
