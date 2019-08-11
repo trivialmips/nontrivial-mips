@@ -150,3 +150,21 @@ perf_test_bitstream:
       - loongson/soc_axi_perf/run_vivado/mycpu_prj1/mycpu.runs/impl_1/soc_axi_lite_top.bit
       - loongson/soc_axi_perf/run_vivado/mycpu_prj1/mycpu.runs/*/runme.log
     when: always
+
+
+soc_bitstream:
+  image: vivado:2018.3
+  tags:
+    - vivado
+  stage: bitstreams
+  only:
+    variables:
+      - $CI_COMMIT_MESSAGE =~ /\[soc bitstream\]/i
+  script:
+    - ${VIVADO_PATH} -mode tcl -source scripts/build_soc.tcl ${PROJECT_DIR}/${PROJECT_NAME}.xpr
+  artifacts:
+    paths:
+      - ${PROJECT_DIR}/${PROJECT_NAME}.runs/impl_1/*.bit
+      - ${PROJECT_DIR}/${PROJECT_NAME}.runs/impl_1/*.ltx
+      - ${PROJECT_DIR}/${PROJECT_NAME}.runs/impl_1/runme.log
+    when: always
