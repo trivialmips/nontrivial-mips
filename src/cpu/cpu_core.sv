@@ -216,7 +216,8 @@ asic asic_inst(
 	.clk,
 	.rst,
 	.we      ( asic_we            ),
-	.chip    ( asic_address[15:8] ),
+	.endian  ( asic_address[15]   ),
+	.chip    ( asic_address[14:8] ),
 	.address ( asic_address[7:0]  ),
 	.wdata   ( asic_wdata         ),
 	.rdata   ( asic_rdata         )

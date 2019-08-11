@@ -5,7 +5,8 @@ module asic(
 
 	input  logic  we,
 
-	input  logic  [7:0]  chip,
+	input  logic  endian,
+	input  logic  [6:0]  chip,
 	input  logic  [7:0]  address,
 	input  logic  [31:0] wdata,
 	output logic  [31:0] rdata
@@ -13,7 +14,7 @@ module asic(
 
 localparam AES_CHIP = 1;
 
-logic [31:0] rdata_n;
+logic [31:0] rdata_n, wdata_q;
 logic [31:0] aes_rdata;
 
 always_comb begin
@@ -21,6 +22,27 @@ always_comb begin
 		AES_CHIP: rdata_n = aes_rdata;
 		default:  rdata_n = '0;
 	endcase
+
+	if(endian) begin
+		rdata_n = {
+			rdata_n[7:0],
+			rdata_n[15:8],
+			rdata_n[23:16],
+			rdata_n[31:24]
+		}
+	end
+end
+
+always_comb begin
+	wdata_q = wdata;
+	if(endian) begin
+		wdata_q = {
+			wdata_q[7:0],
+			wdata_q[15:8],
+			wdata_q[23:16],
+			wdata_q[31:24]
+		}
+	end
 end
 
 always_ff @(posedge clk) begin
@@ -34,7 +56,7 @@ aes aes_inst(
 	.cs      ( chip == AES_CHIP ),
 	.we,
 	.address,
-	.write_data ( wdata ),
+	.write_data ( wdata_q   ),
 	.read_data  ( aes_rdata )
 );
 
