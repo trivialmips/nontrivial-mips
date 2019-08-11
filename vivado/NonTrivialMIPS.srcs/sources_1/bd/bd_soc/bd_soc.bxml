@@ -2,10 +2,10 @@
 <Root MajorVersion="0" MinorVersion="36">
   <CompositeFile CompositeFileTopName="bd_soc" CanBeSetAsTop="false" CanDisplayChildGraph="true">
     <Description>Composite Fileset</Description>
-    <Generation Name="SYNTHESIS" State="GENERATED" Timestamp="1565443501"/>
-    <Generation Name="IMPLEMENTATION" State="GENERATED" Timestamp="1565443501"/>
-    <Generation Name="SIMULATION" State="GENERATED" Timestamp="1565443501"/>
-    <Generation Name="HW_HANDOFF" State="GENERATED" Timestamp="1565443501"/>
+    <Generation Name="SYNTHESIS" State="GENERATED" Timestamp="1565510122"/>
+    <Generation Name="IMPLEMENTATION" State="GENERATED" Timestamp="1565510122"/>
+    <Generation Name="SIMULATION" State="GENERATED" Timestamp="1565510122"/>
+    <Generation Name="HW_HANDOFF" State="GENERATED" Timestamp="1565510122"/>
     <FileCollection Name="SOURCES" Type="SOURCES">
       <File Name="ip/bd_soc_confreg_0_0/bd_soc_confreg_0_0.xci" Type="IP">
         <Instance HierarchyPath="loongson_confrreg"/>
@@ -255,17 +255,6 @@
         <UsedIn Val="IMPLEMENTATION"/>
         <UsedIn Val="SIMULATION"/>
       </File>
-      <File Name="synth/bd_soc.v" Type="Verilog">
-        <Properties IsEditable="false" IsVisible="true" Timestamp="0" IsTrackable="false" IsStatusTracked="false"/>
-        <Library Name="xil_defaultlib"/>
-        <UsedIn Val="SYNTHESIS"/>
-        <UsedIn Val="IMPLEMENTATION"/>
-      </File>
-      <File Name="sim/bd_soc.v" Type="Verilog">
-        <Properties IsEditable="false" IsVisible="true" Timestamp="0" IsTrackable="false" IsStatusTracked="false"/>
-        <Library Name="xil_defaultlib"/>
-        <UsedIn Val="SIMULATION"/>
-      </File>
       <File Name="ip/bd_soc_utmi_usb_controller_0_1/bd_soc_utmi_usb_controller_0_1.xci" Type="IP">
         <Instance HierarchyPath="usb_controller"/>
         <Properties IsEditable="false" IsVisible="true" Timestamp="0" IsTrackable="true" IsStatusTracked="true"/>
@@ -315,11 +304,22 @@
         <UsedIn Val="SIMULATION"/>
       </File>
       <File Name="ip/bd_soc_system_ila_0_0/bd_soc_system_ila_0_0.xci" Type="IP">
-        <Instance HierarchyPath="framebuffer_ila"/>
+        <Instance HierarchyPath="peripheral_ila"/>
         <Properties IsEditable="false" IsVisible="true" Timestamp="0" IsTrackable="true" IsStatusTracked="true"/>
         <Library Name="xil_defaultlib"/>
         <UsedIn Val="SYNTHESIS"/>
         <UsedIn Val="IMPLEMENTATION"/>
+        <UsedIn Val="SIMULATION"/>
+      </File>
+      <File Name="synth/bd_soc.v" Type="Verilog">
+        <Properties IsEditable="false" IsVisible="true" Timestamp="0" IsTrackable="false" IsStatusTracked="false"/>
+        <Library Name="xil_defaultlib"/>
+        <UsedIn Val="SYNTHESIS"/>
+        <UsedIn Val="IMPLEMENTATION"/>
+      </File>
+      <File Name="sim/bd_soc.v" Type="Verilog">
+        <Properties IsEditable="false" IsVisible="true" Timestamp="0" IsTrackable="false" IsStatusTracked="false"/>
+        <Library Name="xil_defaultlib"/>
         <UsedIn Val="SIMULATION"/>
       </File>
       <File Name="ip/bd_soc_auto_pc_0/bd_soc_auto_pc_0.xci" Type="IP">

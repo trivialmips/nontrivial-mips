@@ -29,7 +29,7 @@ always_comb begin
 			rdata_n[15:8],
 			rdata_n[23:16],
 			rdata_n[31:24]
-		}
+		};
 	end
 end
 
@@ -41,7 +41,7 @@ always_comb begin
 			wdata_q[15:8],
 			wdata_q[23:16],
 			wdata_q[31:24]
-		}
+		};
 	end
 end
 

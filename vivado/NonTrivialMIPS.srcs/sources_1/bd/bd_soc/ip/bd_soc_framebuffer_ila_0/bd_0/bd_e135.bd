@@ -1,0 +1,42 @@
+{
+  "design": {
+    "design_info": {
+      "boundary_crc": "0x0",
+      "design_src": "SBD",
+      "device": "xc7a200tfbg676-2",
+      "name": "bd_e135",
+      "scoped": "true",
+      "synth_flow_mode": "None",
+      "tool_version": "2018.3"
+    },
+    "design_tree": {},
+    "interface_ports": {
+      "SLOT_0_AXIS": {
+        "mode": "Monitor",
+        "vlnv": "xilinx.com:interface:axis_rtl:1.0"
+      },
+      "SLOT_1_AXI": {
+        "mode": "Monitor",
+        "vlnv": "xilinx.com:interface:aximm_rtl:1.0"
+      }
+    },
+    "ports": {
+      "clk": {
+        "type": "clk",
+        "direction": "I",
+        "parameters": {
+          "ASSOCIATED_BUSIF": {
+            "value": "SLOT_0_AXIS:SLOT_1_AXI"
+          },
+          "ASSOCIATED_RESET": {
+            "value": "resetn"
+          }
+        }
+      },
+      "resetn": {
+        "type": "rst",
+        "direction": "I"
+      }
+    }
+  }
+}
