@@ -34,113 +34,129 @@ module dcache_fifo #(
     output logic pushed
 );
 
-// TODO: fall-through
+localparam int unsigned ADDR_WIDTH = DEPTH == 0 ? 0 : $clog2(DEPTH) + 1; // For example, we need 4 bit to store 0~8
 
-localparam int unsigned ADDR_WIDTH = $clog2(DEPTH) + 1; // For example, we need 4 bit to store 0~8
-typedef logic [ADDR_WIDTH-1:0] addr_t;
+generate if(DEPTH > 0) begin
+    typedef logic [ADDR_WIDTH-1:0] addr_t;
 
-addr_t head, head_d, tail, tail_d;
-addr_t cnt, cnt_d;
+    addr_t head, head_d, tail, tail_d;
+    addr_t cnt, cnt_d;
 
-line_t [DEPTH-1:0] mem, mem_d;
-logic [DEPTH-1:0] valid, valid_d;
+    line_t [DEPTH-1:0] mem, mem_d;
+    logic [DEPTH-1:0] valid, valid_d;
 
-logic [DEPTH-1:0] hit;
-logic [DEPTH-1:0] hit_non_pop;
-for(genvar i = 0; i < DEPTH; i++) begin
-    assign hit[i] = valid[i] && mem[i][DATA_WIDTH +: TAG_WIDTH] == query_tag;
-    assign hit_non_pop[i] = (pop && head == i[ADDR_WIDTH-1:0]) ? 1'b0 : hit[i];
-end
-
-assign query_found = |hit;
-
-always_comb begin
-    query_rdata = '0;
-
-    for(int i = 0; i < DEPTH; i++) begin
-        query_rdata |= hit[i] ? mem[i][0 +: DATA_WIDTH] : '0;
+    logic [DEPTH-1:0] hit;
+    logic [DEPTH-1:0] hit_non_pop;
+    for(genvar i = 0; i < DEPTH; i++) begin
+        assign hit[i] = valid[i] && mem[i][DATA_WIDTH +: TAG_WIDTH] == query_tag;
+        assign hit_non_pop[i] = (pop && head == i[ADDR_WIDTH-1:0]) ? 1'b0 : hit[i];
     end
-end
 
-// Grow --->
-// O O O X X X X O O
-//       H       T
+    assign query_found = |hit;
 
-assign empty = cnt == '0;
-assign full = cnt == DEPTH[ADDR_WIDTH-1:0];
+    always_comb begin
+        query_rdata = '0;
 
-assign rline = mem[head];
-
-always_comb begin
-    cnt_d = cnt;
-    head_d = head;
-    tail_d = tail;
-    mem_d = mem;
-    valid_d = valid;
-
-    written = 1'b0;
-    pushed = 1'b0;
-
-    if(push && ~full) begin
-        mem_d[tail] = pline;
-        valid_d[tail] = 1'b1;
-
-        if(tail == DEPTH[ADDR_WIDTH-1:0] - 1) begin
-            tail_d = '0;
-        end else begin
-            tail_d = tail + 1;
+        for(int i = 0; i < DEPTH; i++) begin
+            query_rdata |= hit[i] ? mem[i][0 +: DATA_WIDTH] : '0;
         end
-
-        cnt_d = cnt+1;
-
-        pushed = 1'b1;
     end
 
-    if(pop && ~empty) begin
-        valid_d[head] = 1'b0;
+    // Grow --->
+    // O O O X X X X O O
+    //       H       T
 
-        if(head == DEPTH[ADDR_WIDTH-1:0] - 1) begin
-            head_d = '0;
-        end else begin
-            head_d = head + 1;
-        end
+    assign empty = cnt == '0;
+    assign full = cnt == DEPTH[ADDR_WIDTH-1:0];
 
-        cnt_d = cnt - 1;
-    end
+    assign rline = mem[head];
 
-    if(push && ~full && pop && ~empty) begin
+    always_comb begin
         cnt_d = cnt;
+        head_d = head;
+        tail_d = tail;
+        mem_d = mem;
+        valid_d = valid;
+
+        written = 1'b0;
+        pushed = 1'b0;
+
+        if(push && ~full) begin
+            mem_d[tail] = pline;
+            valid_d[tail] = 1'b1;
+
+            if(tail == DEPTH[ADDR_WIDTH-1:0] - 1) begin
+                tail_d = '0;
+            end else begin
+                tail_d = tail + 1;
+            end
+
+            cnt_d = cnt+1;
+
+            pushed = 1'b1;
+        end
+
+        if(pop && ~empty) begin
+            valid_d[head] = 1'b0;
+
+            if(head == DEPTH[ADDR_WIDTH-1:0] - 1) begin
+                head_d = '0;
+            end else begin
+                head_d = head + 1;
+            end
+
+            cnt_d = cnt - 1;
+        end
+
+        if(push && ~full && pop && ~empty) begin
+            cnt_d = cnt;
+        end
+
+        if(write && |hit_non_pop) begin
+            for(int i = 0; i < DEPTH; i++) if(hit_non_pop[i])
+                for(int j = 0; j<DATA_WIDTH/8; j++) if(query_wbe[j])
+                    mem_d[i][j*8+:8] = query_wdata[j*8+:8];
+
+            written = 1'b1;
+        end
     end
 
-    if(write && |hit_non_pop) begin
-        for(int i = 0; i < DEPTH; i++) if(hit_non_pop[i])
-            for(int j = 0; j<DATA_WIDTH/8; j++) if(query_wbe[j])
-                mem_d[i][j*8+:8] = query_wdata[j*8+:8];
-
-        written = 1'b1;
+    always_ff @(posedge clk) begin
+        if(rst) begin
+            head <= '0;
+            tail <= '0;
+            cnt <= '0;
+            valid <= '0;
+        end else begin
+            head <= head_d;
+            tail <= tail_d;
+            cnt <= cnt_d;
+            valid <= valid_d;
+        end
     end
-end
 
-always_ff @(posedge clk) begin
-    if(rst) begin
-        head <= '0;
-        tail <= '0;
-        cnt <= '0;
-        valid <= '0;
-    end else begin
-        head <= head_d;
-        tail <= tail_d;
-        cnt <= cnt_d;
-        valid <= valid_d;
+    always_ff @(posedge clk) begin
+        if(rst) begin
+            mem <= '0;
+        end else if(written || pushed) begin
+            mem <= mem_d;
+        end
     end
-end
 
-always_ff @(posedge clk) begin
-    if(rst) begin
-        mem <= '0;
-    end else if(written || pushed) begin
-        mem <= mem_d;
-    end
-end
+end else begin
+    // 0-depth fallthrough
+    
+    // Because this is a 0-depth fallthrough FIFO, random RW never happens
+    assign written = 1'b0;
+    assign query_found = 1'b0;
 
+    // Reject push unless there is a concurrent pop request
+    assign full = ~pop;
+    assign pushed = pop & push;
+
+    // Same for pop
+    assign empty = ~push;
+
+    assign rline = pline;
+end endgenerate
 endmodule
