@@ -85,6 +85,7 @@ func_test_simulation:
     variables:
       - $CI_COMMIT_MESSAGE =~ /\[func test\]/i
   script:
+    - sed -i "s/\`define COMPILE_FULL_M/\\/\\/ \`define COMPILE_FULL_M/" src/compile_options.svh
     - export SIMULATION=sim_1
     - export LOG_PATH=loongson/soc_axi_func/run_vivado/mycpu_prj1/mycpu.sim/${SIMULATION}/behav/xsim/simulate.log
     - export FLAG='\-\-\-\-PASS!!!'
@@ -107,6 +108,7 @@ perf_test_simulation:
     variables:
       - $CI_COMMIT_MESSAGE =~ /\[perf test\]/i
   script:
+    - sed -i "s/\`define COMPILE_FULL_M/\\/\\/ \`define COMPILE_FULL_M/" src/compile_options.svh
     - export SIMULATION=sim_1
     - export LOG_PATH=loongson/soc_axi_perf/run_vivado/mycpu_prj1/mycpu.sim/${SIMULATION}/behav/xsim/simulate.log
     - export FLAG='All tests done!'
@@ -126,6 +128,7 @@ func_test_bitstream:
     variables:
       - $CI_COMMIT_MESSAGE =~ /\[func bitstream\]/i
   script:
+    - sed -i "s/\`define COMPILE_FULL_M/\\/\\/ \`define COMPILE_FULL_M/" src/compile_options.svh
     - ${VIVADO_PATH} -mode tcl -source scripts/generate_bitstream.tcl loongson/soc_axi_func/run_vivado/mycpu_prj1/mycpu.xpr
   artifacts:
     paths:
