@@ -204,17 +204,20 @@ always_comb begin
 end
 
 /* pipeline between I$ and FIFO read */
+uint32_t instr_mask_s3;
 always_ff @(posedge clk) begin
 	if(rst || flush_s2 || stall_s2) begin
 		entry_s2_d        <= '0;
 		avail_instr_s2_d  <= '0;
 		replay_vaddr      <= '0;
 		delayslot_s3      <= '0;
+		instr_mask_s3     <= '0;
 	end else begin
 		replay_vaddr      <= pipe_s2.pc;
 		entry_s2_d        <= entry_s2;
 		avail_instr_s2_d  <= avail_instr_s2;
 		delayslot_s3      <= pipe_s2.delayslot;
+		instr_mask_s3     <= {32{~|pipe_s2.iaddr_ex}};
 	end
 end
 
@@ -224,7 +227,7 @@ logic  [1:0] is_cf, is_nocf_mispredict;
 virt_t [1:0] imm_branch, imm_jump;
 for(genvar i = 0; i < 2; ++i) begin: gen_branch_decoder
 	decode_branch branch_decoder_inst(
-		.instr ( icache_res.data[31 + 32 * i -: 32] ),
+		.instr ( icache_res.data[31 + 32 * i -: 32] & instr_mask_s3 ),
 		.is_branch  ( is_branch[i]  ),
 		.is_jump_i  ( is_jump_i[i]  ),
 		.is_jump_r  ( is_jump_r[i]  ),
@@ -256,19 +259,19 @@ decoded_instr_t [2:0] decoded;
 
 decoder decoder_inst1(
 	.vaddr         ( entry_s2_d[0].vaddr   ),
-	.instr         ( icache_res.data[31:0] ),
+	.instr         ( icache_res.data[31:0] & instr_mask_s3 ),
 	.decoded_instr ( decoded[0]            )
 );
 
 decoder decoder_inst2(
 	.vaddr         ( entry_s2_d[1].vaddr    ),
-	.instr         ( icache_res.data[63:32] ),
+	.instr         ( icache_res.data[63:32] & instr_mask_s3 ),
 	.decoded_instr ( decoded[1]             )
 );
 
 decoder decoder_inst3(
 	.vaddr         ( entry_s2_d[2].vaddr         ),
-	.instr         ( icache_res.data_extra[31:0] ),
+	.instr         ( icache_res.data_extra[31:0] & instr_mask_s3 ),
 	.decoded_instr ( decoded[2]                  )
 );
 
@@ -276,9 +279,9 @@ decoder decoder_inst3(
 always_comb begin
 	entry_s3 = entry_s2_d;
 	avail_instr_s3 = avail_instr_s2_d;
-	entry_s3[0].instr = icache_res.data[31:0];
-	entry_s3[1].instr = icache_res.data[63:32];
-	entry_s3[2].instr = icache_res.data_extra[31:0];
+	entry_s3[0].instr = icache_res.data[31:0] & instr_mask_s3;
+	entry_s3[1].instr = icache_res.data[63:32] & instr_mask_s3;
+	entry_s3[2].instr = icache_res.data_extra[31:0] & instr_mask_s3;
 
 	entry_s3[0].decoded = decoded[0];
 	entry_s3[1].decoded = decoded[1];
