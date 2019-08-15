@@ -27,9 +27,7 @@
 
 // Instead of modifying this, define CPU_LLSC_ENABLED_M to enable ll/sc
 `ifdef CPU_LLSC_ENABLED_M
-	`define CPU_LLSC_ENABLED     1
-`else
-	`define CPU_LLSC_ENABLED     0
+`define CPU_LLSC_ENABLED     1
 `endif
 
 `define CPU_PERFORMANCE      1
