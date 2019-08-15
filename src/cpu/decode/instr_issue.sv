@@ -140,8 +140,8 @@ assign speculative_branch_conflict =
 //assign speculative_branch_conflict = 
 //	  ~(id_decoded[0].delayed_exec & id_decoded[1].delayed_exec);
 
-assign instr2_not_taken = 
-      ~instr_valid[1]
+assign instr2_not_taken = ~id_decoded[0].is_controlflow && (
+	  ~instr_valid[1]
    || is_data_related(id_decoded[0], id_decoded[1])
    || (mem_access[0] & mem_access[1])
       // mispredict but delayslot does not executed
@@ -157,7 +157,8 @@ assign instr2_not_taken =
 	   || (id_decoded[0].op == OP_MFC2 || id_decoded[1].op == OP_MFC2)
 	   || (id_decoded[0].op == OP_MTC2 || id_decoded[1].op == OP_MTC2)
    `endif
-   || (id_decoded[1].op == OP_ERET);
+   || (id_decoded[1].op == OP_ERET)
+);
 
 assign stall_req =
 	  ex_load_related[0]
