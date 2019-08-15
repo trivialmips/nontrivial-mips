@@ -66,7 +66,7 @@ always_comb begin
 	if(flush_delayed_mispredict) begin
 		flush = 5'b11111;
 	end else if(except_req.valid) begin
-		flush = { 3'b111, {2{except_req.alpha_taken}} };
+		flush = { 3'b111, {2{except_req.alpha_taken | except_req.delayslot}} };
 	end else if(flush_mispredict) begin
 		flush = 5'b11100;
 	end
