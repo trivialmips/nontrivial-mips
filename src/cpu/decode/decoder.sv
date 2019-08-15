@@ -240,7 +240,7 @@ always_comb begin
 			endcase
 		end
 		
-		`ifdef CPU_LLSC_ENABLED_M
+		`ifdef COMPILE_FULL_M
 		6'b110000: begin // load linked word (Reg-Imm)
 			decoded_instr.rs1     = rs;
 			decoded_instr.rd      = rt;
@@ -255,9 +255,7 @@ always_comb begin
 			decoded_instr.op       = OP_SC;
 			decoded_instr.is_store = 1'b1;
 		end
-		`endif
 
-		`ifdef COMPILE_FULL_M
 		6'b110011: begin // prefetch
 			decoded_instr.op = OP_SLL;
 		end
