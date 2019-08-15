@@ -32,7 +32,7 @@
 `define REG_NUM              32
 `define TLB_ENTRIES_NUM      16
 `define BOOT_VEC             32'hbfc00000
-`define BPU_SIZE             2048
+`define BPU_SIZE             4096
 `define INSTR_FIFO_DEPTH     3
 `define DCACHE_PIPE_DEPTH    3
 
