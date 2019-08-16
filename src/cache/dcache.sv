@@ -115,7 +115,7 @@ function offset_t get_offset( input logic [31:0] addr );
     return addr[LINE_BYTE_OFFSET - 1 : DATA_BYTE_OFFSET];
 endfunction
 
-function logic fifo_tag_t get_fifo_tag( input logic [31:0] addr );
+function fifo_tag_t get_fifo_tag( input logic [31:0] addr );
     return addr[31 : LINE_BYTE_OFFSET];
 endfunction
 
