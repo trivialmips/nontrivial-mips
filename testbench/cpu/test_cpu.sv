@@ -86,7 +86,7 @@ task unittest_(
 	begin 
 		fans = $fopen({ path, name, ".ans"}, "r");
 		fmem = $fopen({ path, name, ".mem"}, "r");
-		ibus_inst.mem = '{default: 'x};
+		ibus_inst.mem = '{default: '0};
 		mem_counter = 0;
 		while(!$feof(fmem)) begin
 			$fscanf(fmem, "%x", ibus_inst.mem[mem_counter]);
