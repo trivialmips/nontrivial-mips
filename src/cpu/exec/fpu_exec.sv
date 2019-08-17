@@ -14,8 +14,8 @@ module fpu_exec(
 	output fpu_except_t except_o
 );
 
-localparam int FPU_ADD_LATENCY  = 1;
-localparam int FPU_SUB_LATENCY  = 1;
+localparam int FPU_ADD_LATENCY  = 2;
+localparam int FPU_SUB_LATENCY  = 2;
 localparam int FPU_MUL_LATENCY  = 2;
 localparam int FPU_DIV_LATENCY  = 8;
 localparam int FPU_SQRT_LATENCY = 8;
