@@ -128,9 +128,9 @@ for(genvar i = 0; i < `ISSUE_NUM; ++i) begin : gen_ro_info_fpu
 end
 
 for(genvar i = 0; i < `ISSUE_NUM; ++i) begin : gen_ro_fpu
-	assign pipeline_decode[i].reg1 = fpu_reg_forward[i * 2];
-	assign pipeline_decode[i].reg2 = fpu_reg_forward[i * 2 + 1];
-	assign pipeline_decode[i].fcsr = fpu_fcsr[i];
+	assign pipeline_decode[i].fpu_reg1 = fpu_reg_forward[i * 2];
+	assign pipeline_decode[i].fpu_reg2 = fpu_reg_forward[i * 2 + 1];
+	assign pipeline_decode[i].fpu_fcsr = fpu_fcsr[i];
 end
 `endif
 

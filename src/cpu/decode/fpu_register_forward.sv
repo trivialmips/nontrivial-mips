@@ -7,17 +7,16 @@ module fpu_register_forward(
 	input  pipeline_exec_t   [`DCACHE_PIPE_DEPTH-1:0][`ISSUE_NUM-1:0] pipeline_dcache,
 	input  pipeline_memwb_t  [`ISSUE_NUM-1:0] pipeline_mem,
 	input  pipeline_memwb_t  [`ISSUE_NUM-1:0] pipeline_wb,
-	output pipeline_decode_t [`ISSUE_NUM-1:0] pipeline_decode,
 
 	// from regfile
 	input  uint32_t   reg1_i,
 	input  uint32_t   reg2_i,
-	input  fpu_fcsr_t fcsr_i;
+	input  fpu_fcsr_t fcsr_i,
 
 	// results
 	output uint32_t   reg1_o,
-	output uint32_t   reg2_o
-	output fpu_fcsr_t fcsr_o;
+	output uint32_t   reg2_o,
+	output fpu_fcsr_t fcsr_o
 );
 
 reg_addr_t [1:0] pack_rs;
@@ -54,7 +53,7 @@ always_comb begin
 			for(int j = 0; j < `ISSUE_NUM; ++j) begin
 				if(pipeline_dcache[k][j].fpu_req.we
 					&& pipeline_dcache[k][j].fpu_req.waddr == pack_rs[i])
-					pack_reg_o[i] = dcache_wdata[k][j].fpu_req.wdata;
+					pack_reg_o[i] = pipeline_dcache[k][j].fpu_req.wdata;
 				if(pipeline_dcache[k][j].fpu_req.fcsr_we)
 					fcsr_o = pipeline_dcache[k][j].fpu_req.fcsr;
 			end

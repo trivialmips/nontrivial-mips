@@ -149,7 +149,11 @@ begin
 		regs_now.count     <= '0;
 		regs_now.entry_hi  <= '0;
 		regs_now.compare   <= '0;
+		`ifdef ENABLE_FPU
+		regs_now.status    <= 32'b0011_0000_0100_0000_0000_0000_0000_0000;
+		`else
 		regs_now.status    <= 32'b0001_0000_0100_0000_0000_0000_0000_0000;
+		`endif
 		regs_now.cause     <= '0;
 		regs_now.epc       <= '0;
 		regs_now.error_epc <= '0;
@@ -210,6 +214,9 @@ always_comb begin
 				5'd11: regs_nxt.compare = wdata;
 				5'd12: begin
 					regs_nxt.status.cu0 = wdata[28];
+					`ifdef ENABLE_FPU
+					regs_nxt.status.cu1 = wdata[29];
+					`endif
 					regs_nxt.status.bev = wdata[22];
 					regs_nxt.status.im = wdata[15:8];
 					regs_nxt.status.um = wdata[4];
@@ -263,6 +270,9 @@ always_comb begin
 
 			regs_nxt.status.exl = 1'b1;
 			regs_nxt.cause.exc_code = except_req.code;
+
+			if(except_req.code == `EXCCODE_CpU)
+				regs_nxt.cause.ce = except_req.extra[1:0];
 
 			if(except_req.code == `EXCCODE_ADEL || except_req.code == `EXCCODE_ADES) begin
 				regs_nxt.bad_vaddr = except_req.extra;

@@ -27,6 +27,9 @@ assign is_branch = (
 	opcode[5:2] == 4'b0001 ||
 	// BLTZ (00000), BGEZ (00001), BLTZAL (10000), BGEZAL (10001)
 	opcode == 6'b000001 && instr[19:17] == 3'b0
+	`ifdef ENABLE_FPU
+		|| opcode == 6'b010001 && instr[25:21] == 5'b01000 && ~instr[17]
+	`endif
 );
 
 assign is_call   =

@@ -19,6 +19,13 @@ module instr_exec (
 	input  logic        is_usermode,
 	input  uint32_t     cp0_rdata,
 
+	`ifdef ENABLE_FPU
+	input  logic        fpu_valid,
+	input  uint32_t     fpu_result,
+	input  fpu_fcsr_t   fpu_fcsr,
+	input  fpu_except_t fpu_except,
+	`endif
+
 	`ifdef ENABLE_ASIC
 	input  uint32_t     asic_rdata,
 	`endif
@@ -165,12 +172,82 @@ always_comb begin
 
 		/* read coprocessers */
 		OP_MFC0: exec_ret = cp0_rdata;
+`ifdef ENABLE_FPU
+		OP_MFC1: exec_ret = data.fpu_reg1;
+		OP_CFC1: begin
+			unique case(instr[15:11])
+				5'd0:  exec_ret = 32'h00010000;
+				5'd25: exec_ret = { 24'b0, data.fpu_fcsr.fcc };
+				5'd26: exec_ret = { 14'b0, data.fpu_fcsr.cause,
+					5'b0, data.fpu_fcsr.flags[4:0], 2'b0 };
+				5'd28: exec_ret = { 20'b0, data.fpu_fcsr.enables[4:0],
+					4'b0, data.fpu_fcsr.fs, data.fpu_fcsr.rm };
+				5'd31: exec_ret = { data.fpu_fcsr.fcc[7:1], data.fpu_fcsr.fs,
+					data.fpu_fcsr.fcc[0], 5'b0, data.fpu_fcsr.cause,
+					data.fpu_fcsr.enables[4:0], data.fpu_fcsr.flags[4:0], data.fpu_fcsr.rm };
+				default: exec_ret = 32'b0;
+			endcase
+		end
+`endif
 `ifdef ENABLE_ASIC
 		OP_MFC2: exec_ret = asic_rdata;
 `endif
 		default: exec_ret = '0;
 	endcase
 end
+
+/* FPU result */
+`ifdef ENABLE_FPU
+assign result.fpu_req.waddr   = data.decoded.fd;
+assign result.fpu_req.fcsr_we = data.decoded.fcsr_we;
+always_comb begin
+	if(op == OP_FPU_CMOV) begin
+		unique case(instr[5:0])
+			6'b010001: result.fpu_req.we = (instr[16] == data.fpu_fcsr.fcc[instr[20:18]]);
+			6'b010010: result.fpu_req.we = (reg2 == '0);
+			6'b010011: result.fpu_req.we = (reg2 != '0);
+			default:   result.fpu_req.we = 1'b0;
+		endcase
+	end else begin
+		result.fpu_req.we = data.decoded.fpu_we;
+	end
+end
+always_comb begin
+	if(op == OP_CTC1) begin
+		result.fpu_req.fcsr = data.fpu_fcsr;
+		unique case(instr[15:11])
+			5'd25: result.fpu_req.fcsr.fcc = reg2[7:0];
+			5'd26: begin
+				result.fpu_req.fcsr.cause      = reg2[17:12];
+				result.fpu_req.fcsr.flags[4:0] = reg2[6:2];
+			end
+			5'd28: begin
+				result.fpu_req.fcsr.fs           = reg2[2];
+				result.fpu_req.fcsr.rm           = reg2[1:0];
+				result.fpu_req.fcsr.enables[4:0] = reg2[11:7];
+			end
+			5'd31: begin
+				result.fpu_req.fcsr.fcc          = { reg2[31:25], reg2[23] };
+				result.fpu_req.fcsr.fs           = reg2[24];
+				result.fpu_req.fcsr.cause        = reg2[17:12];
+				result.fpu_req.fcsr.enables[4:0] = reg2[11:7];
+				result.fpu_req.fcsr.flags[4:0]   = reg2[6:2];
+				result.fpu_req.fcsr.rm           = reg2[1:0];
+			end
+		endcase
+	end else begin
+		result.fpu_req.fcsr = fpu_fcsr;
+	end
+end
+always_comb begin
+	unique case(op)
+		OP_MTC1: result.fpu_req.wdata = reg1;
+		OP_FPU_MOV, OP_FPU_CMOV:
+			result.fpu_req.wdata = data.fpu_reg1;
+		default: result.fpu_req.wdata = fpu_result;
+	endcase
+end
+`endif
 
 /* cache operation */
 logic dcache_invalidate;
@@ -239,6 +316,12 @@ end
 
 always_comb begin
 	unique case(op)
+`ifdef ENABLE_FPU
+		OP_SWC1: begin
+			mem_wrdata = data.fpu_reg2;
+			mem_sel = 4'b1111;
+		end
+`endif
 		OP_LW, OP_LL, OP_SW, OP_SC: begin
 			mem_wrdata = sw_reg2;
 			mem_sel = 4'b1111;
@@ -315,6 +398,9 @@ always_comb begin
 	trap_valid = '0;
 `endif
 	unique case(op)
+`ifdef ENABLE_FPU
+		OP_SWC1, OP_LWC1,
+`endif
 		OP_LW, OP_LL, OP_SW, OP_SC:
 			daddr_unaligned = mmu_vaddr[0] | mmu_vaddr[1];
 		OP_LH, OP_LHU, OP_SH:
@@ -339,6 +425,9 @@ assign ex_ex = {
 	op == OP_SYSCALL,
 	((op == OP_ADD) & ov_add) | ((op == OP_SUB) & ov_sub),
 	data.decoded.is_priv & is_usermode
+	`ifdef ENABLE_FPU
+		| data.decoded.is_fpu & ~fpu_valid
+	`endif
 };
 
 assign invalid_instr = (op == OP_INVALID);
@@ -382,7 +471,13 @@ always_comb begin
 			5'b01000: ex.exc_code = `EXCCODE_BP;
 			5'b00100: ex.exc_code = `EXCCODE_SYS;
 			5'b00010: ex.exc_code = `EXCCODE_OV;
-			5'b00001: ex.exc_code = `EXCCODE_CpU;
+			5'b00001: begin
+				ex.exc_code = `EXCCODE_CpU;
+				`ifdef ENABLE_FPU
+					if(data.decoded.is_fpu & ~fpu_valid)
+						ex.extra = 1;
+				`endif
+			end
 			default:;
 		endcase
 	end else if(|ex_mm) begin
@@ -410,6 +505,9 @@ branch_resolver branch_resolver_inst(
 	.reg1,
 	.reg2,
 	.data,
+	`ifdef ENABLE_FPU
+	.fcc_match ( data.fpu_fcsr.fcc[instr[20:18]] == instr[16] ),
+	`endif
 	.resolved_branch
 );
 

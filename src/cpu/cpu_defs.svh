@@ -192,8 +192,10 @@ typedef struct packed {
 	reg_addr_t   fs1;
 	reg_addr_t   fs2;
 	reg_addr_t   fd;
+	logic        fpu_we;
 	logic        fcsr_we;
 	logic        is_fpu;
+	logic        is_fpu_multicyc;
 	`endif
 	oper_t       op;
 	controlflow_t cf;       // controlflow type

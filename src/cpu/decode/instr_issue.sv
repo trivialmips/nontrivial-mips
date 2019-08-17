@@ -32,9 +32,7 @@ function logic is_fpu_load_related(
 	input decoded_instr_t id,
 	input decoded_instr_t ex
 );
-	return ex.is_load & (
-	    ex.fd != '0 && (id.fs1 == ex.fd || id.fs2 == ex.fd)
-	);
+	return ex.is_load & (id.fs1 == ex.fd || id.fs2 == ex.fd);
 endfunction
 `endif
 
@@ -97,10 +95,10 @@ always_comb begin
 	fpu_load_related = '0;
 	for(int i = 0; i < `ISSUE_NUM; ++i) begin
 		for(int j = 0; j < `ISSUE_NUM; ++j) begin
-			fpu_load_related[i] |= is_load_related(
+			fpu_load_related[i] |= is_fpu_load_related(
 				id_decoded[i], ex_decoded[j]);
 			for(int k = 0; k < `DCACHE_PIPE_DEPTH - 1; ++k) begin
-				load_related[i] |= is_fpu_load_related(
+				fpu_load_related[i] |= is_fpu_load_related(
 					id_decoded[i], dcache_decoded[k][j]);
 			end
 		end

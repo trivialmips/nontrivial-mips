@@ -5,6 +5,9 @@ module branch_resolver(
 	input  uint32_t          reg1,
 	input  uint32_t          reg2,
 	input  pipeline_decode_t data,
+	`ifdef ENABLE_FPU
+	input  logic             fcc_match,
+	`endif
 	output branch_resolved_t resolved_branch
 );
 
@@ -30,10 +33,16 @@ always_comb begin
 		OP_BLEZ: resolved_branch.taken = reg_equal | reg1[31];
 		OP_BGTZ: resolved_branch.taken = ~reg_equal & ~reg1[31];
 		OP_JAL, OP_JALR: resolved_branch.taken = 1'b1;
+		`ifdef ENABLE_FPU
+			OP_BC1: resolved_branch.taken = fcc_match;
+		`endif
 		default: resolved_branch.taken = 1'b0;
 	endcase
 
 	unique case(data.decoded.op)
+	`ifdef ENABLE_FPU
+		OP_BC1,
+	`endif
 		OP_BLTZ, OP_BLTZAL, OP_BGEZ, OP_BGEZAL,
 		OP_BEQ,  OP_BNE,    OP_BLEZ, OP_BGTZ: begin
 			resolved_branch.target = data.decoded.default_jump_i;

@@ -129,7 +129,7 @@ regfile #(
 	.WRITE_PORTS ( 2        ),
 	.READ_PORTS  ( 4        ),
 	.ZERO_KEEP   ( 0        )
-) regfile_inst (
+) fpu_regfile_inst (
 	.clk,
 	.rst,
 	.we    ( fpu_reg_we    ),
@@ -266,6 +266,7 @@ asic asic_inst(
 );
 `endif
 
+logic multicyc_stall;
 uint32_t multicyc_reg;
 uint64_t multicyc_hilo;
 multi_cycle_exec multi_cycle_exec_inst(
@@ -273,7 +274,7 @@ multi_cycle_exec multi_cycle_exec_inst(
 	.rst,
 	.flush     ( flush_ex          ),
 	.stall     ( stall_mm          ),
-	.stall_req ( stall_from_ex     ),
+	.stall_req ( multicyc_stall    ),
 	.request   ( pipeline_decode_d ),
 	.hilo_i    ( hilo_forward      ),
 	.hilo_o    ( multicyc_hilo     ),
@@ -284,6 +285,30 @@ multi_cycle_exec multi_cycle_exec_inst(
 	.cp0_rsel,
 	.cp0_raddr
 );
+
+`ifdef ENABLE_FPU
+	logic fpu_stall;
+	assign stall_from_ex = multicyc_stall | fpu_stall;
+`else 
+	assign stall_from_ex = multicyc_stall;
+`endif
+
+`ifdef ENABLE_FPU
+uint32_t fpu_exec_ret;
+fpu_fcsr_t fpu_exec_fcsr;
+fpu_except_t fpu_exec_except;
+fpu_exec fpu_exec_inst(
+	.clk,
+	.rst,
+	.flush     ( flush_ex          ),
+	.stall     ( stall_mm          ),
+	.stall_req ( fpu_stall         ),
+	.request   ( pipeline_decode_d ),
+	.reg_o     ( fpu_exec_ret      ),
+	.fcsr_o    ( fpu_exec_fcsr     ),
+	.except_o  ( fpu_exec_except   )
+);
+`endif
 
 for(genvar i = 0; i < `ISSUE_NUM; ++i) begin : gen_exec
 	instr_exec exec_inst (
@@ -302,6 +327,11 @@ for(genvar i = 0; i < `ISSUE_NUM; ++i) begin : gen_exec
 		.mmu_result  ( mmu_data_result[i]         ),
 		.is_usermode ( cp0_user_mode              ),
 		.cp0_rdata   ( cp0_rdata                  ),
+		`ifdef ENABLE_FPU
+			.fpu_result ( fpu_exec_ret    ),
+			.fpu_fcsr   ( fpu_exec_fcsr   ),
+			.fpu_except ( fpu_exec_except ),
+		`endif
 		`ifdef ENABLE_ASIC
 			.asic_rdata,
 		`endif
