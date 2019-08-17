@@ -964,12 +964,15 @@
         <spirit:language>SystemVerilog</spirit:language>
         <spirit:modelName>nontrivial_mips</spirit:modelName>
         <spirit:fileSetRef>
+          <spirit:localName>xilinx_anylanguagesynthesis_xilinx_com_ip_floating_point_7_1__ref_view_fileset</spirit:localName>
+        </spirit:fileSetRef>
+        <spirit:fileSetRef>
           <spirit:localName>xilinx_anylanguagesynthesis_view_fileset</spirit:localName>
         </spirit:fileSetRef>
         <spirit:parameters>
           <spirit:parameter>
             <spirit:name>viewChecksum</spirit:name>
-            <spirit:value>85803870</spirit:value>
+            <spirit:value>43ac625c</spirit:value>
           </spirit:parameter>
         </spirit:parameters>
       </spirit:view>
@@ -980,12 +983,15 @@
         <spirit:language>SystemVerilog</spirit:language>
         <spirit:modelName>nontrivial_mips</spirit:modelName>
         <spirit:fileSetRef>
+          <spirit:localName>xilinx_anylanguagebehavioralsimulation_xilinx_com_ip_floating_point_7_1__ref_view_fileset</spirit:localName>
+        </spirit:fileSetRef>
+        <spirit:fileSetRef>
           <spirit:localName>xilinx_anylanguagebehavioralsimulation_view_fileset</spirit:localName>
         </spirit:fileSetRef>
         <spirit:parameters>
           <spirit:parameter>
             <spirit:name>viewChecksum</spirit:name>
-            <spirit:value>85803870</spirit:value>
+            <spirit:value>43ac625c</spirit:value>
           </spirit:parameter>
         </spirit:parameters>
       </spirit:view>
@@ -999,7 +1005,7 @@
         <spirit:parameters>
           <spirit:parameter>
             <spirit:name>viewChecksum</spirit:name>
-            <spirit:value>e8b8c6b7</spirit:value>
+            <spirit:value>1911ddbc</spirit:value>
           </spirit:parameter>
         </spirit:parameters>
       </spirit:view>
@@ -2866,6 +2872,30 @@
     <spirit:fileSet>
       <spirit:name>xilinx_anylanguagesynthesis_view_fileset</spirit:name>
       <spirit:file>
+        <spirit:name>src/floating_point_int2float/floating_point_int2float.xci</spirit:name>
+        <spirit:userFileType>xci</spirit:userFileType>
+      </spirit:file>
+      <spirit:file>
+        <spirit:name>src/floating_point_compare/floating_point_compare.xci</spirit:name>
+        <spirit:userFileType>xci</spirit:userFileType>
+      </spirit:file>
+      <spirit:file>
+        <spirit:name>src/floating_point_sqrt/floating_point_sqrt.xci</spirit:name>
+        <spirit:userFileType>xci</spirit:userFileType>
+      </spirit:file>
+      <spirit:file>
+        <spirit:name>src/floating_point_divide/floating_point_divide.xci</spirit:name>
+        <spirit:userFileType>xci</spirit:userFileType>
+      </spirit:file>
+      <spirit:file>
+        <spirit:name>src/floating_point_multiply/floating_point_multiply.xci</spirit:name>
+        <spirit:userFileType>xci</spirit:userFileType>
+      </spirit:file>
+      <spirit:file>
+        <spirit:name>src/floating_point_addsub/floating_point_addsub.xci</spirit:name>
+        <spirit:userFileType>xci</spirit:userFileType>
+      </spirit:file>
+      <spirit:file>
         <spirit:name>../../../src/asic/aes/src/rtl/aes.v</spirit:name>
         <spirit:fileType>verilogSource</spirit:fileType>
       </spirit:file>
@@ -2994,6 +3024,18 @@
       </spirit:file>
       <spirit:file>
         <spirit:name>../../../src/utils/fifo_v3.sv</spirit:name>
+        <spirit:fileType>systemVerilogSource</spirit:fileType>
+      </spirit:file>
+      <spirit:file>
+        <spirit:name>../../../src/cpu/exec/float2int.sv</spirit:name>
+        <spirit:fileType>systemVerilogSource</spirit:fileType>
+      </spirit:file>
+      <spirit:file>
+        <spirit:name>../../../src/cpu/exec/fpu_exec.sv</spirit:name>
+        <spirit:fileType>systemVerilogSource</spirit:fileType>
+      </spirit:file>
+      <spirit:file>
+        <spirit:name>../../../src/cpu/decode/fpu_register_forward.sv</spirit:name>
         <spirit:fileType>systemVerilogSource</spirit:fileType>
       </spirit:file>
       <spirit:file>
@@ -3079,7 +3121,41 @@
       </spirit:file>
     </spirit:fileSet>
     <spirit:fileSet>
+      <spirit:name>xilinx_anylanguagesynthesis_xilinx_com_ip_floating_point_7_1__ref_view_fileset</spirit:name>
+      <spirit:vendorExtensions>
+        <xilinx:subCoreRef>
+          <xilinx:componentRef xilinx:vendor="xilinx.com" xilinx:library="ip" xilinx:name="floating_point" xilinx:version="7.1">
+            <xilinx:mode xilinx:name="create_mode"/>
+          </xilinx:componentRef>
+        </xilinx:subCoreRef>
+      </spirit:vendorExtensions>
+    </spirit:fileSet>
+    <spirit:fileSet>
       <spirit:name>xilinx_anylanguagebehavioralsimulation_view_fileset</spirit:name>
+      <spirit:file>
+        <spirit:name>src/floating_point_int2float/floating_point_int2float.xci</spirit:name>
+        <spirit:userFileType>xci</spirit:userFileType>
+      </spirit:file>
+      <spirit:file>
+        <spirit:name>src/floating_point_compare/floating_point_compare.xci</spirit:name>
+        <spirit:userFileType>xci</spirit:userFileType>
+      </spirit:file>
+      <spirit:file>
+        <spirit:name>src/floating_point_sqrt/floating_point_sqrt.xci</spirit:name>
+        <spirit:userFileType>xci</spirit:userFileType>
+      </spirit:file>
+      <spirit:file>
+        <spirit:name>src/floating_point_divide/floating_point_divide.xci</spirit:name>
+        <spirit:userFileType>xci</spirit:userFileType>
+      </spirit:file>
+      <spirit:file>
+        <spirit:name>src/floating_point_multiply/floating_point_multiply.xci</spirit:name>
+        <spirit:userFileType>xci</spirit:userFileType>
+      </spirit:file>
+      <spirit:file>
+        <spirit:name>src/floating_point_addsub/floating_point_addsub.xci</spirit:name>
+        <spirit:userFileType>xci</spirit:userFileType>
+      </spirit:file>
       <spirit:file>
         <spirit:name>../../../src/asic/aes/src/rtl/aes.v</spirit:name>
         <spirit:fileType>verilogSource</spirit:fileType>
@@ -3212,6 +3288,18 @@
         <spirit:fileType>systemVerilogSource</spirit:fileType>
       </spirit:file>
       <spirit:file>
+        <spirit:name>../../../src/cpu/exec/float2int.sv</spirit:name>
+        <spirit:fileType>systemVerilogSource</spirit:fileType>
+      </spirit:file>
+      <spirit:file>
+        <spirit:name>../../../src/cpu/exec/fpu_exec.sv</spirit:name>
+        <spirit:fileType>systemVerilogSource</spirit:fileType>
+      </spirit:file>
+      <spirit:file>
+        <spirit:name>../../../src/cpu/decode/fpu_register_forward.sv</spirit:name>
+        <spirit:fileType>systemVerilogSource</spirit:fileType>
+      </spirit:file>
+      <spirit:file>
         <spirit:name>../../../src/cpu/regs/hilo.sv</spirit:name>
         <spirit:fileType>systemVerilogSource</spirit:fileType>
       </spirit:file>
@@ -3293,6 +3381,16 @@
       </spirit:file>
     </spirit:fileSet>
     <spirit:fileSet>
+      <spirit:name>xilinx_anylanguagebehavioralsimulation_xilinx_com_ip_floating_point_7_1__ref_view_fileset</spirit:name>
+      <spirit:vendorExtensions>
+        <xilinx:subCoreRef>
+          <xilinx:componentRef xilinx:vendor="xilinx.com" xilinx:library="ip" xilinx:name="floating_point" xilinx:version="7.1">
+            <xilinx:mode xilinx:name="create_mode"/>
+          </xilinx:componentRef>
+        </xilinx:subCoreRef>
+      </spirit:vendorExtensions>
+    </spirit:fileSet>
+    <spirit:fileSet>
       <spirit:name>xilinx_testbench_view_fileset</spirit:name>
       <spirit:file>
         <spirit:name>../../../src/compile_options.svh</spirit:name>
@@ -3349,11 +3447,11 @@
         <xilinx:xpmLibrary>XPM_FIFO</xilinx:xpmLibrary>
         <xilinx:xpmLibrary>XPM_MEMORY</xilinx:xpmLibrary>
       </xilinx:xpmLibraries>
-      <xilinx:coreRevision>7</xilinx:coreRevision>
+      <xilinx:coreRevision>11</xilinx:coreRevision>
       <xilinx:upgrades>
         <xilinx:canUpgradeFrom>xilinx.com:user:nontrivial_mips:1.0</xilinx:canUpgradeFrom>
       </xilinx:upgrades>
-      <xilinx:coreCreationDateTime>2019-08-10T13:23:30Z</xilinx:coreCreationDateTime>
+      <xilinx:coreCreationDateTime>2019-08-17T14:56:49Z</xilinx:coreCreationDateTime>
       <xilinx:tags>
         <xilinx:tag xilinx:name="nopcore"/>
         <xilinx:tag xilinx:name="ui.data.coregen.dd@5c0e3ab_ARCHIVE_LOCATION">c:/Workspace/nontrivial-mips/src</xilinx:tag>
@@ -3428,13 +3526,179 @@
         <xilinx:tag xilinx:name="ui.data.coregen.dd@22eee4af_ARCHIVE_LOCATION">/home/harry/Workspace/nontrivial-mips/vivado/ip_repo/nontrivial_mips</xilinx:tag>
         <xilinx:tag xilinx:name="ui.data.coregen.dd@7134e539_ARCHIVE_LOCATION">/home/harry/Workspace/nontrivial-mips/vivado/ip_repo/nontrivial_mips</xilinx:tag>
         <xilinx:tag xilinx:name="ui.data.coregen.dd@2223b036_ARCHIVE_LOCATION">/home/harry/Workspace/nontrivial-mips/vivado/ip_repo/nontrivial_mips</xilinx:tag>
+        <xilinx:tag xilinx:name="ui.data.coregen.dd@7c5eed06_ARCHIVE_LOCATION">/home/oslab/nontrivial-mips/vivado/ip_repo/nontrivial_mips</xilinx:tag>
+        <xilinx:tag xilinx:name="ui.data.coregen.dd@661c0dfd_ARCHIVE_LOCATION">/home/oslab/nontrivial-mips/vivado/ip_repo/nontrivial_mips</xilinx:tag>
+        <xilinx:tag xilinx:name="ui.data.coregen.dd@726ffd64_ARCHIVE_LOCATION">/home/oslab/nontrivial-mips/vivado/ip_repo/nontrivial_mips</xilinx:tag>
+        <xilinx:tag xilinx:name="ui.data.coregen.dd@199940b7_ARCHIVE_LOCATION">/home/oslab/nontrivial-mips/vivado/ip_repo/nontrivial_mips</xilinx:tag>
+        <xilinx:tag xilinx:name="ui.data.coregen.dd@2d2e7405_ARCHIVE_LOCATION">/home/oslab/nontrivial-mips/vivado/ip_repo/nontrivial_mips</xilinx:tag>
+        <xilinx:tag xilinx:name="ui.data.coregen.dd@68d80488_ARCHIVE_LOCATION">/home/oslab/nontrivial-mips/vivado/ip_repo/nontrivial_mips</xilinx:tag>
+        <xilinx:tag xilinx:name="ui.data.coregen.dd@beb0bed_ARCHIVE_LOCATION">/home/oslab/nontrivial-mips/vivado/ip_repo/nontrivial_mips</xilinx:tag>
+        <xilinx:tag xilinx:name="ui.data.coregen.dd@3073dd0c_ARCHIVE_LOCATION">/home/oslab/nontrivial-mips/vivado/ip_repo/nontrivial_mips</xilinx:tag>
+        <xilinx:tag xilinx:name="ui.data.coregen.dd@4d608d67_ARCHIVE_LOCATION">/home/oslab/nontrivial-mips/vivado/ip_repo/nontrivial_mips</xilinx:tag>
+        <xilinx:tag xilinx:name="ui.data.coregen.dd@705ba22c_ARCHIVE_LOCATION">/home/oslab/nontrivial-mips/vivado/ip_repo/nontrivial_mips</xilinx:tag>
+        <xilinx:tag xilinx:name="ui.data.coregen.dd@7ff36b67_ARCHIVE_LOCATION">/home/oslab/nontrivial-mips/vivado/ip_repo/nontrivial_mips</xilinx:tag>
+        <xilinx:tag xilinx:name="ui.data.coregen.dd@6056ee03_ARCHIVE_LOCATION">/home/oslab/nontrivial-mips/vivado/ip_repo/nontrivial_mips</xilinx:tag>
+        <xilinx:tag xilinx:name="ui.data.coregen.dd@15dd7265_ARCHIVE_LOCATION">/home/oslab/nontrivial-mips/vivado/ip_repo/nontrivial_mips</xilinx:tag>
+        <xilinx:tag xilinx:name="ui.data.coregen.dd@5c77ce55_ARCHIVE_LOCATION">/home/oslab/nontrivial-mips/vivado/ip_repo/nontrivial_mips</xilinx:tag>
+        <xilinx:tag xilinx:name="ui.data.coregen.dd@5c0443c2_ARCHIVE_LOCATION">/home/oslab/nontrivial-mips/vivado/ip_repo/nontrivial_mips</xilinx:tag>
+        <xilinx:tag xilinx:name="ui.data.coregen.dd@77baa076_ARCHIVE_LOCATION">/home/oslab/nontrivial-mips/vivado/ip_repo/nontrivial_mips</xilinx:tag>
+        <xilinx:tag xilinx:name="ui.data.coregen.dd@7ec35bfa_ARCHIVE_LOCATION">/home/oslab/nontrivial-mips/vivado/ip_repo/nontrivial_mips</xilinx:tag>
+        <xilinx:tag xilinx:name="ui.data.coregen.dd@9a981cb_ARCHIVE_LOCATION">/home/oslab/nontrivial-mips/vivado/ip_repo/nontrivial_mips</xilinx:tag>
+        <xilinx:tag xilinx:name="ui.data.coregen.dd@53a4032a_ARCHIVE_LOCATION">/home/oslab/nontrivial-mips/vivado/ip_repo/nontrivial_mips</xilinx:tag>
+        <xilinx:tag xilinx:name="ui.data.coregen.dd@5fb9628d_ARCHIVE_LOCATION">/home/oslab/nontrivial-mips/vivado/ip_repo/nontrivial_mips</xilinx:tag>
+        <xilinx:tag xilinx:name="ui.data.coregen.dd@1f7b0e4_ARCHIVE_LOCATION">/home/oslab/nontrivial-mips/vivado/ip_repo/nontrivial_mips</xilinx:tag>
+        <xilinx:tag xilinx:name="ui.data.coregen.dd@23f55dd0_ARCHIVE_LOCATION">/home/oslab/nontrivial-mips/vivado/ip_repo/nontrivial_mips</xilinx:tag>
+        <xilinx:tag xilinx:name="ui.data.coregen.dd@aea384e_ARCHIVE_LOCATION">/home/oslab/nontrivial-mips/vivado/ip_repo/nontrivial_mips</xilinx:tag>
+        <xilinx:tag xilinx:name="ui.data.coregen.dd@51757e74_ARCHIVE_LOCATION">/home/oslab/nontrivial-mips/vivado/ip_repo/nontrivial_mips</xilinx:tag>
+        <xilinx:tag xilinx:name="ui.data.coregen.dd@11422449_ARCHIVE_LOCATION">/home/oslab/nontrivial-mips/vivado/ip_repo/nontrivial_mips</xilinx:tag>
+        <xilinx:tag xilinx:name="ui.data.coregen.dd@5e8d134_ARCHIVE_LOCATION">/home/oslab/nontrivial-mips/vivado/ip_repo/nontrivial_mips</xilinx:tag>
+        <xilinx:tag xilinx:name="ui.data.coregen.dd@ca0dd29_ARCHIVE_LOCATION">/home/oslab/nontrivial-mips/vivado/ip_repo/nontrivial_mips</xilinx:tag>
+        <xilinx:tag xilinx:name="ui.data.coregen.dd@471258cb_ARCHIVE_LOCATION">/home/oslab/nontrivial-mips/vivado/ip_repo/nontrivial_mips</xilinx:tag>
+        <xilinx:tag xilinx:name="ui.data.coregen.dd@92fee2_ARCHIVE_LOCATION">/home/oslab/nontrivial-mips/vivado/ip_repo/nontrivial_mips</xilinx:tag>
+        <xilinx:tag xilinx:name="ui.data.coregen.dd@1246706e_ARCHIVE_LOCATION">/home/oslab/nontrivial-mips/vivado/ip_repo/nontrivial_mips</xilinx:tag>
+        <xilinx:tag xilinx:name="ui.data.coregen.dd@57dd4d0e_ARCHIVE_LOCATION">/home/oslab/nontrivial-mips/vivado/ip_repo/nontrivial_mips</xilinx:tag>
+        <xilinx:tag xilinx:name="ui.data.coregen.dd@5f3e6a4_ARCHIVE_LOCATION">/home/oslab/nontrivial-mips/vivado/ip_repo/nontrivial_mips</xilinx:tag>
+        <xilinx:tag xilinx:name="ui.data.coregen.dd@692a79b5_ARCHIVE_LOCATION">/home/oslab/nontrivial-mips/vivado/ip_repo/nontrivial_mips</xilinx:tag>
+        <xilinx:tag xilinx:name="ui.data.coregen.dd@600622d5_ARCHIVE_LOCATION">/home/oslab/nontrivial-mips/vivado/ip_repo/nontrivial_mips</xilinx:tag>
+        <xilinx:tag xilinx:name="ui.data.coregen.dd@56ea8e90_ARCHIVE_LOCATION">/home/oslab/nontrivial-mips/vivado/ip_repo/nontrivial_mips</xilinx:tag>
+        <xilinx:tag xilinx:name="ui.data.coregen.dd@4f887014_ARCHIVE_LOCATION">/home/oslab/nontrivial-mips/vivado/ip_repo/nontrivial_mips</xilinx:tag>
+        <xilinx:tag xilinx:name="ui.data.coregen.dd@39fa330e_ARCHIVE_LOCATION">/home/oslab/nontrivial-mips/vivado/ip_repo/nontrivial_mips</xilinx:tag>
+        <xilinx:tag xilinx:name="ui.data.coregen.dd@694dcc5b_ARCHIVE_LOCATION">/home/oslab/nontrivial-mips/vivado/ip_repo/nontrivial_mips</xilinx:tag>
+        <xilinx:tag xilinx:name="ui.data.coregen.dd@6c631c73_ARCHIVE_LOCATION">/home/oslab/nontrivial-mips/vivado/ip_repo/nontrivial_mips</xilinx:tag>
+        <xilinx:tag xilinx:name="ui.data.coregen.dd@4a92439_ARCHIVE_LOCATION">/home/oslab/nontrivial-mips/vivado/ip_repo/nontrivial_mips</xilinx:tag>
+        <xilinx:tag xilinx:name="ui.data.coregen.dd@4ba75063_ARCHIVE_LOCATION">/home/oslab/nontrivial-mips/vivado/ip_repo/nontrivial_mips</xilinx:tag>
+        <xilinx:tag xilinx:name="ui.data.coregen.dd@69e32045_ARCHIVE_LOCATION">/home/oslab/nontrivial-mips/vivado/ip_repo/nontrivial_mips</xilinx:tag>
+        <xilinx:tag xilinx:name="ui.data.coregen.dd@269aa8fc_ARCHIVE_LOCATION">/home/oslab/nontrivial-mips/vivado/ip_repo/nontrivial_mips</xilinx:tag>
+        <xilinx:tag xilinx:name="ui.data.coregen.dd@71ff1a11_ARCHIVE_LOCATION">/home/oslab/nontrivial-mips/vivado/ip_repo/nontrivial_mips</xilinx:tag>
+        <xilinx:tag xilinx:name="ui.data.coregen.dd@7189810c_ARCHIVE_LOCATION">/home/oslab/nontrivial-mips/vivado/ip_repo/nontrivial_mips</xilinx:tag>
+        <xilinx:tag xilinx:name="ui.data.coregen.dd@184cb4c9_ARCHIVE_LOCATION">/home/oslab/nontrivial-mips/vivado/ip_repo/nontrivial_mips</xilinx:tag>
+        <xilinx:tag xilinx:name="ui.data.coregen.dd@631998c_ARCHIVE_LOCATION">/home/oslab/nontrivial-mips/vivado/ip_repo/nontrivial_mips</xilinx:tag>
+        <xilinx:tag xilinx:name="ui.data.coregen.dd@277fd9d3_ARCHIVE_LOCATION">/home/oslab/nontrivial-mips/vivado/ip_repo/nontrivial_mips</xilinx:tag>
+        <xilinx:tag xilinx:name="ui.data.coregen.dd@2c657806_ARCHIVE_LOCATION">/home/oslab/nontrivial-mips/vivado/ip_repo/nontrivial_mips</xilinx:tag>
+        <xilinx:tag xilinx:name="ui.data.coregen.dd@6bc835b4_ARCHIVE_LOCATION">/home/oslab/nontrivial-mips/vivado/ip_repo/nontrivial_mips</xilinx:tag>
+        <xilinx:tag xilinx:name="ui.data.coregen.dd@18f100c9_ARCHIVE_LOCATION">/home/oslab/nontrivial-mips/vivado/ip_repo/nontrivial_mips</xilinx:tag>
+        <xilinx:tag xilinx:name="ui.data.coregen.dd@6bdb0653_ARCHIVE_LOCATION">/home/oslab/nontrivial-mips/vivado/ip_repo/nontrivial_mips</xilinx:tag>
+        <xilinx:tag xilinx:name="ui.data.coregen.dd@5ede91a9_ARCHIVE_LOCATION">/home/oslab/nontrivial-mips/vivado/ip_repo/nontrivial_mips</xilinx:tag>
+        <xilinx:tag xilinx:name="ui.data.coregen.dd@48bd06c3_ARCHIVE_LOCATION">/home/oslab/nontrivial-mips/vivado/ip_repo/nontrivial_mips</xilinx:tag>
+        <xilinx:tag xilinx:name="ui.data.coregen.dd@32d1c512_ARCHIVE_LOCATION">/home/oslab/nontrivial-mips/vivado/ip_repo/nontrivial_mips</xilinx:tag>
+        <xilinx:tag xilinx:name="ui.data.coregen.dd@1d241365_ARCHIVE_LOCATION">/home/oslab/nontrivial-mips/vivado/ip_repo/nontrivial_mips</xilinx:tag>
+        <xilinx:tag xilinx:name="ui.data.coregen.dd@24ddd64d_ARCHIVE_LOCATION">/home/oslab/nontrivial-mips/vivado/ip_repo/nontrivial_mips</xilinx:tag>
+        <xilinx:tag xilinx:name="ui.data.coregen.dd@7b4dd47e_ARCHIVE_LOCATION">/home/oslab/nontrivial-mips/vivado/ip_repo/nontrivial_mips</xilinx:tag>
+        <xilinx:tag xilinx:name="ui.data.coregen.dd@5ba8fceb_ARCHIVE_LOCATION">/home/oslab/nontrivial-mips/vivado/ip_repo/nontrivial_mips</xilinx:tag>
+        <xilinx:tag xilinx:name="ui.data.coregen.dd@2fb73652_ARCHIVE_LOCATION">/home/oslab/nontrivial-mips/vivado/ip_repo/nontrivial_mips</xilinx:tag>
+        <xilinx:tag xilinx:name="ui.data.coregen.dd@5985ded9_ARCHIVE_LOCATION">/home/oslab/nontrivial-mips/vivado/ip_repo/nontrivial_mips</xilinx:tag>
+        <xilinx:tag xilinx:name="ui.data.coregen.dd@d9d3203_ARCHIVE_LOCATION">/home/oslab/nontrivial-mips/vivado/ip_repo/nontrivial_mips</xilinx:tag>
+        <xilinx:tag xilinx:name="ui.data.coregen.dd@576dd57c_ARCHIVE_LOCATION">/home/oslab/nontrivial-mips/vivado/ip_repo/nontrivial_mips</xilinx:tag>
+        <xilinx:tag xilinx:name="ui.data.coregen.dd@2ef741c2_ARCHIVE_LOCATION">/home/oslab/nontrivial-mips/vivado/ip_repo/nontrivial_mips</xilinx:tag>
+        <xilinx:tag xilinx:name="ui.data.coregen.dd@297061bf_ARCHIVE_LOCATION">/home/oslab/nontrivial-mips/vivado/ip_repo/nontrivial_mips</xilinx:tag>
+        <xilinx:tag xilinx:name="ui.data.coregen.dd@4611e84b_ARCHIVE_LOCATION">/home/oslab/nontrivial-mips/vivado/ip_repo/nontrivial_mips</xilinx:tag>
+        <xilinx:tag xilinx:name="ui.data.coregen.dd@238e405e_ARCHIVE_LOCATION">/home/oslab/nontrivial-mips/vivado/ip_repo/nontrivial_mips</xilinx:tag>
+        <xilinx:tag xilinx:name="ui.data.coregen.dd@9c5b0d5_ARCHIVE_LOCATION">/home/oslab/nontrivial-mips/vivado/ip_repo/nontrivial_mips</xilinx:tag>
+        <xilinx:tag xilinx:name="ui.data.coregen.dd@6ce501c5_ARCHIVE_LOCATION">/home/oslab/nontrivial-mips/vivado/ip_repo/nontrivial_mips</xilinx:tag>
+        <xilinx:tag xilinx:name="ui.data.coregen.dd@1ed5e855_ARCHIVE_LOCATION">/home/oslab/nontrivial-mips/vivado/ip_repo/nontrivial_mips</xilinx:tag>
+        <xilinx:tag xilinx:name="ui.data.coregen.dd@51383464_ARCHIVE_LOCATION">/home/oslab/nontrivial-mips/vivado/ip_repo/nontrivial_mips</xilinx:tag>
+        <xilinx:tag xilinx:name="ui.data.coregen.dd@47c66555_ARCHIVE_LOCATION">/home/oslab/nontrivial-mips/vivado/ip_repo/nontrivial_mips</xilinx:tag>
+        <xilinx:tag xilinx:name="ui.data.coregen.dd@75852ed6_ARCHIVE_LOCATION">/home/oslab/nontrivial-mips/vivado/ip_repo/nontrivial_mips</xilinx:tag>
+        <xilinx:tag xilinx:name="ui.data.coregen.dd@3987199_ARCHIVE_LOCATION">/home/oslab/nontrivial-mips/vivado/ip_repo/nontrivial_mips</xilinx:tag>
+        <xilinx:tag xilinx:name="ui.data.coregen.dd@6d7c319d_ARCHIVE_LOCATION">/home/oslab/nontrivial-mips/vivado/ip_repo/nontrivial_mips</xilinx:tag>
+        <xilinx:tag xilinx:name="ui.data.coregen.dd@312e603e_ARCHIVE_LOCATION">/home/oslab/nontrivial-mips/vivado/ip_repo/nontrivial_mips</xilinx:tag>
+        <xilinx:tag xilinx:name="ui.data.coregen.dd@620db7e_ARCHIVE_LOCATION">/home/oslab/nontrivial-mips/vivado/ip_repo/nontrivial_mips</xilinx:tag>
+        <xilinx:tag xilinx:name="ui.data.coregen.dd@4e3f085_ARCHIVE_LOCATION">/home/oslab/nontrivial-mips/vivado/ip_repo/nontrivial_mips</xilinx:tag>
+        <xilinx:tag xilinx:name="ui.data.coregen.dd@47fb62b3_ARCHIVE_LOCATION">/home/oslab/nontrivial-mips/vivado/ip_repo/nontrivial_mips</xilinx:tag>
+        <xilinx:tag xilinx:name="ui.data.coregen.dd@191abd18_ARCHIVE_LOCATION">/home/oslab/nontrivial-mips/vivado/ip_repo/nontrivial_mips</xilinx:tag>
+        <xilinx:tag xilinx:name="ui.data.coregen.dd@5fe18e49_ARCHIVE_LOCATION">/home/oslab/nontrivial-mips/vivado/ip_repo/nontrivial_mips</xilinx:tag>
+        <xilinx:tag xilinx:name="ui.data.coregen.dd@6dacb510_ARCHIVE_LOCATION">/home/oslab/nontrivial-mips/vivado/ip_repo/nontrivial_mips</xilinx:tag>
+        <xilinx:tag xilinx:name="ui.data.coregen.dd@64a64c0_ARCHIVE_LOCATION">/home/oslab/nontrivial-mips/vivado/ip_repo/nontrivial_mips</xilinx:tag>
+        <xilinx:tag xilinx:name="ui.data.coregen.dd@18738d57_ARCHIVE_LOCATION">/home/oslab/nontrivial-mips/vivado/ip_repo/nontrivial_mips</xilinx:tag>
+        <xilinx:tag xilinx:name="ui.data.coregen.dd@59222111_ARCHIVE_LOCATION">/home/oslab/nontrivial-mips/vivado/ip_repo/nontrivial_mips</xilinx:tag>
+        <xilinx:tag xilinx:name="ui.data.coregen.dd@56740f4c_ARCHIVE_LOCATION">/home/oslab/nontrivial-mips/vivado/ip_repo/nontrivial_mips</xilinx:tag>
+        <xilinx:tag xilinx:name="ui.data.coregen.dd@602703a9_ARCHIVE_LOCATION">/home/oslab/nontrivial-mips/vivado/ip_repo/nontrivial_mips</xilinx:tag>
+        <xilinx:tag xilinx:name="ui.data.coregen.dd@34b0bd42_ARCHIVE_LOCATION">/home/oslab/nontrivial-mips/vivado/ip_repo/nontrivial_mips</xilinx:tag>
+        <xilinx:tag xilinx:name="ui.data.coregen.dd@4cd486d6_ARCHIVE_LOCATION">/home/oslab/nontrivial-mips/vivado/ip_repo/nontrivial_mips</xilinx:tag>
+        <xilinx:tag xilinx:name="ui.data.coregen.dd@514cfa82_ARCHIVE_LOCATION">/home/oslab/nontrivial-mips/vivado/ip_repo/nontrivial_mips</xilinx:tag>
+        <xilinx:tag xilinx:name="ui.data.coregen.dd@78271ff3_ARCHIVE_LOCATION">/home/oslab/nontrivial-mips/vivado/ip_repo/nontrivial_mips</xilinx:tag>
+        <xilinx:tag xilinx:name="ui.data.coregen.dd@6c9a8506_ARCHIVE_LOCATION">/home/oslab/nontrivial-mips/vivado/ip_repo/nontrivial_mips</xilinx:tag>
+        <xilinx:tag xilinx:name="ui.data.coregen.dd@475b2b68_ARCHIVE_LOCATION">/home/oslab/nontrivial-mips/vivado/ip_repo/nontrivial_mips</xilinx:tag>
+        <xilinx:tag xilinx:name="ui.data.coregen.dd@44e841a4_ARCHIVE_LOCATION">/home/oslab/nontrivial-mips/vivado/ip_repo/nontrivial_mips</xilinx:tag>
+        <xilinx:tag xilinx:name="ui.data.coregen.dd@447ef03a_ARCHIVE_LOCATION">/home/oslab/nontrivial-mips/vivado/ip_repo/nontrivial_mips</xilinx:tag>
+        <xilinx:tag xilinx:name="ui.data.coregen.dd@7d7ab2f1_ARCHIVE_LOCATION">/home/oslab/nontrivial-mips/vivado/ip_repo/nontrivial_mips</xilinx:tag>
+        <xilinx:tag xilinx:name="ui.data.coregen.dd@30c2560e_ARCHIVE_LOCATION">/home/oslab/nontrivial-mips/vivado/ip_repo/nontrivial_mips</xilinx:tag>
+        <xilinx:tag xilinx:name="ui.data.coregen.dd@1675abef_ARCHIVE_LOCATION">/home/oslab/nontrivial-mips/vivado/ip_repo/nontrivial_mips</xilinx:tag>
+        <xilinx:tag xilinx:name="ui.data.coregen.dd@76514574_ARCHIVE_LOCATION">/home/oslab/nontrivial-mips/vivado/ip_repo/nontrivial_mips</xilinx:tag>
+        <xilinx:tag xilinx:name="ui.data.coregen.dd@4a7ab7d4_ARCHIVE_LOCATION">/home/oslab/nontrivial-mips/vivado/ip_repo/nontrivial_mips</xilinx:tag>
+        <xilinx:tag xilinx:name="ui.data.coregen.dd@67c0f837_ARCHIVE_LOCATION">/home/oslab/nontrivial-mips/vivado/ip_repo/nontrivial_mips</xilinx:tag>
+        <xilinx:tag xilinx:name="ui.data.coregen.dd@1aacc246_ARCHIVE_LOCATION">/home/oslab/nontrivial-mips/vivado/ip_repo/nontrivial_mips</xilinx:tag>
+        <xilinx:tag xilinx:name="ui.data.coregen.dd@7e138510_ARCHIVE_LOCATION">/home/oslab/nontrivial-mips/vivado/ip_repo/nontrivial_mips</xilinx:tag>
+        <xilinx:tag xilinx:name="ui.data.coregen.dd@3d65ba7b_ARCHIVE_LOCATION">/home/oslab/nontrivial-mips/vivado/ip_repo/nontrivial_mips</xilinx:tag>
+        <xilinx:tag xilinx:name="ui.data.coregen.dd@1dcef74a_ARCHIVE_LOCATION">/home/oslab/nontrivial-mips/vivado/ip_repo/nontrivial_mips</xilinx:tag>
+        <xilinx:tag xilinx:name="ui.data.coregen.dd@1a7f4179_ARCHIVE_LOCATION">/home/oslab/nontrivial-mips/vivado/ip_repo/nontrivial_mips</xilinx:tag>
+        <xilinx:tag xilinx:name="ui.data.coregen.dd@6782e0fd_ARCHIVE_LOCATION">/home/oslab/nontrivial-mips/vivado/ip_repo/nontrivial_mips</xilinx:tag>
+        <xilinx:tag xilinx:name="ui.data.coregen.dd@74e3c50a_ARCHIVE_LOCATION">/home/oslab/nontrivial-mips/vivado/ip_repo/nontrivial_mips</xilinx:tag>
+        <xilinx:tag xilinx:name="ui.data.coregen.dd@456cdbfa_ARCHIVE_LOCATION">/home/oslab/nontrivial-mips/vivado/ip_repo/nontrivial_mips</xilinx:tag>
+        <xilinx:tag xilinx:name="ui.data.coregen.dd@1e4d5f28_ARCHIVE_LOCATION">/home/oslab/nontrivial-mips/vivado/ip_repo/nontrivial_mips</xilinx:tag>
+        <xilinx:tag xilinx:name="ui.data.coregen.dd@2fd4f850_ARCHIVE_LOCATION">/home/oslab/nontrivial-mips/vivado/ip_repo/nontrivial_mips</xilinx:tag>
+        <xilinx:tag xilinx:name="ui.data.coregen.dd@3a870d44_ARCHIVE_LOCATION">/home/oslab/nontrivial-mips/vivado/ip_repo/nontrivial_mips</xilinx:tag>
+        <xilinx:tag xilinx:name="ui.data.coregen.dd@116e1236_ARCHIVE_LOCATION">/home/oslab/nontrivial-mips/vivado/ip_repo/nontrivial_mips</xilinx:tag>
+        <xilinx:tag xilinx:name="ui.data.coregen.dd@2a4f85cc_ARCHIVE_LOCATION">/home/oslab/nontrivial-mips/vivado/ip_repo/nontrivial_mips</xilinx:tag>
+        <xilinx:tag xilinx:name="ui.data.coregen.dd@46cfc60f_ARCHIVE_LOCATION">/home/oslab/nontrivial-mips/vivado/ip_repo/nontrivial_mips</xilinx:tag>
+        <xilinx:tag xilinx:name="ui.data.coregen.dd@340471c9_ARCHIVE_LOCATION">/home/oslab/nontrivial-mips/vivado/ip_repo/nontrivial_mips</xilinx:tag>
+        <xilinx:tag xilinx:name="ui.data.coregen.dd@5c572384_ARCHIVE_LOCATION">/home/oslab/nontrivial-mips/vivado/ip_repo/nontrivial_mips</xilinx:tag>
+        <xilinx:tag xilinx:name="ui.data.coregen.dd@3093716e_ARCHIVE_LOCATION">/home/oslab/nontrivial-mips/vivado/ip_repo/nontrivial_mips</xilinx:tag>
+        <xilinx:tag xilinx:name="ui.data.coregen.dd@1ca3b1b3_ARCHIVE_LOCATION">/home/oslab/nontrivial-mips/vivado/ip_repo/nontrivial_mips</xilinx:tag>
+        <xilinx:tag xilinx:name="ui.data.coregen.dd@7db057fb_ARCHIVE_LOCATION">/home/oslab/nontrivial-mips/vivado/ip_repo/nontrivial_mips</xilinx:tag>
+        <xilinx:tag xilinx:name="ui.data.coregen.dd@1405547e_ARCHIVE_LOCATION">/home/oslab/nontrivial-mips/vivado/ip_repo/nontrivial_mips</xilinx:tag>
+        <xilinx:tag xilinx:name="ui.data.coregen.dd@440d5438_ARCHIVE_LOCATION">/home/oslab/nontrivial-mips/vivado/ip_repo/nontrivial_mips</xilinx:tag>
+        <xilinx:tag xilinx:name="ui.data.coregen.dd@46afa89c_ARCHIVE_LOCATION">/home/oslab/nontrivial-mips/vivado/ip_repo/nontrivial_mips</xilinx:tag>
+        <xilinx:tag xilinx:name="ui.data.coregen.dd@116dcf60_ARCHIVE_LOCATION">/home/oslab/nontrivial-mips/vivado/ip_repo/nontrivial_mips</xilinx:tag>
+        <xilinx:tag xilinx:name="ui.data.coregen.dd@95fa2f2_ARCHIVE_LOCATION">/home/oslab/nontrivial-mips/vivado/ip_repo/nontrivial_mips</xilinx:tag>
+        <xilinx:tag xilinx:name="ui.data.coregen.dd@afdebfd_ARCHIVE_LOCATION">/home/oslab/nontrivial-mips/vivado/ip_repo/nontrivial_mips</xilinx:tag>
+        <xilinx:tag xilinx:name="ui.data.coregen.dd@3f8616fc_ARCHIVE_LOCATION">/home/oslab/nontrivial-mips/vivado/ip_repo/nontrivial_mips</xilinx:tag>
+        <xilinx:tag xilinx:name="ui.data.coregen.dd@5a1826d_ARCHIVE_LOCATION">/home/oslab/nontrivial-mips/vivado/ip_repo/nontrivial_mips</xilinx:tag>
+        <xilinx:tag xilinx:name="ui.data.coregen.dd@1c72b5d4_ARCHIVE_LOCATION">/home/oslab/nontrivial-mips/vivado/ip_repo/nontrivial_mips</xilinx:tag>
+        <xilinx:tag xilinx:name="ui.data.coregen.dd@14546008_ARCHIVE_LOCATION">/home/oslab/nontrivial-mips/vivado/ip_repo/nontrivial_mips</xilinx:tag>
+        <xilinx:tag xilinx:name="ui.data.coregen.dd@491a4118_ARCHIVE_LOCATION">/home/oslab/nontrivial-mips/vivado/ip_repo/nontrivial_mips</xilinx:tag>
+        <xilinx:tag xilinx:name="ui.data.coregen.dd@79a088ba_ARCHIVE_LOCATION">/home/oslab/nontrivial-mips/vivado/ip_repo/nontrivial_mips</xilinx:tag>
+        <xilinx:tag xilinx:name="ui.data.coregen.dd@2c16fe32_ARCHIVE_LOCATION">/home/oslab/nontrivial-mips/vivado/ip_repo/nontrivial_mips</xilinx:tag>
+        <xilinx:tag xilinx:name="ui.data.coregen.dd@5a865410_ARCHIVE_LOCATION">/home/oslab/nontrivial-mips/vivado/ip_repo/nontrivial_mips</xilinx:tag>
+        <xilinx:tag xilinx:name="ui.data.coregen.dd@d7b0135_ARCHIVE_LOCATION">/home/oslab/nontrivial-mips/vivado/ip_repo/nontrivial_mips</xilinx:tag>
+        <xilinx:tag xilinx:name="ui.data.coregen.dd@2bfcc30f_ARCHIVE_LOCATION">/home/oslab/nontrivial-mips/vivado/ip_repo/nontrivial_mips</xilinx:tag>
+        <xilinx:tag xilinx:name="ui.data.coregen.dd@5ae92eec_ARCHIVE_LOCATION">/home/oslab/nontrivial-mips/vivado/ip_repo/nontrivial_mips</xilinx:tag>
+        <xilinx:tag xilinx:name="ui.data.coregen.dd@125b0f1d_ARCHIVE_LOCATION">/home/oslab/nontrivial-mips/vivado/ip_repo/nontrivial_mips</xilinx:tag>
+        <xilinx:tag xilinx:name="ui.data.coregen.dd@1d6b10e0_ARCHIVE_LOCATION">/home/oslab/nontrivial-mips/vivado/ip_repo/nontrivial_mips</xilinx:tag>
+        <xilinx:tag xilinx:name="ui.data.coregen.dd@737f6e0e_ARCHIVE_LOCATION">/home/oslab/nontrivial-mips/vivado/ip_repo/nontrivial_mips</xilinx:tag>
+        <xilinx:tag xilinx:name="ui.data.coregen.dd@6e798ac2_ARCHIVE_LOCATION">/home/oslab/nontrivial-mips/vivado/ip_repo/nontrivial_mips</xilinx:tag>
+        <xilinx:tag xilinx:name="ui.data.coregen.dd@78afabab_ARCHIVE_LOCATION">/home/oslab/nontrivial-mips/vivado/ip_repo/nontrivial_mips</xilinx:tag>
+        <xilinx:tag xilinx:name="ui.data.coregen.dd@67caeb5c_ARCHIVE_LOCATION">/home/oslab/nontrivial-mips/vivado/ip_repo/nontrivial_mips</xilinx:tag>
+        <xilinx:tag xilinx:name="ui.data.coregen.dd@39cb9f67_ARCHIVE_LOCATION">/home/oslab/nontrivial-mips/vivado/ip_repo/nontrivial_mips</xilinx:tag>
+        <xilinx:tag xilinx:name="ui.data.coregen.dd@ed2d436_ARCHIVE_LOCATION">/home/oslab/nontrivial-mips/vivado/ip_repo/nontrivial_mips</xilinx:tag>
+        <xilinx:tag xilinx:name="ui.data.coregen.dd@5020b652_ARCHIVE_LOCATION">/home/oslab/nontrivial-mips/vivado/ip_repo/nontrivial_mips</xilinx:tag>
+        <xilinx:tag xilinx:name="ui.data.coregen.dd@41a9551a_ARCHIVE_LOCATION">/home/oslab/nontrivial-mips/vivado/ip_repo/nontrivial_mips</xilinx:tag>
+        <xilinx:tag xilinx:name="ui.data.coregen.dd@2f389530_ARCHIVE_LOCATION">/home/oslab/nontrivial-mips/vivado/ip_repo/nontrivial_mips</xilinx:tag>
+        <xilinx:tag xilinx:name="ui.data.coregen.dd@5fbffdec_ARCHIVE_LOCATION">/home/oslab/nontrivial-mips/vivado/ip_repo/nontrivial_mips</xilinx:tag>
+        <xilinx:tag xilinx:name="ui.data.coregen.dd@60aa72d9_ARCHIVE_LOCATION">/home/oslab/nontrivial-mips/vivado/ip_repo/nontrivial_mips</xilinx:tag>
+        <xilinx:tag xilinx:name="ui.data.coregen.dd@40115202_ARCHIVE_LOCATION">/home/oslab/nontrivial-mips/vivado/ip_repo/nontrivial_mips</xilinx:tag>
+        <xilinx:tag xilinx:name="ui.data.coregen.dd@2f8b262e_ARCHIVE_LOCATION">/home/oslab/nontrivial-mips/vivado/ip_repo/nontrivial_mips</xilinx:tag>
+        <xilinx:tag xilinx:name="ui.data.coregen.dd@56eeb50d_ARCHIVE_LOCATION">/home/oslab/nontrivial-mips/vivado/ip_repo/nontrivial_mips</xilinx:tag>
+        <xilinx:tag xilinx:name="ui.data.coregen.dd@767add3e_ARCHIVE_LOCATION">/home/oslab/nontrivial-mips/vivado/ip_repo/nontrivial_mips</xilinx:tag>
+        <xilinx:tag xilinx:name="ui.data.coregen.dd@50aa76aa_ARCHIVE_LOCATION">/home/oslab/nontrivial-mips/vivado/ip_repo/nontrivial_mips</xilinx:tag>
+        <xilinx:tag xilinx:name="ui.data.coregen.dd@7c1ff495_ARCHIVE_LOCATION">/home/oslab/nontrivial-mips/vivado/ip_repo/nontrivial_mips</xilinx:tag>
+        <xilinx:tag xilinx:name="ui.data.coregen.dd@198ab84e_ARCHIVE_LOCATION">/home/oslab/nontrivial-mips/vivado/ip_repo/nontrivial_mips</xilinx:tag>
+        <xilinx:tag xilinx:name="ui.data.coregen.dd@2f439746_ARCHIVE_LOCATION">/home/oslab/nontrivial-mips/vivado/ip_repo/nontrivial_mips</xilinx:tag>
+        <xilinx:tag xilinx:name="ui.data.coregen.dd@7cb2e115_ARCHIVE_LOCATION">/home/oslab/nontrivial-mips/vivado/ip_repo/nontrivial_mips</xilinx:tag>
+        <xilinx:tag xilinx:name="ui.data.coregen.dd@6acdcbd0_ARCHIVE_LOCATION">/home/oslab/nontrivial-mips/vivado/ip_repo/nontrivial_mips</xilinx:tag>
+        <xilinx:tag xilinx:name="ui.data.coregen.dd@487efe19_ARCHIVE_LOCATION">/home/oslab/nontrivial-mips/vivado/ip_repo/nontrivial_mips</xilinx:tag>
+        <xilinx:tag xilinx:name="ui.data.coregen.dd@50a00ce8_ARCHIVE_LOCATION">/home/oslab/nontrivial-mips/vivado/ip_repo/nontrivial_mips</xilinx:tag>
+        <xilinx:tag xilinx:name="ui.data.coregen.dd@80f5f04_ARCHIVE_LOCATION">/home/oslab/nontrivial-mips/vivado/ip_repo/nontrivial_mips</xilinx:tag>
+        <xilinx:tag xilinx:name="ui.data.coregen.dd@474d245a_ARCHIVE_LOCATION">/home/oslab/nontrivial-mips/vivado/ip_repo/nontrivial_mips</xilinx:tag>
+        <xilinx:tag xilinx:name="ui.data.coregen.dd@6ea9829_ARCHIVE_LOCATION">/home/oslab/nontrivial-mips/vivado/ip_repo/nontrivial_mips</xilinx:tag>
+        <xilinx:tag xilinx:name="ui.data.coregen.dd@4fd5e30f_ARCHIVE_LOCATION">/home/oslab/nontrivial-mips/vivado/ip_repo/nontrivial_mips</xilinx:tag>
       </xilinx:tags>
     </xilinx:coreExtensions>
     <xilinx:packagingInfo>
       <xilinx:xilinxVersion>2018.3</xilinx:xilinxVersion>
       <xilinx:checksum xilinx:scope="busInterfaces" xilinx:value="2c9b91ca"/>
       <xilinx:checksum xilinx:scope="addressSpaces" xilinx:value="12b10a3b"/>
-      <xilinx:checksum xilinx:scope="fileGroups" xilinx:value="1ad6aa69"/>
+      <xilinx:checksum xilinx:scope="fileGroups" xilinx:value="fdc74900"/>
       <xilinx:checksum xilinx:scope="ports" xilinx:value="a05f6ae2"/>
       <xilinx:checksum xilinx:scope="hdlParameters" xilinx:value="6c299f67"/>
       <xilinx:checksum xilinx:scope="parameters" xilinx:value="23d8dd2d"/>
