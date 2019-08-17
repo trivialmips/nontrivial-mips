@@ -328,9 +328,10 @@ for(genvar i = 0; i < `ISSUE_NUM; ++i) begin : gen_exec
 		.is_usermode ( cp0_user_mode              ),
 		.cp0_rdata   ( cp0_rdata                  ),
 		`ifdef ENABLE_FPU
-			.fpu_result ( fpu_exec_ret    ),
-			.fpu_fcsr   ( fpu_exec_fcsr   ),
-			.fpu_except ( fpu_exec_except ),
+			.fpu_valid  ( cp0_regs.status.cu1 ),
+			.fpu_result ( fpu_exec_ret        ),
+			.fpu_fcsr   ( fpu_exec_fcsr       ),
+			.fpu_except ( fpu_exec_except     ),
 		`endif
 		`ifdef ENABLE_ASIC
 			.asic_rdata,

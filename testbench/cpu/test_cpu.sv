@@ -64,6 +64,7 @@ string summary;
 
 task unittest_(
 	input string name,
+	input integer check_fpu,
 	input integer check_total_cycles
 );
 	integer i, fans, fmem, cycle, path_counter, mem_counter, last_write;
@@ -126,6 +127,11 @@ task unittest_(
 			last_write = pipe_wb[0].wdata;
 		end 
 
+		if(pipe_wb[0].fpu_req.we && check_fpu) begin
+			$sformat(out, "$f%0d=0x%x", pipe_wb[0].fpu_req.waddr, pipe_wb[0].fpu_req.wdata);
+			judge(fans, cycle, out);
+		end 
+
 		if(pipe_wb[0].hiloreq.we) begin
 			$sformat(out, "$hilo=0x%x", pipe_wb[0].hiloreq.wdata);
 			judge(fans, cycle, out);
@@ -140,6 +146,11 @@ task unittest_(
 			$sformat(out, "$%0d=0x%x", pipe_wb[1].rd, pipe_wb[1].wdata);
 			judge(fans, cycle, out);
 			last_write = pipe_wb[1].wdata;
+		end 
+
+		if(pipe_wb[1].fpu_req.we && check_fpu) begin
+			$sformat(out, "$f%0d=0x%x", pipe_wb[1].fpu_req.waddr, pipe_wb[1].fpu_req.wdata);
+			judge(fans, cycle, out);
 		end 
 
 		if(pipe_wb[1].hiloreq.we) begin
@@ -163,11 +174,15 @@ task unittest_(
 endtask
 
 task unittest(input string name);
-	unittest_(name, 0);
+	unittest_(name, 0, 0);
+endtask
+
+task unittest_fpu(input string name);
+	unittest_(name, 1, 0);
 endtask
 
 task unittest_cycle(input string name);
-	unittest_(name, 1);
+	unittest_(name, 0, 1);
 endtask
 
 initial
@@ -212,6 +227,12 @@ begin
 	unittest("across_tlb/4");
 	unittest("across_tlb/5");
 	unittest("across_tlb/6");
+	unittest("fpu/fpu_arith");
+	unittest("fpu/fpu_arith2");
+	unittest("fpu/fpu_compare");
+	unittest("fpu/fpu_transfer");
+	unittest_fpu("fpu/fpu_test2");
+	unittest("fpu/fpu_test3");
 	unittest("performance/loop");
 	unittest("performance/call_ras");
 	unittest("performance/call_ras_unaligned");

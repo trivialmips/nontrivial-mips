@@ -70,7 +70,7 @@ begin
 	if(rst || ~pipe_read)
 	begin
 		ibus.stall  = 1'b0;
-		ibus.rddata = 'x;
+		ibus.rddata = '0;
 	end else begin
 		ibus.stall  = (cache_miss | (|stall)) & fake_stall_en & ~ibus.flush_2;
 	end
