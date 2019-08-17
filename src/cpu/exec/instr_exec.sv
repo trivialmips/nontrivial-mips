@@ -92,12 +92,21 @@ end else begin: generate_disable_cloclz
 end endgenerate
 
 // conditional move
+`ifdef ENABLE_FPU
+logic fcc_match;
+assign fcc_match = data.fpu_fcsr.fcc[instr[20:18]] == instr[16];
+`endif
+
 `ifdef COMPILE_FULL_M
 always_comb begin
 	result.decoded = data.decoded;
 	if(op == OP_MOVZ && reg2 != '0
 		|| op == OP_MOVN && reg2 == '0)
 		result.decoded.rd = '0;
+	`ifdef ENABLE_FPU
+		if(op == OP_MOVCI && ~fcc_match)
+			result.decoded.rd = '0;
+	`endif
 end
 `else
 assign result.decoded = data.decoded;
@@ -142,6 +151,9 @@ always_comb begin
 		OP_CLO: exec_ret = clo_cnt;
 
 		/* move instructions */
+		`ifdef ENABLE_FPU
+			OP_MOVCI,
+		`endif
 		OP_MOVZ, OP_MOVN: exec_ret = reg1;
 		OP_MFHI: exec_ret = hilo_i[63:32];
 		OP_MFLO: exec_ret = hilo_i[31:0];
@@ -498,7 +510,6 @@ always_comb begin
 		endcase
 	end
 end
-
 /* resolve branch */
 branch_resolver branch_resolver_inst(
 	.en   ( ~data.decoded.delayed_exec ),
@@ -506,7 +517,7 @@ branch_resolver branch_resolver_inst(
 	.reg2,
 	.data,
 	`ifdef ENABLE_FPU
-	.fcc_match ( data.fpu_fcsr.fcc[instr[20:18]] == instr[16] ),
+	.fcc_match,
 	`endif
 	.resolved_branch
 );

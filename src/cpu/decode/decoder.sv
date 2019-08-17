@@ -136,6 +136,13 @@ always_comb begin
 				/* compare and set */
 				6'b101010: decoded_instr.op = OP_SLT;
 				6'b101011: decoded_instr.op = OP_SLTU;
+				`ifdef ENABLE_FPU
+				/* FPU conditional move */
+				6'b000001: begin
+					decoded_instr.op  = OP_MOVCI;
+					decoded_instr.rs2 = '0;
+				end
+				`endif
 				`ifdef COMPILE_FULL_M
 				/* trap */
 				6'b110000: decoded_instr.op = OP_TGE;
@@ -378,8 +385,14 @@ always_comb begin
 							decoded_instr.op = OP_FPU_MOV;
 							decoded_instr.is_fpu_multicyc = 1'b0;
 						end
-						6'b010001, 6'b01001?: begin
+						6'b010001: begin
 							decoded_instr.op = OP_FPU_CMOV;
+							decoded_instr.fs2 = '0;
+							decoded_instr.is_fpu_multicyc = 1'b0;
+						end
+						6'b01001?: begin
+							decoded_instr.op = OP_FPU_CMOV;
+							decoded_instr.rs2 = rt;
 							decoded_instr.fs2 = '0;
 							decoded_instr.is_fpu_multicyc = 1'b0;
 						end
