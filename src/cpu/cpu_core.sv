@@ -113,6 +113,43 @@ regfile #(
 	.rdata ( reg_rdata )
 );
 
+`ifdef ENABLE_FPU
+logic      [1:0] fpu_reg_we;
+uint32_t   [1:0] fpu_reg_wdata;
+reg_addr_t [1:0] fpu_reg_waddr;
+uint32_t   [3:0] fpu_reg_rdata;
+reg_addr_t [3:0] fpu_reg_raddr;
+logic [1:0] fcsr_we;
+fpu_fcsr_t [1:0] fcsr_wdata;
+fpu_fcsr_t fcsr_reg;
+
+regfile #(
+	.REG_NUM     ( `REG_NUM ),
+	.DATA_WIDTH  ( 32       ),
+	.WRITE_PORTS ( 2        ),
+	.READ_PORTS  ( 4        ),
+	.ZERO_KEEP   ( 0        )
+) regfile_inst (
+	.clk,
+	.rst,
+	.we    ( fpu_reg_we    ),
+	.wdata ( fpu_reg_wdata ),
+	.waddr ( fpu_reg_waddr ),
+	.raddr ( fpu_reg_raddr ),
+	.rdata ( fpu_reg_rdata )
+);
+
+always_ff @(posedge clk) begin
+	if(rst) begin
+		fcsr_reg <= '0;
+	end else if(fcsr_we[1]) begin
+		fcsr_reg <= fcsr_wdata[1];
+	end else if(fcsr_we[0]) begin
+		fcsr_reg <= fcsr_wdata[0];
+	end
+end
+`endif
+
 hilo hilo_inst(
 	.clk,
 	.rst,
@@ -175,6 +212,11 @@ decode_and_issue decode_issue_inst(
 	.pipeline_mem,
 	.pipeline_wb,
 	.pipeline_decode,
+	`ifdef ENABLE_FPU
+		.fcsr ( fcsr_reg ),
+		.fpu_reg_raddr,
+		.fpu_reg_rdata,
+	`endif
 	.reg_raddr    ( reg_raddr[3:0] ),
 	.reg_rdata    ( reg_rdata[3:0] ),
 	.stall_from_id
@@ -310,7 +352,7 @@ ll_bit llbit_inst(
 );
 
 except except_inst(
-	.rst,
+	.rst            ( rst | stall_mm     ),
 	.cp0_regs,
 	.pipe_mm        ( pipeline_exec_d    ),
 	.interrupt_req  ( pipe_interrupt_req ),
@@ -461,6 +503,13 @@ end
 for(genvar i = 0; i < `ISSUE_NUM; ++i) begin : gen_write_back
 	assign reg_waddr[i] = pipeline_wb[i].rd;
 	assign reg_wdata[i] = pipeline_wb[i].wdata;
+	`ifdef ENABLE_FPU
+	assign fcsr_we[i]       = pipeline_wb[i].fpu_req.fcsr_we;
+	assign fcsr_wdata[i]    = pipeline_wb[i].fpu_req.fcsr;
+	assign fpu_reg_we[i]    = pipeline_wb[i].fpu_req.we;
+	assign fpu_reg_waddr[i] = pipeline_wb[i].fpu_req.waddr;
+	assign fpu_reg_wdata[i] = pipeline_wb[i].fpu_req.wdata;
+	`endif
 end
 
 endmodule

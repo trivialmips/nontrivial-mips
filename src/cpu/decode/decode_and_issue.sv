@@ -7,7 +7,7 @@ module decode_and_issue(
 	input logic stall_ro,
 	input logic flush_ro,
 
-	input  logic	     delayslot_not_exec,
+	input  logic	         delayslot_not_exec,
 	input  fetch_entry_t     [`ISSUE_NUM-1:0] fetch_entry,
 	input  pipeline_exec_t   [`ISSUE_NUM-1:0] pipeline_exec,
 	input  pipeline_exec_t   [`DCACHE_PIPE_DEPTH-1:0][`ISSUE_NUM-1:0] pipeline_dcache,
@@ -17,6 +17,12 @@ module decode_and_issue(
 	output logic   [$clog2(`ISSUE_NUM+1)-1:0] issue_num,
 
 	output logic       stall_from_id,
+
+`ifdef ENABLE_FPU
+	input  fpu_fcsr_t  fcsr,
+	output reg_addr_t  [`ISSUE_NUM * 2 - 1:0] fpu_reg_raddr,
+	input  uint32_t    [`ISSUE_NUM * 2 - 1:0] fpu_reg_rdata,
+`endif
 
 	output reg_addr_t  [`ISSUE_NUM * 2 - 1:0] reg_raddr,
 	input  uint32_t    [`ISSUE_NUM * 2 - 1:0] reg_rdata
@@ -101,5 +107,31 @@ for(genvar i = 0; i < `ISSUE_NUM; ++i) begin : gen_ro
 	assign pipeline_decode[i].decoded = pipeline_issue_d[i].decoded;
 	assign pipeline_decode[i].valid   = pipeline_issue_d[i].valid;
 end
+
+/* Read FPU Operands */
+`ifdef ENABLE_FPU
+fpu_fcsr_t [1:0] fpu_fcsr;
+uint32_t [3:0] fpu_reg_forward;
+for(genvar i = 0; i < `ISSUE_NUM; ++i) begin : gen_ro_info_fpu
+	assign fpu_reg_raddr[i * 2]     = pipeline_issue_d[i].decoded.fs1;
+	assign fpu_reg_raddr[i * 2 + 1] = pipeline_issue_d[i].decoded.fs2;
+	fpu_register_forward reg_forward_inst(
+		.*, // forward from EX/D$/MM/WB
+		.decoded_instr ( pipeline_issue_d[i].decoded ),
+		.reg1_i        ( fpu_reg_rdata[i * 2]        ),
+		.reg2_i        ( fpu_reg_rdata[i * 2 + 1]    ),
+		.fcsr_i        ( fcsr                        ),
+		.reg1_o        ( fpu_reg_forward[i * 2]      ),
+		.reg2_o        ( fpu_reg_forward[i * 2 + 1]  ),
+		.fcsr_o        ( fpu_fcsr[i]                 )
+	);
+end
+
+for(genvar i = 0; i < `ISSUE_NUM; ++i) begin : gen_ro_fpu
+	assign pipeline_decode[i].reg1 = fpu_reg_forward[i * 2];
+	assign pipeline_decode[i].reg2 = fpu_reg_forward[i * 2 + 1];
+	assign pipeline_decode[i].fcsr = fpu_fcsr[i];
+end
+`endif
 
 endmodule

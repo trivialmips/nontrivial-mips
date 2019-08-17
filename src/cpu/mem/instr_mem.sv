@@ -47,7 +47,6 @@ begin
 	end
 end
 
-// TODO: support SC
 always_comb begin
 	result.rd    = data.decoded.rd;
 	result.wdata = data.result;
@@ -62,5 +61,13 @@ always_comb begin
 		endcase
 	end
 end
+
+`ifdef ENABLE_FPU
+always_comb begin
+	result.fpu_req = data.fpu_req;
+	if(data.decoded.op == OP_LWC1)
+		result.fpu_req.wdata = aligned_data_rd;
+end
+`endif
 
 endmodule

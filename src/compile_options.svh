@@ -22,6 +22,7 @@
 
 `ifdef COMPILE_FULL_M
 	`define ENABLE_ASIC
+	`define ENABLE_FPU
 `endif
 
 `define CPU_PERFORMANCE      1

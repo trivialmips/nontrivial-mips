@@ -114,6 +114,11 @@ localparam int IC_ASSOC       = `ICACHE_SET_ASSOC - 1;
 localparam int DC_SET_PER_WAY = $clog2(`DCACHE_SIZE / `DCACHE_SET_ASSOC / `DCACHE_LINE_WIDTH / 64);
 localparam int DC_LINE_SIZE   = $clog2(`DCACHE_LINE_WIDTH / 32) + 1;
 localparam int DC_ASSOC       = `DCACHE_SET_ASSOC - 1;
+`ifdef ENABLE_FPU
+localparam logic FPU_ENABLED  = 1'b1;
+`else
+localparam logic FPU_ENABLED  = 1'b0;
+`endif
 
 assign config1_default = {
 	1'b0,
@@ -124,7 +129,8 @@ assign config1_default = {
 	DC_SET_PER_WAY[2:0],
 	DC_LINE_SIZE[2:0],
 	DC_ASSOC[2:0],
-	7'd0
+	6'd0,
+	FPU_ENABLED
 };
 
 assign prid_default = {8'b0, 8'b1, 16'h8000};

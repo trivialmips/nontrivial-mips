@@ -23,6 +23,13 @@ assign rt        = instr[20:16];
 assign rd        = instr[15:11];
 assign funct     = instr[5:0];
 
+`ifdef ENABLE_FPU
+reg_addr_t fs, ft, fd;
+assign ft = inst[20:16];
+assign fs = inst[15:11];
+assign fd = inst[10:6];
+`endif
+
 logic is_branch, is_jump_i, is_jump_r, is_call, is_return;
 decode_branch branch_decoder_inst(
 	.*,
@@ -44,6 +51,12 @@ always_comb begin
 	decoded_instr.rs1        = '0;
 	decoded_instr.rs2        = '0;
 	decoded_instr.rd         = '0;
+	`ifdef ENABLE_FPU
+	decoded_instr.fs1        = '0;
+	decoded_instr.fs2        = '0;
+	decoded_instr.fd         = '0;
+	decoded_instr.fcsr_we    = 1'b0;
+	`endif
 	decoded_instr.op         = OP_SLL;
 	decoded_instr.use_imm    = 1'b0;
 	decoded_instr.imm_signed = 1'b1;
@@ -294,6 +307,90 @@ always_comb begin
 				default: decoded_instr.op = OP_INVALID;
 			endcase
 		end
+
+`ifdef ENABLE_FPU
+		6'b110001: begin
+			decoded_instr.op      = OP_LWC1
+			decoded_instr.rs1     = rs;
+			decoded_instr.fd      = ft;
+			decoded_instr.is_load = 1'b1;
+			decoded_instr.is_fpu  = 1'b1;
+		end
+		6'b111001: begin
+			decoded_instr.op       = OP_SWC1
+			decoded_instr.rs1      = rs;
+			decoded_instr.fs2      = ft;
+			decoded_instr.is_store = 1'b1;
+			decoded_instr.is_fpu   = 1'b1;
+		end
+		6'b010001: begin  // COP1
+			decoded_instr.is_fpu = 1'b1;
+			unique case(inst[25:21])
+				5'b00000: begin
+					decoded_instr.op  = OP_MFC1;
+					decoded_instr.rd  = rt;
+					decoded_instr.fs1 = inst[15:11];
+				end
+				5'b00010: begin
+					decoded_instr.op  = OP_CFC1;
+					decoded_instr.rd  = rt;
+				end
+				5'b00100: begin
+					decoded_instr.op  = OP_MTC1;
+					decoded_instr.rs1 = rt;
+					decoded_instr.fd  = inst[15:11];
+				end
+				5'b00110: begin
+					decoded_instr.op  = OP_CTC1;
+					decoded_instr.rs1 = rt;
+					decoded_instr.fcsr_we = 1'b1;
+				end
+				5'b10000: begin: // fmt = S
+					decoded_instr.fs1 = fs;
+					decoded_instr.fs2 = ft;
+					decoded_instr.fd  = fd;
+					decoded_instr.fcsr_we = 1'b1;
+					unique casez(inst[5:0])
+						6'b000000: decoded_instr.op = OP_FPU_ADD;
+						6'b000001: decoded_instr.op = OP_FPU_SUB;
+						6'b000010: decoded_instr.op = OP_FPU_MUL;
+						6'b000011: decoded_instr.op = OP_FPU_DIV;
+						6'b000100: decoded_instr.op = OP_FPU_SQRT;
+						6'b000101: decoded_instr.op = OP_FPU_ABS;
+						6'b000110: decoded_instr.op = OP_FPU_MOV;
+						6'b000111: decoded_instr.op = OP_FPU_NEG;
+						6'b001100: decoded_instr.op = OP_FPU_ROUND;
+						6'b001101: decoded_instr.op = OP_FPU_TRUNC;
+						6'b001110: decoded_instr.op = OP_FPU_CEIL;
+						6'b001111: decoded_instr.op = OP_FPU_FLOOR;
+						6'b100100: decoded_instr.op = OP_FPU_CVTW;
+						6'b010001, 6'b01001?: begin
+							decoded_instr.op = OP_FPU_CMOV;
+							decoded_instr.fs1 = fs;
+							decoded_instr.fs2 = '0;
+							decoded_instr.fd  = fd;
+						end
+						6'b11????: begin
+							decoded_instr.op = OP_FPU_COND;
+							decoded_instr.fd = '0;
+						end
+						default: decoded_instr.op = OP_INVALID;
+					endcase
+				end
+				5'b10100: begin: // fmt = W
+					decoded_instr.fs1 = fs;
+					decoded_instr.fs2 = ft;
+					decoded_instr.fd  = fd;
+					decoded_instr.fcsr_we = 1'b1;
+					unique casez(inst[5:0])
+						6'b100000: decoded_instr.op = OP_FPU_CVTS;
+						default:   decoded_instr.op = OP_INVALID;
+					endcase
+				end
+				default: decoded_instr.op = OP_INVALID;
+			endcase
+		end
+`endif
 
 `ifdef ENABLE_ASIC
 		6'b010010: begin // COP2

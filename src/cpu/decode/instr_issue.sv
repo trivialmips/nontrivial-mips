@@ -27,6 +27,17 @@ function logic is_load_related(
 	);
 endfunction
 
+`ifdef ENABLE_FPU
+function logic is_fpu_load_related(
+	input decoded_instr_t id,
+	input decoded_instr_t ex
+);
+	return ex.is_load & (
+	    ex.fd != '0 && (id.fs1 == ex.fd || id.fs2 == ex.fd)
+	);
+endfunction
+`endif
+
 function logic is_load_related_store(
 	input decoded_instr_t id,
 	input decoded_instr_t ex
@@ -59,7 +70,7 @@ logic instr2_not_taken;
 logic priv_executing, nonrw_priv_executing;
 logic [`ISSUE_NUM-1:0] instr_valid;
 logic [`ISSUE_NUM-1:0] ex_load_related, load_related, mem_access, data_delayed;
-logic [`ISSUE_NUM-1:0]allow_delayed;
+logic [`ISSUE_NUM-1:0] allow_delayed;
 
 for(genvar i = 0; i < `ISSUE_NUM; ++i) begin : gen_access
 	assign mem_access[i]    = id_decoded[i].is_load | id_decoded[i].is_store;
@@ -79,6 +90,24 @@ always_comb begin
 	end
 	data_delayed &= instr_valid;
 end
+
+`ifdef ENABLE_FPU
+logic [`ISSUE_NUM-1:0] fpu_load_related;
+always_comb begin
+	fpu_load_related = '0;
+	for(int i = 0; i < `ISSUE_NUM; ++i) begin
+		for(int j = 0; j < `ISSUE_NUM; ++j) begin
+			fpu_load_related[i] |= is_load_related(
+				id_decoded[i], ex_decoded[j]);
+			for(int k = 0; k < `DCACHE_PIPE_DEPTH - 1; ++k) begin
+				load_related[i] |= is_fpu_load_related(
+					id_decoded[i], dcache_decoded[k][j]);
+			end
+		end
+	end
+	fpu_load_related &= instr_valid;
+end
+`endif
 
 always_comb begin
 	load_related = '0;
@@ -153,6 +182,9 @@ assign instr2_not_taken = ~id_decoded[0].is_controlflow && (
    || (id_decoded[0].is_priv && id_decoded[1].is_priv)
    || (id_decoded[0].is_multicyc && id_decoded[1].is_multicyc)
    || (id_decoded[0].is_multicyc && hilo_read[1])
+   `ifdef ENABLE_FPU
+	   || (id_decoded[0].is_fpu && id_decoded[1].is_fpu)
+   `endif
    `ifdef ENABLE_ASIC
 	   || (id_decoded[0].op == OP_MFC2 || id_decoded[1].op == OP_MFC2)
 	   || (id_decoded[0].op == OP_MTC2 || id_decoded[1].op == OP_MTC2)
@@ -170,6 +202,10 @@ assign stall_req =
 	| (id_decoded[0].is_nonrw_priv && priv_executing) & `CPU_MUTEX_PRIV
 	| nonrw_priv_executing & `CPU_MUTEX_PRIV
 	| (ex_decoded[0].is_priv | ex_decoded[1].is_priv)
+   `ifdef ENABLE_FPU
+	   | fpu_load_related[0]
+	   | (fpu_load_related[1] & ~instr2_not_taken)
+   `endif
    `ifdef ENABLE_ASIC
 	   | (ex_decoded[0].op == OP_MTC2 && id_decoded[0].op == OP_MFC2)
    `endif

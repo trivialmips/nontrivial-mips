@@ -166,6 +166,19 @@ typedef enum logic [6:0] {
 	`ifdef ENABLE_ASIC
 		OP_MFC2, OP_MTC2,
 	`endif
+	/* FPU */
+	`ifdef ENABLE_FPU
+		OP_MFC1, OP_MTC1, OP_CFC1, OP_CTC1,
+		OP_BC1,
+		OP_MOVCI,
+		OP_LWC1, OP_SWC1,
+		OP_FPU_ADD, OP_FPU_SUB, OP_FPU_COND, OP_FPU_NEG,
+		OP_FPU_MUL, OP_FPU_DIV, OP_FPU_SQRT, OP_FPU_ABS,
+		OP_FPU_CVTW, OP_FPU_CVTS,
+		OP_FPU_TRUNC, OP_FPU_ROUND,
+		OP_FPU_CEIL, OP_FPU_FLOOR,
+		OP_FPU_MOV, OP_FPU_CMOV,
+	`endif
 	/* invalid */
 	OP_INVALID
 } oper_t;
@@ -175,6 +188,13 @@ typedef struct packed {
 	reg_addr_t   rs1;
 	reg_addr_t   rs2;
 	reg_addr_t   rd;
+	`ifdef ENABLE_FPU
+	reg_addr_t   fs1;
+	reg_addr_t   fs2;
+	reg_addr_t   fd;
+	logic        fcsr_we;
+	logic        is_fpu;
+	`endif
 	oper_t       op;
 	controlflow_t cf;       // controlflow type
 	virt_t default_jump_i;
@@ -189,6 +209,30 @@ typedef struct packed {
 	logic  is_multicyc;
 	logic  delayed_exec;
 } decoded_instr_t;
+
+typedef struct packed {
+	logic unimpl;  // only used by 'cause'
+	logic invalid;
+	logic divided_by_zero;
+	logic overflow;
+	logic underflow;
+	logic inexact;
+} fpu_except_t;
+
+typedef struct packed {
+	logic [7:0] fcc;
+	logic fs;
+	fpu_except_t cause, enables, flags;
+	logic [1:0] rm;
+} fpu_fcsr_t;
+
+typedef struct packed {
+	logic      fcsr_we;
+	fpu_fcsr_t fcsr;
+	logic      we;
+	reg_addr_t waddr;
+	uint32_t   wdata;
+} fpu_req_t;
 
 // fetched instruction
 typedef struct packed {
@@ -256,6 +300,11 @@ typedef struct packed {
 	logic            valid;
 	uint32_t         reg1;
 	uint32_t         reg2;
+`ifdef ENABLE_FPU
+	uint32_t         fpu_reg1;
+	uint32_t         fpu_reg2;
+	fpu_fcsr_t       fpu_fcsr;
+`endif
 	fetch_entry_t    fetch;
 	decoded_instr_t  decoded;
 } pipeline_decode_t;
@@ -275,6 +324,9 @@ typedef struct packed {
 	decoded_instr_t decoded;
 	tlb_request_t   tlbreq;
 	cp0_req_t       cp0_req;
+	`ifdef ENABLE_FPU
+		fpu_req_t fpu_req;
+	`endif
 	`ifdef ENABLE_ASIC
 		asic_req_t asic_req;
 	`endif
@@ -288,6 +340,9 @@ typedef struct packed {
 	reg_addr_t     rd;
 	uint32_t       wdata;
 	hilo_req_t     hiloreq;
+	`ifdef ENABLE_FPU
+		fpu_req_t fpu_req;
+	`endif
 } pipeline_memwb_t;
 
 // MMU/TLB
