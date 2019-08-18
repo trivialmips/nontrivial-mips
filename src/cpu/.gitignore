@@ -1,0 +1,16 @@
+ip/*/cmodel/
+ip/*/demo_tb/
+ip/*/doc/
+ip/*/*.dcp
+ip/*/*.veo
+ip/*/*.vho
+ip/*/*.xml
+ip/*/*.xdc
+ip/*/*.v
+ip/*/*.vhdl
+ip/*/*.v
+ip/*/*.vhdl
+ip/*/hdl/
+ip/*/sim/
+ip/*/synth/
+

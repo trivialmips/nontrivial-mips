@@ -202,6 +202,7 @@ decode_and_issue decode_issue_inst(
 	.clk,
 	.rst,
 	.stall_id,
+	.flush_id,
 	.stall_ro,
 	.flush_ro,
 	.fetch_entry  ( if_fetch_entry ),

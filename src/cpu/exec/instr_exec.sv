@@ -283,7 +283,15 @@ end
 uint32_t extended_imm, mem_wrdata;
 logic [3:0] mem_sel;
 assign extended_imm = { {16{instr[15]}}, instr[15:0] };
+`ifdef ENABLE_FPU
+always_comb begin
+	mmu_vaddr = reg1 + extended_imm;
+	if(op == OP_LDC1B || op == OP_SDC1B)
+		mmu_vaddr[2] = 1'b1;
+end
+`else
 assign mmu_vaddr = reg1 + extended_imm;
+`endif
 
 always_comb begin
 	result.memreq.invalidate_icache = icache_invalidate;
@@ -329,7 +337,7 @@ end
 always_comb begin
 	unique case(op)
 `ifdef ENABLE_FPU
-		OP_SWC1: begin
+		OP_SWC1, OP_SDC1A, OP_SDC1B: begin
 			mem_wrdata = data.fpu_reg2;
 			mem_sel = 4'b1111;
 		end
@@ -411,6 +419,8 @@ always_comb begin
 `endif
 	unique case(op)
 `ifdef ENABLE_FPU
+		OP_SDC1A, OP_LDC1A:
+			daddr_unaligned = |mmu_vaddr[2:0];
 		OP_SWC1, OP_LWC1,
 `endif
 		OP_LW, OP_LL, OP_SW, OP_SC:

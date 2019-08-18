@@ -4,6 +4,7 @@ module decode_and_issue(
 	input logic clk,
 	input logic rst,
 	input logic stall_id,
+	input logic flush_id,
 	input logic stall_ro,
 	input logic flush_ro,
 
@@ -31,7 +32,7 @@ module decode_and_issue(
 pipeline_decode_t [`ISSUE_NUM-1:0] pipeline_issue, pipeline_issue_d;
 decoded_instr_t [`ISSUE_NUM-1:0] ex_decoded, id_decoded;
 decoded_instr_t [`DCACHE_PIPE_DEPTH-1:0][`ISSUE_NUM-1:0] dcache_decoded;
-decoded_instr_t [`ISSUE_NUM-1:0] issue_instr;
+decoded_instr_t [`ISSUE_NUM-1:0] issue_instr, issue_instr_n;
 
 for(genvar i = 0; i < `ISSUE_NUM; ++i) begin : gen_decoder_info
 	assign id_decoded[i]        = fetch_entry[i].decoded;
@@ -41,24 +42,88 @@ for(genvar i = 0; i < `ISSUE_NUM; ++i) begin : gen_decoder_info
 	assign dcache_decoded[2][i] = pipeline_dcache[1][i].decoded;
 end
 
+logic stall_issue;
+logic [$clog2(`ISSUE_NUM+1)-1:0] issue_num_n;
+`ifdef ENABLE_FPU
+	always_comb begin
+		issue_num   = issue_num_n;
+		issue_instr = issue_instr_n;
+		stall_from_id = stall_issue;
+		if(pipeline_issue_d[0].decoded.op == OP_LDC1A) begin
+			issue_num   = '0;
+			issue_instr = '0;
+			issue_instr[0] = pipeline_issue_d[0].decoded;
+			issue_instr[0].op = OP_LDC1B;
+			issue_instr[0].fd += 1;
+			stall_from_id = 1'b0;
+		end
+		
+		if(pipeline_issue_d[1].decoded.op == OP_LDC1A) begin
+			issue_num   = '0;
+			issue_instr = '0;
+			issue_instr[0] = pipeline_issue_d[1].decoded;
+			issue_instr[0].op = OP_LDC1B;
+			issue_instr[0].fd += 1;
+			stall_from_id = 1'b0;
+		end
+		
+		if(pipeline_issue_d[0].decoded.op == OP_SDC1A) begin
+			issue_num   = '0;
+			issue_instr = '0;
+			issue_instr[0] = pipeline_issue_d[0].decoded;
+			issue_instr[0].op = OP_SDC1B;
+			issue_instr[0].fs2 += 1;
+			stall_from_id = 1'b0;
+		end
+		
+		if(pipeline_issue_d[1].decoded.op == OP_SDC1A) begin
+			issue_num   = '0;
+			issue_instr = '0;
+			issue_instr[0] = pipeline_issue_d[1].decoded;
+			issue_instr[0].op = OP_SDC1B;
+			issue_instr[0].fs2 += 1;
+			stall_from_id = 1'b0;
+		end
+	end
+
+	always_comb begin
+		for(int i = 0; i < `ISSUE_NUM; ++i) begin
+			pipeline_issue[i].fetch   = fetch_entry[i];
+			pipeline_issue[i].reg1    = '0;
+			pipeline_issue[i].reg2    = '0;
+			pipeline_issue[i].decoded = issue_instr[i];
+			pipeline_issue[i].valid   = (i < issue_num);
+		end
+
+		if(issue_instr[0].op == OP_SDC1B || issue_instr[0].op == OP_LDC1B) begin
+			pipeline_issue[0].valid = 1'b1;
+			if(pipeline_issue_d[0].decoded.op == OP_SDC1A || pipeline_issue_d[0].decoded.op == OP_LDC1A)
+				pipeline_issue[0].fetch = pipeline_issue_d[0].fetch;
+			else pipeline_issue[1].fetch = pipeline_issue_d[1].fetch;
+		end
+	end
+`else 
+	assign issue_num     = issue_num_n;
+	assign stall_from_id = stall_issue;
+	for(genvar i = 0; i < `ISSUE_NUM; ++i) begin : gen_issue
+		assign pipeline_issue[i].fetch   = fetch_entry[i];
+		assign pipeline_issue[i].reg1    = '0;
+		assign pipeline_issue[i].reg2    = '0;
+		assign pipeline_issue[i].decoded = issue_instr[i];
+		assign pipeline_issue[i].valid   = (i < issue_num);
+	end
+`endif
+
 instr_issue issue_inst(
 	.fetch_entry,
 	.id_decoded,
 	.ex_decoded,
 	.dcache_decoded,
 	.delayslot_not_exec,
-	.issue_instr,
-	.issue_num,
-	.stall_req  ( stall_from_id )
+	.issue_instr ( issue_instr_n ),
+	.issue_num   ( issue_num_n   ),
+	.stall_req   ( stall_issue   )
 );
-
-for(genvar i = 0; i < `ISSUE_NUM; ++i) begin : gen_issue
-	assign pipeline_issue[i].fetch   = fetch_entry[i];
-	assign pipeline_issue[i].reg1    = '0;
-	assign pipeline_issue[i].reg2    = '0;
-	assign pipeline_issue[i].decoded = issue_instr[i];
-	assign pipeline_issue[i].valid   = (i < issue_num);
-end
 
 /* Pipeline between IS and RO */
 always_ff @(posedge clk) begin

@@ -18,6 +18,9 @@ assign interrupt_occur = (
 	&& ~cp0_regs.status.erl
 	&& interrupt_req != 8'b0
 	&& (pipe_mm[0].valid || pipe_mm[1].valid)
+	`ifdef ENABLE_FPU
+		&& ~(pipe_mm[0].decoded.op == OP_LDC1B || pipe_mm[0].decoded.op == OP_SDC1B)
+	`endif
 );
 
 logic tlb_refill;

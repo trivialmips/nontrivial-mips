@@ -319,6 +319,21 @@ always_comb begin
 		end
 
 `ifdef ENABLE_FPU
+		6'b110101: begin
+			decoded_instr.op      = OP_LDC1A;
+			decoded_instr.rs1     = rs;
+			decoded_instr.fd      = ft;
+			decoded_instr.fpu_we  = 1'b1;
+			decoded_instr.is_load = 1'b1;
+			decoded_instr.is_fpu  = 1'b1;
+		end
+		6'b111101: begin
+			decoded_instr.op       = OP_SDC1A;
+			decoded_instr.rs1      = rs;
+			decoded_instr.fs2      = ft;
+			decoded_instr.is_store = 1'b1;
+			decoded_instr.is_fpu   = 1'b1;
+		end
 		6'b110001: begin
 			decoded_instr.op      = OP_LWC1;
 			decoded_instr.rs1     = rs;

@@ -65,7 +65,7 @@ end
 `ifdef ENABLE_FPU
 always_comb begin
 	result.fpu_req = data.fpu_req;
-	if(data.decoded.op == OP_LWC1)
+	if(data.decoded.op == OP_LWC1 || data.decoded.op == OP_LDC1A || data.decoded.op == OP_LDC1B)
 		result.fpu_req.wdata = aligned_data_rd;
 end
 `endif

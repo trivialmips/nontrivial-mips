@@ -32,7 +32,8 @@ function logic is_fpu_load_related(
 	input decoded_instr_t id,
 	input decoded_instr_t ex
 );
-	return ex.is_load & (id.fs1 == ex.fd || id.fs2 == ex.fd);
+	return ex.is_load & (id.fs1 == ex.fd || id.fs2 == ex.fd
+		|| id.op == OP_SDC1A && (id.fs1 + 1 == ex.fd || id.fs2 + 1 == ex.fd));
 endfunction
 `endif
 
@@ -182,6 +183,7 @@ assign instr2_not_taken = ~id_decoded[0].is_controlflow && (
    || (id_decoded[0].is_multicyc && hilo_read[1])
    `ifdef ENABLE_FPU
 	   || (id_decoded[0].is_fpu && id_decoded[1].is_fpu)
+	   || (id_decoded[0].op == OP_LDC1A || id_decoded[0].op == OP_SDC1A)
    `endif
    `ifdef ENABLE_ASIC
 	   || (id_decoded[0].op == OP_MFC2 || id_decoded[1].op == OP_MFC2)
