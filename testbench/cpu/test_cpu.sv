@@ -25,12 +25,12 @@ fake_dbus dbus_inst(.rst(sync_rst), .*);
 
 cpu_core core_inst(.rst(sync_rst), .*);
 
-logic mem_access_path1;
+logic mem_access_path1, mem_access_path10;
 pipeline_memwb_t [1:0] pipe_wb;
 pipeline_exec_t [1:0] pipe_exec_d;
 assign pipe_wb = core_inst.pipeline_wb;
-assign pipe_exec_d = core_inst.pipeline_dcache[1];
-assign mem_access_path1 = pipe_exec_d[0].memreq.read | pipe_exec_d[0].memreq.write;
+assign pipe_exec_d = core_inst.pipeline_dcache[2];
+assign mem_access_path10 = pipe_exec_d[0].memreq.read | pipe_exec_d[0].memreq.write;
 
 task judge(input integer fans, input integer cycle, input string out);
 	string ans;
@@ -52,6 +52,7 @@ always @(negedge clk) begin
 	dbus_we_delay   <= dbus_inst.pipe_write | dbus_inst.pipe_uncached_write;
 	dbus_addr_delay <= { dbus_inst.pipe_addr[15:2], 2'b0 };
 	dbus_data_delay <= dbus_inst.wrdata;
+	mem_access_path1 <= mem_access_path10;
 end
 
 logic post_stall;
@@ -231,6 +232,7 @@ begin
 	unittest("fpu/fpu_arith2");
 	unittest("fpu/fpu_compare");
 	unittest("fpu/fpu_transfer");
+	unittest("fpu/fpu_test1");
 	unittest_fpu("fpu/fpu_test2");
 	unittest("fpu/fpu_test3");
 	unittest("performance/loop");
