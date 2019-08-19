@@ -308,10 +308,6 @@ always_comb begin
 	result.memreq.paddr      = mmu_result.phy_addr;
 	result.memreq.wrdata     = mem_wrdata;
 	result.memreq.byteenable = mem_sel;
-`ifndef XILINX_SIMULATOR
-	if(~mmu_vaddr == `SIMU_ONLY_ADDR)
-		result.memreq = '0;
-`endif
 end
 
 uint32_t sw_reg2;
