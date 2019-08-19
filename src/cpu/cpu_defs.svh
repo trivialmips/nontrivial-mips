@@ -21,8 +21,6 @@
 `define EXCCODE_TR    5'h0d  // trap
 `define EXCCODE_FPE   5'h0f  // floating point exception
 
-`define SIMU_ONLY_ADDR 32'h4050_000f // used in simulation for debug purposes
-
 typedef logic [$clog2(`REG_NUM)-1:0] reg_addr_t;
 typedef logic [4:0] cpu_interrupt_t;
 
