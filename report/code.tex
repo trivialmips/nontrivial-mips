@@ -1,0 +1,305 @@
+\chapter{代码摘录}
+
+\section{TrivialBootloader 使用的链接脚本}
+\label{sec:linker-script}
+
+\begin{minted}{c}
+ENTRY(_start);
+
+MEMORY
+{
+    BOOTROM  (rx)  : ORIGIN = 0xBFC00000, LENGTH = 128K
+    OCM      (rwx) : ORIGIN = 0x88000000, LENGTH = 64K
+    RAM      (rwx) : ORIGIN = 0x80000000, LENGTH = 128M
+}
+
+#ifdef CODE_INTO_BOOTROM
+#define TEXT_AREA BOOTROM
+#define DATA_AREA OCM
+#else
+#define TEXT_AREA OCM
+#define DATA_AREA RAM
+#endif
+
+SECTIONS
+{
+    . = ORIGIN(TEXT_AREA);
+
+    _mem_start = ORIGIN(DATA_AREA);
+    _mem_end = ORIGIN(DATA_AREA) + LENGTH(DATA_AREA);
+
+#ifdef CODE_INTO_BOOTROM
+    _mem_avail_start = ORIGIN(RAM);
+    _mem_avail_end = ORIGIN(RAM) + LENGTH(RAM);
+#else
+    _mem_avail_start = _stack;
+    _mem_avail_end = ORIGIN(RAM) + LENGTH(RAM);
+#endif
+
+    .text :
+    {
+        _text = .;
+        *(.text.startup)
+        *(.text*)
+        *(.rodata*)
+        *(.reginfo)
+        *(.init)
+        *(.stub)
+        *(.gnu.warning)
+        *(.MIPS.abiflags)
+        _text_end = .;
+    } > TEXT_AREA
+
+    .data :
+    {
+        _data = .;
+        _stack = _data + LENGTH(DATA_AREA) - 32;
+        *(.data)
+        *(.data*)
+        *(.eh_frame)
+        _gp = ALIGN(16);  
+        *(.got.plt) *(.got)
+        *(.sdata) 
+        *(.lit8) 
+        *(.lit4)
+        _data_end = .;
+    } > DATA_AREA
+
+    .sbss : 
+    { 
+        *(.sbss)
+        *(.scommon)
+    } > DATA_AREA
+    
+    .bss :
+    {
+        _bss = .;
+        *(.dynbss)
+        *(.bss)
+        *(COMMON)
+        _bss_end = .;
+    } > DATA_AREA
+
+    /DISCARD/ :
+    {
+        *(.note*);
+        *(.iplt*);
+        *(.igot*);
+        *(.rel*);
+        *(.comment);
+    }
+}
+\end{minted}
+
+\section{扩展计算单元的寄存器读写}
+\label{sec:cp2-rw}
+\begin{minted}{c++}
+#define write_aes_register_bigendian(addr, variable)       \
+  asm volatile(".byte " #addr "\n"                        \
+               ".byte 0x81\n"                             \
+               ".byte 0b10000000+(%0-0x100)\n"            \
+               ".byte 0b01001000\n"                       \
+               :                                          \
+               : "r"(variable));
+
+#define read_aes_register_bigendian(addr, variable)       \
+  asm volatile(".byte " #addr "\n"                        \
+               ".byte 0x81\n"                             \
+               ".byte 0b00000000+(%0-0x100)\n"            \
+               ".byte 0b01001000\n"                       \
+               : "=r"(variable));
+
+#define write_aes_register(addr, variable)                \
+  asm volatile(".byte " #addr "\n"                        \
+               ".byte 0x01\n"                             \
+               ".byte 0b10000000+(%0-0x100)\n"            \
+               ".byte 0b01001000\n"                       \
+               :                                          \
+               : "r"(variable));
+
+#define read_aes_register(addr, variable)                 \
+  asm volatile(".byte " #addr "\n"                        \
+               ".byte 0x01\n"                             \
+               ".byte 0b00000000+(%0-0x100)\n"            \
+               ".byte 0b01001000\n"                       \
+               : "=r"(variable));
+\end{minted}
+
+\section{移植 Linux 使用的 DTS文件}
+\label{sec:trivialmips-dts}
+
+\begin{minted}{text}
+/dts-v1/;
+
+#include <dt-bindings/interrupt-controller/irq.h>
+
+/ {
+    compatible = "TrivialMIPS,NSCSCC";
+    #address-cells = <1>;
+    #size-cells = <1>;
+
+    chosen {
+        bootargs = "console=ttyS0,115200n8 console=tty1 rootfstype=squashfs root=/dev/mtdblock1";
+    };
+
+    aliases {
+            serial0 = &serial0;
+        };
+
+    cpus {
+        #address-cells = <1>;
+        #size-cells = <0>;
+        cpu@0 {
+            device_type = "cpu";
+            compatible = "mips,4Kc";
+            clocks = <&ext>;
+            reg = <0>;
+        };
+    };
+
+    ext: ext {
+        compatible = "fixed-clock";
+        clock-frequency = <80000000>;
+        #clock-cells = <0>;
+    };
+
+    memory {
+        device_type = "memory";
+        reg = <0x0 0x8000000>;
+    };
+
+    cpuintc: interrupt-controller@0 {
+        #address-cells = <0>;
+        #interrupt-cells = <1>;
+        interrupt-controller;
+        compatible = "mti,cpu-interrupt-controller";
+    };
+
+    soc {
+        compatible = "simple-bus";
+        #address-cells = <1>;
+        #size-cells = <1>;
+        #interrupt-cells = <1>;
+        ranges;
+
+        serial0: serial@1fd02000 {
+            device_type = "serial";
+            compatible = "ns16550a";
+            reg = <0x1fd02000 0x1000>;
+            reg-offset = <0x1000>;
+            reg-io-width = <4>;
+            reg-shift = <2>;
+            current-speed = <115200>;
+            clock-frequency = <100000000>;
+            interrupt-parent = <&cpuintc>;
+            interrupts = <2>;
+        };
+
+        lcd0: lcd@1c030000 {
+            compatible = "lcd,nt35510";
+            reg = <0x1c030000 0x1000>;
+        };
+
+        axi_quad_spi: spi@1c040000 {
+            #address-cells = <1>;
+            #size-cells = <0>;
+            compatible = "xlnx,xps-spi-2.00.a";
+            interrupt-parent = <&axi_intc_0>;
+            interrupts = <1>;
+            reg = <0x1c040000 0x10000>;
+            xlnx,num-ss-bits = <0x1>;
+            num-cs = <0x1>;
+            fifo-size = <256>;
+
+            flash@0 {
+                compatible = "mx25l25635f", "jedec,spi-nor";
+                reg = <0x0>;
+                spi-max-frequency = <30000000>;
+
+                spi-rx-bus-width = <4>;
+                m25p,fast-read;
+
+                partitions {
+                    compatible = "fixed-partitions";
+                    #address-cells = <1>;
+                    #size-cells = <1>;
+
+                    partition@10000 {
+                        label = "bootenv";
+                        reg = <0x10000 0x10000>;
+                    };
+                    partition@20000 {
+                        label = "rootfs";
+                        reg = <0x20000 0x1fe0000>;
+                    };
+                };
+            };
+        };
+
+        axi_intc_0: interrupt-controller@1d000000 {
+            #interrupt-cells = <1>;
+            compatible = "xlnx,xps-intc-1.00.a";
+            interrupt-controller;
+            interrupt-parent = <&cpuintc>;
+            interrupts = <6>;
+            reg = <0x1d000000 0x1000>;
+            xlnx,kind-of-intr = <0x15>;
+            xlnx,num-intr-inputs = <0x4>;
+        };
+
+        axi_ethernetlite: ethernet@1c000000 {
+            compatible = "xlnx,xps-ethernetlite-3.00.a";
+            device_type = "network";
+            mac-address = [19 98 00 01 00 29];
+            phy-handle = <&phy0>;
+            reg = <0x1c000000 0x10000>;
+            xlnx,duplex = <0x1>;
+            xlnx,include-global-buffers = <0x1>;
+            xlnx,include-internal-loopback = <0x0>;
+            xlnx,include-mdio = <0x1>;
+            xlnx,instance = "axi_ethernetlite_inst";
+            xlnx,rx-ping-pong = <0x1>;
+            xlnx,s-axi-id-width = <0x1>;
+            xlnx,tx-ping-pong = <0x1>;
+            xlnx,use-internal = <0x0>;
+            interrupt-parent = <&axi_intc_0>;
+            interrupts = <0>;
+            mdio {
+                #address-cells = <1>;
+                #size-cells = <0>;
+                phy0: phy@1 {
+                    device_type = "ethernet-phy";
+                    reg = <1>;
+                } ;
+            } ;
+        } ;
+
+        ps2: ps2@1c020000 {
+            compatible = "altr,ps2-1.0";
+            reg = <0x1c020000 0x1000>;
+            interrupt-parent = <&cpuintc>;
+            interrupts = <3>;
+        };
+
+        usb: usb@1c050000 {
+            compatible = "ue11-hcd";
+            reg = <0x1c050000 0x1000>;
+            interrupt-parent = <&axi_intc_0>;
+            interrupts = <3>;
+        };
+
+        axi_tft_0: axi_tft@1c010000 {
+            compatible = "xlnx,xps-tft-1.00.accl";
+            reg = <0x1c010000 0x1000>, // TFT controller
+                <0x1c060000 0x1000>, // framebuffer read
+                <0x1c070000 0x1000>, // framebuffer write
+                <0x1ff08000 0x4>; // video stream modifier control
+            xlnx,dcr-splb-slave-if = <0x1>;
+            resolution = <640 480>; // actual video size
+            virtual-resolution = <1024 480>; // framebuffersize
+            phys-size = <640 480>; // don't care (physical size of screen)
+        };
+
+    };
+};
+\end{minted}

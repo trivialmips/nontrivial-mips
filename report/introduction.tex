@@ -1,0 +1,144 @@
+\chapter{概述}
+
+\section{项目背景}
+
+本项目的成果是在龙芯提供的FPGA实验平台上设计并实现基于 MIPS 32 的CPU，并使用实验板上的周边硬件，成为一个片上系统（SOC）。其能够支持标准MIPS 32 Rev 1指令集的一个较完整子集和 MIPS 32 Rev 2指令集的部分功能，能够运行功能、性能测试，并能够运行 u-boot 引导器、uCore 操作系统、Linux 操作系统等。
+
+%在此之外，我们还完成了与编译原理的联合实验，能够运行 decaf 语言编写的程序。
+
+\section{项目概览}
+
+本项目计划设计和实现的部分主要包括：CPU、SoC设计、Bootloader、系统软件移植、自动化测试。项目使用的硬件语言为 SystemVerilog 2005。下面为各个部分的概览。
+
+\subsection{CPU}
+
+CPU 的设计包含指令集、流水线结构（微架构）、内存管理单元、异常处理机制、协处理器以及其他增强功能。
+
+\begin{description}
+
+    \item[指令集] 本项目的CPU实现的指令是 MIPS 32 Rev 1 指令集的一个较完整子集，包括了所有的算术逻辑指令、控制流指令和大部分特权指令（不包括与缓存有关的），覆盖了大赛要求需要的所有57条指令。MIPS 32 Rev 2 中的部分指令（如 CP0 中的 ebase 寄存器）由于被操作系统需要，也包含在实现中。
+    \item[流水线结构] 本项目实现了具有\textbf{10段动态流水线}结构的\textbf{超标量（双发射）}处理器：根据流水线上处理指令的不同，以及当前指令与之前指令的数据/访存相关的不同，流水线各个阶段的操作也将不同。大致来说，流水线的各个阶段可以分为取指、译码、发射、执行、访存/延迟执行和写回。其中取指和访存各有3个阶段，发射有2个阶段。由于访存延迟过长，访存相关的暂停对性能影响较大，我们允许某些指令的执行延迟到访存阶段，即允许在译码阶段操作数未准备好的时候就发射指令，在其后操作数准备好时再执行。为了更好地支持超标量，我们的取指单元较为独立，获取的指令会放入指令FIFO，同时其有一个分支预测器。取指单元在分支预测成功的情况下保证生成的指令流就是执行所需的指令流，这处理了延迟槽等机制。取指单元一个周期至多会放入FIFO三条指令。
+    \item[内存管理单元] 本项目实现了内存管理单元（MMU）以进行从虚拟地址到物理地址的映射，本项目的内存划分遵循 MIPS 32 标准，将使用转换检测缓冲区（TLB）以加速页表的查询，并对所有外设实现内存映射IO（MMIO）。
+    \item[异常处理机制] 本项目完整支持 MIPS 32 Rev 1的异常和中断机制，正确处理同步和异步异常，支持硬件和软件中断，并实现精确异常。
+    \item[协处理器] 本项目实现了 MIPS 32 Rev 1中为CP0处理器规定的几乎所有指令和寄存器，以正确运行操作系统。
+    \item[缓存系统] 本项目实现了指令和数据缓存以及 MIPS 32 Rev 1 中要求的缓存控制指令，加快取指和访存。
+    \item[增强功能] 本项目实现了一种可扩展的专用计算模块，它可以完成各类特殊的计算需求，例如密码学算法中的AES、SHA、MD5等。各个不同的计算单元通过统一的接口同CPU连接，计算单元通过其自身的寄存器与CPU交互。各类计算单元仅需要提供一个读写其自身寄存器的接口就可以直接接入CPU，具体和该模块的交互由软件通过MFC2和MTC2来完成。
+
+\end{description}
+
+\subsection{SoC设计}
+
+为了验证 CPU 的设计，并且使用实验箱上提供的硬件进行更多的功能演示，我们以 NonTrivialMIPS CPU 为核心搭建了一个 SoC (System-on-Chip)，具有以下模块：
+
+\begin{description}
+
+    \item[CPU] NonTrivialMIPS CPU （包含 Cache）
+    \item[DRAM支持] 使用板载 DDR3 SDRAM 作为主存
+    \item[额外存储] 板载 128KB BootROM 和 64KB RAM，用于初级引导程序
+    \item[Flash读写] 支持软件通过 SPI 协议读取 FPGA 配置 Flash、读写扩展 Flash
+    \item[串口] 16550 兼容的串口控制器，可调节波特率
+    \item[以太网] 使用 Xilinx IP 构建的以太网控制器，实现 100Mbps 通信
+    \item[GPIO] 使用龙芯 confreg 组件，软件控制 LED、数码管，读取开关、按键等状态
+    \item[图像输出] 实现标准的 VGA Framebuffer，并实现了DMA 硬件加速绘制；支持使用外置 NT35510 LCD 绘制图像
+    \item[PS/2] 支持 PS/2 键盘/鼠标输入
+    \item[USB] 使用板载 USB PHY 提供 USB 2.0 Full Speed 控制器支持，支持人体工程学设备（键鼠）、大容量存储（U盘）等不同类型的设备
+\end{description}
+
+\subsection{Bootloader}
+
+Bootloader用于引导操作系统，本项目中运行的 Bootloader分两个阶段，分别是自行编写的 TrivialBootloader 和移植的 U-Boot。前者是被固化在Bootrom中的程序，使用 C++ 边下，需要支持从Flash、SRAM、串口等多途径启动，提供任意地址转储等功能，负责基本的异常处理，并支持内存和外设的检查。而 U-Boot 是被TrivialBootloader加载的较复杂的引导程序，支持网络启动、Flash 启动、性能测试等高级功能，需要对源代码进行平台相关移植。
+
+
+\subsection{操作系统移植}
+
+我们在 SoC 上成功运行了 \texttt{uCore-thumips} 操作系统，并通过了其中的一系列测试。同时，我们将最新的 \texttt{Linux 5.2.8} 操作系统移植到实验板上，并成功运行；其能够使用 SoC 上的所有外设，包括串口、以太网、USB、图形输出等。我们在 Linux 上成功运行了大量用户态程序，包括 GNU 命令行工具、Xorg Server、Python 解释器等。
+
+% 我们在板上系统上成功运行了 \texttt{uCore-thumips} 操作系统，包括进行一些平台相关的改动，以及正确实现CPU的各项功能（尤其是MMU相关模块）、正确与外设进行通信。为了演示本项目的成果，我们还在操作系统上编写了数个用户态程序，并移植 USB 键盘驱动到内核。同时，我们也为 decaf 编译器后端编写了对应的链接库，以使其编译出的 MIPS 汇编能够正常在我们的平台上运行，并支持输入、输出等功能。
+
+% \todo
+
+\subsection{自动化测试与部署}
+
+本项目还使用了基于GitLab CI的自动化综合、测试、部署系统，包括以下的功能：
+
+\begin{itemize}
+
+    \item 项目需求、设计等文档的自动编译
+    \item 基于事先撰写的 testbench 自动对CPU、外设和整个板上系统运行RTL仿真
+    \item 自动调用 Vivado 生成 Bitstream 文件，并缓存可复用的中间结果
+    \item 所有相应软件的自动编译，使用 QEMU 对操作系统进行测试
+    \item 使用在线实验平台 SDK，在真实环境中运行性能、功能测试和操作系统，并提取数据进行分析和报告
+
+\end{itemize}
+
+\section{名词解释}
+
+表\ref{table:abbreviation_definition}中是本项目中可能用到的一些名词缩写及它们的解释，以后本项目相关的文档中将不加解释地使用这些缩写。
+
+\begin{table}[!htbp]
+    \centering
+    \caption{名词缩写和解释}
+    \label{table:abbreviation_definition}
+    
+    \begin{tabular}{|l|l|l|}
+    \hline
+    \multicolumn{1}{|c|}{\textbf{缩写}} & \multicolumn{1}{c|}{\textbf{全称}}                   & \multicolumn{1}{c|}{\textbf{含义}} \\ \hline
+    MIPS                              & Microprocessor without Interlocked Pipeline Stages & 无内部互锁流水级的微处理器                    \\ \hline
+    CPU                               & Central Processing Unit                            & 中央处理器                            \\ \hline
+    FPU                               & Floating Point Unit                                & 浮点处理器                            \\ \hline
+    CP0/1                             & Co-Processor 0/1                                   & 协处理器 0/1                         \\ \hline
+    ALU                               & Arithmetic Logic Unit                              & 算术逻辑单元                           \\ \hline
+    MMU                               & Memory Management Unit                             & 内存管理单元                           \\ \hline
+    TLB                               & Translation Lookaside Buffer                       & 旁路快表缓冲                           \\ \hline
+    PA/VA                             & Physical/Virtual Address                           & 物理/虚拟地址                          \\ \hline
+    ROM                               & Read Only Memory                                   & 只读存储器                            \\ \hline
+    (D)RAM                            & (Dynamic) Random Access Memory                     & （动态）随机访问存储器                      \\ \hline
+    UART                              & Universal Asynchronous Receiver-Transmitter        & 通用异步接收器-发射器                      \\ \hline
+    GPIO                              & General-Purpose Input/Output                       & 通用目的输入/输出                        \\ \hline
+    MMIO                              & Memory Mapped Input/Output                         & 内存映射输入/输出                        \\ \hline
+    USB                               & Universal Serial Bus                               & 通用串行总线                        \\ \hline
+    SOC                               & System On a Chip                                   & 片上系统                             \\ \hline
+    \end{tabular}
+\end{table}
+
+\section{开发平台}
+
+\subsection{硬件平台}
+
+本项目使用的硬件平台为龙芯FPGA实验箱，其主要部件为Xilinx的Artix 7系列FPGA，型号为xc7a200t，包含外部器件：
+
+\begin{description}
+    \item[DRAM] 128MB DDR3 SDRAM 
+    \item[NOR Flash (CFG)] 16MB
+    \item[NOR Flash (SPI)] 32MB
+    \item[VGA 接口] RGB输出，各 4 bit 
+    \item[以太网接口] DM9161 100Mbps Ethernet PHY 
+    \item[其他接口] 标准 RS232 串口、PS/2 接口、USB PHY
+    \item[显示屏] NT35510 LCD，分辨率 800 $\times$ 480
+    \item[GPIO] 数码管 $\times$  8，LED $\times$  26，拨码开关 $\times$ 8，按键 $\times$ 19
+\end{description}
+
+\subsection{软件平台}
+\label{section:software_platform}
+
+本项目使用 GitLab-CI 进行自动化集成和测试，借助Docker保证运行结果可复现。
+
+\begin{description}
+    \item[开发IDE] Xilinx Vivado 2018.3 Web HL Edition
+    \item[CI系统] Ubuntu 18.04.1
+    \item[编译器套件] cross-mipsel-linux-gnu-binutils 2.32-1, cross-mipsel-linux-gnu-gcc 9.1.0-1 (AUR)
+\end{description}
+
+\section{参考资料}
+
+本项目的设计、开发过程需要参考包括且不限于下面列出的书籍、文献和资料：
+\begin{itemize}
+    \item \textit{计算机组成与设计: 硬件/软件接口.} David A.Patterson
+    \item \textit{See MIPS Run Linux.} Dominic Sweetman
+    \item \textit{自己动手写CPU.} 雷思磊
+    \item \textit{MIPS® Architecture For Programmers I, II, III.} Imagination Technologies LTD.
+    \item \textit{Vivado使用误区与进阶.} Ally Zhou
+    \item \textit{NaiveMIPS 设计文档.} 张宇翔，王邈，刘家昌
+    \item \textit{32-bits MIPS CPU 设计文档.} 谢磊，李北辰
+    \item \textit{各外设使用手册.} 相关厂商
+\end{itemize}

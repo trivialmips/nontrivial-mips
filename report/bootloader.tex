@@ -1,0 +1,94 @@
+\chapter{引导程序（Bootloader）}
+
+\section{第一阶段：TrivialBootloader}
+
+作为板上系统的一部分，BootROM 中包含了系统每次上电或重置时都会首先执行的代码，起始物理地址为 \texttt{0x1FC00000}。由于这部分程序是固化在FPGA中的，为了节约有限的板载存储，Bootrom中的代码不能太大。因此，有必要撰写一个较小的Bootloader来进行初步的系统初始化和加载工作，将其命名为TrivialBootloader。
+
+\subsection{汇编部分}
+
+作为程序入口，在跳转到高级语言编写的代码之前，需要先使用汇编语言设置一些基本参数，如栈基址（\texttt{sp}）寄存器和异常处理入口等。具体地，汇编部分具有如下功能：
+
+\begin{itemize}
+    \item 系统的全局初始化，设置\texttt{sp, gp}寄存器，跳转到实际代码入口
+    \item C++代码退出后的清理与提示
+    \item 启用异常处理并设置异常向量
+\end{itemize}
+
+其中实际代码入口为 \texttt{\_main} 符号，\texttt{sp, gp}寄存器被分别设置到\texttt{\_stack, \_gp} 符号。而异常处理会跳转到 \texttt{\_exception\_handler} 符号。这些符号需要在链接时被填充。
+
+\subsection{高级语言部分}
+
+高级语言部分也分为两个C与C++两个子部分。C编写的部分主要用于提供 \texttt{\_main} 函数和 \texttt{\_exception\_handler}函数。前者具有打印欢迎信息、清零 BSS 段、执行 \texttt{main} 函数、打印返回值等功能，后者负责处理异常，从CP0中收集异常原因、异常地址等信息，以友好的方式打印出来。
+
+C++部分是Bootloader的主体，也也是真正的 \texttt{main} 函数实现位置，其具有的功能包括：
+
+\begin{description}
+    \item[内存检测] 通过不同块大小随机读写检测内存硬件与实现是否存在问题
+    \item[ELF启动] 支持从非易失存储（Flash）中读取合法的ELF文件头，正确地将其复制到内存的相应位置并跳转
+    \item[直接启动] 支持直接跳转到内存（\texttt{0x8000000}）、片上内存（\texttt{0x8800000}）入口点启动，便于系统移植时的调试工作
+    \item[串口旁加载] 支持从串口直接向内存中加载数据和指令，并跳转到指定的位置启动
+    \item[内存转储] 支持将指定的内存区域的数据转储到串口输出
+    \item[异常处理] 正确处理各种操作异常、非法情况（如没有选择启动模式、内存检测失败、要复制到内存的数据覆盖了Bootloader本身的代码），在发生异常时通过串口、LED等多种途径给出友好可读的提示
+\end{description}
+
+考虑到指令和数据 Cache 的存在可能会引发数据不一致，TrivialBootloader 在拷贝代码前将通过 CP0 \texttt{Config0} 寄存器中相应位关闭 \texttt{kseg0} 段的全部缓存，并在跳转到外部代码前再打开缓存。通过这一简单的处理，能够保证在执行前代码已经被全部写入到相应存储器中。
+
+作为功能举例，在引导Flash中操作系统的 ELF 文件时，Bootloader输出为（没有启用内存检查）：
+\begin{minted}{text}
+*****TrivialMIPS Bare Metal System*****
+Compilation time: 19:37:09 Jul 25 2019
+=====Entering TrivialBootloader=====
+Bootloader used memory: from 0x88000000 to 0x88010000
+Mode: Boot
+Device: SPI Flash
+Valid ELF file found, will now copy to RAM.
+Copying 24 bytes from offset 0x19480 to address 0x80019400
+Copying 2159744 bytes from offset 0x80 to address 0x80000000
+Booting from address 0x80000000...
+=====Exiting TrivialBootloader=====
+\end{minted}
+
+\subsection{链接脚本}
+
+由于Bootloader可能被放置在不同位置，此时其本身可用的内存空间（作为栈）以及加载基址是不同的。因此，我们编写了如下的链接脚本。可以看到，我们将内存划分为高低两片，根据代码生成的位置选择不同的区域放置栈代码段和数据段。此外，可用内存范围、BSS段范围、需要检查的内存范围等都是由链接器提供的符号。其可以通过编译时定义不同的常量进行预处理，从而为高级语言提供关于平台的信息，灵活地适应多种要求。
+
+附录 \ref{sec:linker-script} 中包含了当前使用的链接脚本。
+
+\section{第二阶段：U-Boot}
+
+\subsection{背景}
+U-Boot是一个启动引导程序，常见于嵌入式系统中，用于引导Linux等操作系统。通过运行U-Boot引导程序，可以支持从Flash、U盘、网络等来源加载uCore、Linux系统镜像到内存并进行引导。由于U-Boot本身有较强的命令行功能和交互能力，它也可以作为一个硬件测试与演示的工具。在本系统的设计中，U-Boot将作为二级引导程序，放置在Flash中，被TrivialBootloader所加载。
+
+\subsection{硬件需求}
+
+U-Boot对CPU的功能要求较低，它不使用MIPS的中断和TLB机制，因此硬件可以不需要实现这些机制。对于其它的异常，仅仅在程序运行不正常时才会发生，如果假定程序能正常运行，对异常处理也没有要求。
+
+作为功能丰富的引导程序，其将用到 SPI Flash、网络等外设。其中，网络控制器的正常工作是至关重要的，否则片上系统将失去从外部加载系统的功能。
+
+\subsection{编译方法}
+
+U-Boot可以直接使用\ref{section:software_platform}节中给出的编译器套件进行编译和调试。具体地，只需要从 \url{https://github.com/Harry-Chen/u-boot-trivialmips} 下载源代码，并运行下列命令：
+
+\begin{minted}{bash}
+make CROSS_COMPILE=mipsel-linux-gnu- nontrivialmips_thinpad_defconfig
+make CROSS_COMPILE=mipsel-linux-gnu-
+mipsel-linux-gnu-strip u-boot
+\end{minted}
+
+执行完后，即可生成最终的 ELF 可执行文件 \texttt{u-boot}，将其写入配置 Flash 的 bitstream 之后的位置，并正确配置 TrivialBootloader 中的 Flash 镜像起始地址，即可被自动加载。
+
+\subsection{移植内容}
+
+U-Boot 与 Linux 内核源码的组织架构类似，也都采用了\texttt{DTS}（设备树源码）来描述设备，因此移植方法也比较类似。主要的移植工作主要分为两部分，一部分是添加CPU相关的SoC支持，一部分是添加板级支持。
+
+由于之前的类似项目已经有了完成度较高的工作\footnote{\url{https://github.com/z4yx/u-boot-naivemips/}}，本项目在其基础上进一步进行修改。主要的工作有：
+
+\begin{itemize}
+    \item 更新到 U-Boot v2019.7 版本
+    \item 启用串口控制器驱动（包括系统启动早期和后期两个部分）
+    \item 添加定时器读取功能，准确反映运行时间
+    \item 编写 DTS 格式设备描述以准确反映SoC片上设备资源，加载相应驱动（包括网络、Flash等）
+    \item 利用\texttt{bootmenu}命令，增加启动菜单，提供引导至 uCore/Linux 操作系统、通过 DHCP/TFTP 协议网络引导、进入 U-Boot 控制台等选项
+    \item 调整 U-Boot 编译选项，将 Flash 管理、网络配置等工具内嵌于镜像中
+\end{itemize}
+

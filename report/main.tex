@@ -1,0 +1,129 @@
+ % !TEX root = main.tex
+
+\documentclass[fontset=fandol]{ctexrep}
+
+\newcommand{\artdate}{2019年8月}
+
+\usepackage[toc,page]{appendix}
+\usepackage{graphicx}
+\usepackage{geometry}
+\usepackage{lscape}
+\usepackage{hyperref}
+\usepackage{hyperxmp}
+\usepackage{longtable}
+\usepackage{booktabs}
+\usepackage[bottom]{footmisc}
+\usepackage{subcaption}
+\usepackage{url}
+\usepackage{bytefield}
+\usepackage{xcolor}
+\usepackage{minted}
+\usepackage{threeparttable}
+
+\newcommand{\artauthor}{陈晟祺，周聿浩，刘晓义}
+\newcommand{\arttitle}{NonTrivialMIPS 决赛设计报告}
+
+\newcommand{\todo}{\textbf{\textcolor{red}{此部分尚需完善。}}}
+
+\hypersetup{pdfauthor=\artauthor,
+			pdftitle=\arttitle,
+			pdfcopyright={Copyright TrivialMIPS 2019. All rights reserved.},
+			pdfdate=\artdate,
+			pdfdisplaydoctitle=true,
+			pdflang=zh-CN,
+			pdfstartview=FitH}
+
+\geometry{
+	a4paper,
+	left=3.18cm,
+	right=3.18cm,
+	top=2.54cm,
+	bottom=2.54cm
+}
+
+\graphicspath{{figures/}}
+
+\ctexset{chapter={
+		name={第,部分},
+		number=\chinese{chapter},
+	},
+	listfigurename=插图索引,
+	listtablename=表格索引
+}
+
+\setminted{frame=lines, linenos=true, breaklines=true}
+
+\begin{document}
+
+\begin{titlepage}
+
+    \newcommand{\HRule}{\rule{\linewidth}{0.5mm}}
+  
+    \vfill
+    \center 
+    
+    \textit{\Large “龙芯杯”第三届全国大学生计算机系统能力培养大赛}\\[0.5cm] 
+    \texttt{\Large 清华大学 “编程是一件很危险的事情”队\footnote{封面图为CPU综合后的资源占用情况，不同颜色代表不同组件}}
+  
+    \vspace{1.5 cm}
+    \HRule \\[0.4cm]
+    { \huge \bfseries NonTrivialMIPS 项目}\\[0.4cm]
+    { \huge \bfseries 决赛设计报告}\\
+    \HRule \\[1cm]
+   
+   \begin{figure}[H]
+       \centering
+       \includegraphics[width=0.5\linewidth]{colorful-new.png}
+   \end{figure}
+   
+   \vspace{0.5 cm}
+  
+    \vspace{.5 cm}
+    陈晟祺\\
+    harry-chen@outlook.com\\
+    \vspace{.5 cm}
+    周聿浩\\
+    miskcoo@gmail.com\\
+    \vspace{.5 cm}
+    刘晓义\\
+    circuitcoder0@gmail.com\\
+    \vspace{.5 cm}
+    陈嘉杰\\
+    jiegec@qq.com\\
+  
+    \vspace{1 cm}
+    {\large \artdate}\\[3cm] 
+  
+  \vfill
+  
+\end{titlepage}
+
+\tableofcontents
+
+\input{introduction}
+
+\input{cpu}
+
+\input{soc}
+
+\input{bootloader}
+
+\input{os_software}
+
+\input{auto_test}
+
+\addcontentsline{toc}{chapter}{\listfigurename}
+
+\listoffigures
+
+\addcontentsline{toc}{chapter}{\listtablename}
+
+\listoftables
+
+\appendix
+
+\input{acknowledgement}
+
+\input{code}
+
+\end{document}

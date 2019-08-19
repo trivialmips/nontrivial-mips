@@ -17,7 +17,7 @@ See `AUTHORS` for information about the authors of this project.
 * `src`: RTL code of NonTrivialMIPS CPU
 * `vivado`: Vivado project and block design of NSCSCC SoC (now using GS232 IP)
 * `testbench`: Testbenches of NonTrivialMIPS CPU / NSCSCC Soc
-* `material`: references
+* `report`: Design reports (LaTeX srouce code and rendered PDF)
 
 ## Build Project
 

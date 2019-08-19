@@ -1,0 +1,39 @@
+\chapter{自动化测试}
+
+为了保证实现的正确性，本项目进行了自动化的集成、测试与部署。所有的流程都通过Docker进行，确保是可完整复现的。
+
+\section{硬件测试}
+\label{section:test_hardware}
+
+本项目使用的主要硬件设计语言SystemVerilog是一门强大的验证语言，我们用它编写testbench来测试硬件模块。主要的测试用例分为有：
+
+\begin{description}
+    \item[CPU测试] 本部分用于测试CPU实现指令的正确性。我们对CPU的各条指令都编写了相应的测试程序，同时还对各类可能的冲突现象、异常、TLB的行为编写了对应的测试。测试的过程是通过一个testbench虚拟出外部的总线和RAM并且接入CPU，并对CPU中的访存动作，包括WB阶段对寄存器和的写请求和MEM阶段的内存写请求进行监视。每个测试用例对上述动作都会给出响应期待的结果，同时在运行testbench时会将监测到的真实的写请求和期望的结果进行对比进而确认程序执行的正确性。整个CPU的测试过程是自动化的，通过指定格式的汇编代码即可生成对应的存储文件（\texttt{.mem}文件）、答案文件（\texttt{.ans}文件）；我们编写了用于执行上述动作的 SystemVerilog task，可以直接使用 Vivado 对所有用例依次执行测试，得到比较结果，无需人工介入观察信号，如果发现真实的运行和期望不符会进行报告。所有的测试用例以及解释可见表\ref{table:cpu_testbenches}。除此之外，我们还在CPU仿真部分引入了Verilator这一基于C++的编译型仿真工具，用于简单的测试，其性能相比解释型工具有数量级上的增强。
+    \item[Cache 测试] 我们生成不同特征的访存序列（顺序/随机），并捕获真实应用程序的访存序列，将其作为激励传递给 Cache 组件，观察其行为是否与预期一致，本部分用于测试 Cache 的正确性。此部分还使用了一个 AXI RAM 的行为模型，用于替代 Xilinx AXI Block RAM Generator IP 核，并能模拟测试中人工插入的延迟。
+
+\end{description}
+
+同时，我们还为龙芯功能测试、性能测试编写 tcl 脚本并修改 testbench，以在 CI 环境中能够进行自动化测试和结果提取。最后，还可以自动生成上述测试的 bitstream 文件，供直接上板测试。
+
+对于主分支的每一次提交，都需要进行持续集成（CI），步骤包括进行IP核的生成与预综合、上述的测试，以及 bitstream 的生成。由于完整仿真速度较慢，通常只运行CPU测试部分。
+
+\begin{table}[!htbp]
+\centering
+\caption{CPU测试用例（位于 \texttt{testbench/cpu/testcases} 目录中）}
+\label{table:cpu_testbenches}
+\begin{threeparttable}
+\begin{tabular}{|l|l|}
+\hline
+\multicolumn{1}{|c|}{\textbf{文件名}} & \multicolumn{1}{c|}{\textbf{测试内容}}                                                                                        \\ \hline
+except/*              & 异常相关测试          \\ \hline                           
+instr/*              & 指令功能测试          \\ \hline                           
+branch/*              & 分支测试          \\ \hline                              
+hazard/*              & 各类边界情况测试          \\ \hline                      
+across\_tlb/*              & TLB测试          \\ \hline                          
+performance/*              & 性能测试          \\ \hline                                   \end{tabular}
+\end{threeparttable}
+\end{table}
+
+\section{软件测试}
+
+在软件方面，本项目计划对编写的所有汇编/C/C++代码，移植的Bootloader、操作系统，以及需要运行的功能测试、性能测试，均编写基于GitLab CI的持续集成脚本，保证每个版本都能进行正确的、可重现的编译。
