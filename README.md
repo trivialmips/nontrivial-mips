@@ -1,6 +1,6 @@
 # NonTrivialMIPS
 
-NonTrivial-MIPS is a synthesizable superscalar MIPS processor with branch prediction and FPU support, and it is capable of booting linux.
+NonTrivial-MIPS is a synthesizable superscalar MIPS processor with branch prediction and CP1 (FPU), CP2 (AES accelerator) support, and it is capable of booting fully-functional Linux.
 
 ## Authors
 
@@ -21,7 +21,15 @@ See `AUTHORS` for information about the authors of this project.
 
 ## Build Project
 
-You can build the project by the following command:
+### Compiling options
+
+NonTrivialMIPS CPU has some compiling flags that can control the features that will be enabled and parameters (such as cache size and associativity) that will be used. See 'src/compile_options.svh` for details.
+
+Note that inappropriate changes made to these flags may lead to strange or WRONG behaviors of the CPU.
+
+### Generate bitstream
+
+You can generate bitstreams that can be programmed to FPGA by following commands:
 
 ```bash
 # for soc project
@@ -38,7 +46,7 @@ Vivado 2018.3 is required.
 
 All source code under `src/` is released under the MIT License with the following exceptions:
 
-* `src/aes/` is licensed under BSD-2-Clause License (source code from [GitHub](https://github.com/secworks/aes/))
+* `src/asic/aes/` is licensed under BSD-2-Clause License (source code from [GitHub](https://github.com/secworks/aes/))
 * `src/utils/fifo_v3.sv` is licesed under [The Solderpad Hardware Licence](https://solderpad.org/licenses/) (source code from [GitHub](https://github.com/pulp-platform/ariane))
 
 Other directories might contain source code or materials that are proprietary or subject to open source licenses and kept in this repository as-is.
