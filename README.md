@@ -23,7 +23,7 @@ See `AUTHORS` for information about the authors of this project.
 
 ### Compiling options
 
-NonTrivialMIPS CPU has some compiling flags that can control the features that will be enabled and parameters (such as cache size and associativity) that will be used. See 'src/compile_options.svh` for details.
+NonTrivialMIPS CPU has some compiling flags that can control the features that will be enabled and parameters (such as cache size and associativity) that will be used. See `src/compile_options.svh` for details.
 
 Note that inappropriate changes made to these flags may lead to strange or WRONG behaviors of the CPU.
 
