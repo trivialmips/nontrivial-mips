@@ -19,6 +19,8 @@ See `AUTHORS` for information about the authors of this project.
 * `testbench`: Testbenches of NonTrivialMIPS CPU / NSCSCC Soc
 * `report`: Design reports (LaTeX srouce code and rendered PDF)
 
+*Remark*: `out-of-order` branch contains a toy dual-issue out-of-order processor.
+
 ## Build Project
 
 ### Compiling options
