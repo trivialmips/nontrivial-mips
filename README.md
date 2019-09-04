@@ -15,7 +15,7 @@ See `AUTHORS` for information about the authors of this project.
   * `soc_run_os`: Vivado project and RTL code of a whole SoC (using GS232 CPU, upgraded to 2018.3)
   * `soft`: RAM initialization files used by the projects above
 * `src`: RTL code of NonTrivialMIPS CPU
-* `vivado`: Vivado project and block design of NSCSCC SoC (now using GS232 IP)
+* `vivado`: Vivado project and block design of NSCSCC SoC
 * `testbench`: Testbenches of NonTrivialMIPS CPU / NSCSCC Soc
 * `report`: Design reports (LaTeX srouce code and rendered PDF)
 
