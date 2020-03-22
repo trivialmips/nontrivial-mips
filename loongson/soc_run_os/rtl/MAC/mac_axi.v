@@ -1,23 +1,23 @@
 /*------------------------------------------------------------------------------
 --------------------------------------------------------------------------------
 Copyright (c) 2016, Loongson Technology Corporation Limited.
-
+ 
 All rights reserved.
-
+ 
 Redistribution and use in source and binary forms, with or without modification,
 are permitted provided that the following conditions are met:
-
+ 
 1. Redistributions of source code must retain the above copyright notice, this 
 list of conditions and the following disclaimer.
-
+ 
 2. Redistributions in binary form must reproduce the above copyright notice, 
 this list of conditions and the following disclaimer in the documentation and/or
 other materials provided with the distribution.
-
+ 
 3. Neither the name of Loongson Technology Corporation Limited nor the names of 
 its contributors may be used to endorse or promote products derived from this 
 software without specific prior written permission.
-
+ 
 THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
 ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED 
 WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE 
@@ -32,124 +32,124 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 ------------------------------------------------------------------------------*/
 
 module MAC_AXI (
-  clkt,
-  clkr,
-  rsttco,
-  rstrco,
-  interrupt,
-  tps,
-  rps,
-  mhclk,
-  mhresetn,
-  mawid_o    ,
-  mawaddr_o  ,
-  mawlen_o   ,
-  mawsize_o  ,
-  mawburst_o ,
-  mawlock_o  ,
-  mawcache_o ,
-  mawprot_o  ,
-  mawvalid_o ,
-  mawready_i ,
-  mwid_o     ,
-  mwdata_o   ,
-  mwstrb_o   ,
-  mwlast_o   ,
-  mwvalid_o  ,
-  mwready_i  ,
-  mbid_i     ,
-  mbresp_i   ,
-  mbvalid_i  ,
-  mbready_o  ,
-  marid_o    ,
-  maraddr_o  ,
-  marlen_o   ,
-  marsize_o  ,
-  marburst_o ,
-  marlock_o  ,
-  marcache_o ,
-  marprot_o  ,
-  marvalid_o ,
-  marready_i ,
-  mrid_i     ,
-  mrdata_i   ,
-  mrresp_i   ,
-  mrlast_i   ,
-  mrvalid_i  ,
-  mrready_o  ,
-  shclk,
-  shresetn,
-  sawid_i    ,
-  sawaddr_i  ,
-  sawlen_i   ,
-  sawsize_i  ,
-  sawburst_i ,
-  sawlock_i  ,
-  sawcache_i ,
-  sawprot_i  ,
-  sawvalid_i ,
-  sawready_o ,   
-  swid_i     ,
-  swdata_i   ,
-  swstrb_i   ,
-  swlast_i   ,
-  swvalid_i  ,
-  swready_o  ,
-  sbid_o     ,
-  sbresp_o   ,
-  sbvalid_o  ,
-  sbready_i  ,
-  sarid_i    ,
-  saraddr_i  ,
-  sarlen_i   ,
-  sarsize_i  ,
-  sarburst_i ,
-  sarlock_i  ,
-  sarcache_i ,
-  sarprot_i  ,
-  sarvalid_i ,
-  sarready_o ,
-  srid_o     ,
-  srdata_o   ,
-  srresp_o   ,
-  srlast_o   ,
-  srvalid_o  ,
-  srready_i  ,                 
-  trdata,
-  twe,
-  twaddr,
-  traddr,
-  twdata,
-  rrdata,
-  rwe,
-  rwaddr,
-  rraddr,
-  rwdata,
-  frdata,
-  fwe,
-  fwaddr,
-  fraddr,
-  fwdata,
-  match,
-  matchval,
-  matchen,
-  matchdata,
-  sdi,
-  sclk,
-  scs,
-  sdo,
-  rxer,
-  rxdv,
-  col,
-  crs,
-  rxd,
-  txen,
-  txer,
-  txd,
-  mdc,
-  mdi,
-  mdo,
-  mden
+    clkt,
+    clkr,
+    rsttco,
+    rstrco,
+    interrupt,
+    tps,
+    rps,
+    mhclk,
+    mhresetn,
+    mawid_o    ,
+    mawaddr_o  ,
+    mawlen_o   ,
+    mawsize_o  ,
+    mawburst_o ,
+    mawlock_o  ,
+    mawcache_o ,
+    mawprot_o  ,
+    mawvalid_o ,
+    mawready_i ,
+    mwid_o     ,
+    mwdata_o   ,
+    mwstrb_o   ,
+    mwlast_o   ,
+    mwvalid_o  ,
+    mwready_i  ,
+    mbid_i     ,
+    mbresp_i   ,
+    mbvalid_i  ,
+    mbready_o  ,
+    marid_o    ,
+    maraddr_o  ,
+    marlen_o   ,
+    marsize_o  ,
+    marburst_o ,
+    marlock_o  ,
+    marcache_o ,
+    marprot_o  ,
+    marvalid_o ,
+    marready_i ,
+    mrid_i     ,
+    mrdata_i   ,
+    mrresp_i   ,
+    mrlast_i   ,
+    mrvalid_i  ,
+    mrready_o  ,
+    shclk,
+    shresetn,
+    sawid_i    ,
+    sawaddr_i  ,
+    sawlen_i   ,
+    sawsize_i  ,
+    sawburst_i ,
+    sawlock_i  ,
+    sawcache_i ,
+    sawprot_i  ,
+    sawvalid_i ,
+    sawready_o ,
+    swid_i     ,
+    swdata_i   ,
+    swstrb_i   ,
+    swlast_i   ,
+    swvalid_i  ,
+    swready_o  ,
+    sbid_o     ,
+    sbresp_o   ,
+    sbvalid_o  ,
+    sbready_i  ,
+    sarid_i    ,
+    saraddr_i  ,
+    sarlen_i   ,
+    sarsize_i  ,
+    sarburst_i ,
+    sarlock_i  ,
+    sarcache_i ,
+    sarprot_i  ,
+    sarvalid_i ,
+    sarready_o ,
+    srid_o     ,
+    srdata_o   ,
+    srresp_o   ,
+    srlast_o   ,
+    srvalid_o  ,
+    srready_i  ,
+    trdata,
+    twe,
+    twaddr,
+    traddr,
+    twdata,
+    rrdata,
+    rwe,
+    rwaddr,
+    rraddr,
+    rwdata,
+    frdata,
+    fwe,
+    fwaddr,
+    fraddr,
+    fwdata,
+    match,
+    matchval,
+    matchen,
+    matchdata,
+    sdi,
+    sclk,
+    scs,
+    sdo,
+    rxer,
+    rxdv,
+    col,
+    crs,
+    rxd,
+    txen,
+    txer,
+    txd,
+    mdc,
+    mdi,
+    mdo,
+    mden
   );
 
   parameter MAXIADDRESSWIDTH  = 32;
@@ -160,27 +160,27 @@ module MAC_AXI (
   parameter RCDEPTH           = 2;
   parameter MAXIDATAWIDTH     = 32;
   parameter SAXIDATAWIDTH     = 32;
-  `include "utility.v"
+`include "utility.v"
 
 
-  input     clkt; 
-  input     clkr; 
-  output    rsttco; 
+  input     clkt;
+  input     clkr;
+  output    rsttco;
   wire      rsttco;
-  output    rstrco; 
+  output    rstrco;
   wire      rstrco;
 
-    
-  output    interrupt; 
+
+  output    interrupt;
   wire      interrupt;
 
-  output    tps; 
+  output    tps;
   wire      tps;
-  output    rps; 
+  output    rps;
   wire      rps;
-    
-  input     mhclk; 
-  input     mhresetn; 
+
+  input     mhclk;
+  input     mhresetn;
   output  [  3:0] mawid_o              ;
   output  [ 31:0] mawaddr_o            ;
   output  [  3:0] mawlen_o             ;
@@ -216,9 +216,9 @@ module MAC_AXI (
   input   [  1:0] mrresp_i             ;
   input           mrlast_i             ;
   input           mrvalid_i            ;
-  output          mrready_o            ;                 
-  input     shclk; 
-  input     shresetn; 
+  output          mrready_o            ;
+  input     shclk;
+  input     shresetn;
 
   input   [  3:0]   sawid_i              ;
   input   [ 31:0]   sawaddr_i            ;
@@ -255,268 +255,268 @@ module MAC_AXI (
   output  [  1:0]   srresp_o             ;
   output            srlast_o             ;
   output            srvalid_o            ;
-  input             srready_i            ;                 
-  input     [MAXIDATAWIDTH - 1:0] trdata; 
-  output    twe; 
+  input             srready_i            ;
+  input     [MAXIDATAWIDTH - 1:0] trdata;
+  output    twe;
   wire      twe;
-  output    [TFIFODEPTH - 1:0] twaddr; 
+  output    [TFIFODEPTH - 1:0] twaddr;
   wire      [TFIFODEPTH - 1:0] twaddr;
-  output    [TFIFODEPTH - 1:0] traddr; 
+  output    [TFIFODEPTH - 1:0] traddr;
   wire      [TFIFODEPTH - 1:0] traddr;
-  output    [MAXIDATAWIDTH - 1:0] twdata; 
+  output    [MAXIDATAWIDTH - 1:0] twdata;
   wire      [MAXIDATAWIDTH - 1:0] twdata;
 
 
-  input     [MAXIDATAWIDTH - 1:0] rrdata; 
-  output    rwe; 
+  input     [MAXIDATAWIDTH - 1:0] rrdata;
+  output    rwe;
   wire      rwe;
-  output    [RFIFODEPTH - 1:0] rwaddr; 
+  output    [RFIFODEPTH - 1:0] rwaddr;
   wire      [RFIFODEPTH - 1:0] rwaddr;
-  output    [RFIFODEPTH - 1:0] rraddr; 
+  output    [RFIFODEPTH - 1:0] rraddr;
   wire      [RFIFODEPTH - 1:0] rraddr;
-  output    [MAXIDATAWIDTH - 1:0] rwdata; 
+  output    [MAXIDATAWIDTH - 1:0] rwdata;
   wire      [MAXIDATAWIDTH - 1:0] rwdata;
-    
-  input     [15:0] frdata; 
-  output    fwe; 
+
+  input     [15:0] frdata;
+  output    fwe;
   wire      fwe;
-  output    [ADDRDEPTH - 1:0] fwaddr; 
+  output    [ADDRDEPTH - 1:0] fwaddr;
   wire      [ADDRDEPTH - 1:0] fwaddr;
-  output    [ADDRDEPTH - 1:0] fraddr; 
+  output    [ADDRDEPTH - 1:0] fraddr;
   wire      [ADDRDEPTH - 1:0] fraddr;
-  output    [15:0] fwdata; 
+  output    [15:0] fwdata;
   wire      [15:0] fwdata;
-    
-  input     match; 
-  input     matchval; 
-  output    matchen; 
+
+  input     match;
+  input     matchval;
+  output    matchen;
   wire      matchen;
-  output    [47:0] matchdata; 
+  output    [47:0] matchdata;
   wire      [47:0] matchdata;
-    
-  input     sdi; 
-  output    sclk; 
+
+  input     sdi;
+  output    sclk;
   wire      sclk;
-  output    scs; 
+  output    scs;
   wire      scs;
-  output    sdo; 
+  output    sdo;
   wire      sdo;
-    
-  input     rxer; 
-  input     rxdv; 
-  input     col; 
-  input     crs; 
-  input     [MIIWIDTH - 1:0] rxd; 
-  output    txen; 
+
+  input     rxer;
+  input     rxdv;
+  input     col;
+  input     crs;
+  input     [MIIWIDTH - 1:0] rxd;
+  output    txen;
   wire      txen;
-  output    txer; 
+  output    txer;
   wire      txer;
-  output    [MIIWIDTH - 1:0] txd; 
+  output    [MIIWIDTH - 1:0] txd;
   wire      [MIIWIDTH - 1:0] txd;
-  output    mdc; 
+  output    mdc;
   wire      mdc;
-  input     mdi; 
-  output    mdo; 
+  input     mdi;
+  output    mdo;
   wire      mdo;
-  output    mden; 
+  output    mden;
   wire      mden;
 
 
-  wire      datareq; 
-  wire      datareqc; 
-  wire      datarw; 
-  wire      dataeob; 
-  wire      dataeobc; 
-  wire      [(MAXIADDRESSWIDTH - 1):0] dataaddr; 
-  wire      [(MAXIDATAWIDTH - 1):0] datao; 
-  wire      dataack; 
-  wire      [(MAXIDATAWIDTH - 1):0] datai; 
+  wire      datareq;
+  wire      datareqc;
+  wire      datarw;
+  wire      dataeob;
+  wire      dataeobc;
+  wire      [(MAXIADDRESSWIDTH - 1):0] dataaddr;
+  wire      [(MAXIDATAWIDTH - 1):0] datao;
+  wire      dataack;
+  wire      [(MAXIDATAWIDTH - 1):0] datai;
 
-  wire      rstcsr; 
-  wire      csrack; 
-  wire      [SAXIDATAWIDTH - 1:0] csrdatao; 
-  wire      csrreq; 
-  wire      csrrw; 
-  wire      [SAXIDATAWIDTH / 8 - 1:0] csrbe; 
-  wire      [SAXIDATAWIDTH - 1:0] csrdatai; 
-  wire      [7:0] csraddr; 
+  wire      rstcsr;
+  wire      csrack;
+  wire      [SAXIDATAWIDTH - 1:0] csrdatao;
+  wire      csrreq;
+  wire      csrrw;
+  wire      [SAXIDATAWIDTH / 8 - 1:0] csrbe;
+  wire      [SAXIDATAWIDTH - 1:0] csrdatai;
+  wire      [7:0] csraddr;
 
   MAC
-  #(SAXIDATAWIDTH,
-    MAXIDATAWIDTH,
-    MAXIADDRESSWIDTH,
-    TFIFODEPTH,
-    RFIFODEPTH,
-    TCDEPTH,
-    RCDEPTH)
-  U_MAC (
-  .clkdma           (mhclk),
-  .clkcsr           (shclk),
-  .clkt             (clkt),
-  .clkr             (clkr),
-  .rstcsr           (rstcsr),
-  .rsttco           (rsttco),
-  .rstrco           (rstrco),
-  .interrupt              (interrupt),
-  .rps              (rps),
-  .tps              (tps),
-  .csrreq           (csrreq),
-  .csrrw            (csrrw),
-  .csrbe            (csrbe),
-  .csrdatai         (csrdatai),
-  .csrack           (csrack),
-  .csraddr          (csraddr),
-  .csrdatao         (csrdatao),
-  .dataack          (dataack),
-  .datareq          (datareq),
-  .datareqc         (datareqc),
-  .datarw           (datarw),
-  .dataeob          (dataeob),
-  .dataeobc         (dataeobc),
-  .datai            (datai),
-  .dataaddr         (dataaddr),
-  .datao            (datao),
-  .trdata           (trdata),
-  .twe              (twe),
-  .twaddr           (twaddr),
-  .traddr           (traddr),
-  .twdata           (twdata),
-  .rrdata           (rrdata),
-  .rwe              (rwe),
-  .rwaddr           (rwaddr),
-  .rraddr           (rraddr),
-  .rwdata           (rwdata),
-  .frdata           (frdata),
-  .fwe              (fwe),
-  .fraddr           (fraddr),
-  .fwaddr           (fwaddr),
-  .fwdata           (fwdata),
-  .match            (match),
-  .matchval         (matchval),
-  .matchen          (matchen),
-  .matchdata        (matchdata),
-  .sdi              (sdi),
-  .sclk             (sclk),
-  .scs              (scs),
-  .sdo              (sdo),
-  .rxer             (rxer),
-  .rxdv             (rxdv),
-  .col              (col),
-  .crs              (crs),
-  .rxd              (rxd),
-  .txen             (txen),
-  .txer             (txer),
-  .txd              (txd),
-  .mdi              (mdi),
-  .mdo              (mdo),
-  .mden             (mden),
-  .mdc              (mdc)
-  ); 
+    #(SAXIDATAWIDTH,
+      MAXIDATAWIDTH,
+      MAXIADDRESSWIDTH,
+      TFIFODEPTH,
+      RFIFODEPTH,
+      TCDEPTH,
+      RCDEPTH)
+    U_MAC (
+      .clkdma           (mhclk),
+      .clkcsr           (shclk),
+      .clkt             (clkt),
+      .clkr             (clkr),
+      .rstcsr           (rstcsr),
+      .rsttco           (rsttco),
+      .rstrco           (rstrco),
+      .interrupt              (interrupt),
+      .rps              (rps),
+      .tps              (tps),
+      .csrreq           (csrreq),
+      .csrrw            (csrrw),
+      .csrbe            (csrbe),
+      .csrdatai         (csrdatai),
+      .csrack           (csrack),
+      .csraddr          (csraddr),
+      .csrdatao         (csrdatao),
+      .dataack          (dataack),
+      .datareq          (datareq),
+      .datareqc         (datareqc),
+      .datarw           (datarw),
+      .dataeob          (dataeob),
+      .dataeobc         (dataeobc),
+      .datai            (datai),
+      .dataaddr         (dataaddr),
+      .datao            (datao),
+      .trdata           (trdata),
+      .twe              (twe),
+      .twaddr           (twaddr),
+      .traddr           (traddr),
+      .twdata           (twdata),
+      .rrdata           (rrdata),
+      .rwe              (rwe),
+      .rwaddr           (rwaddr),
+      .rraddr           (rraddr),
+      .rwdata           (rwdata),
+      .frdata           (frdata),
+      .fwe              (fwe),
+      .fraddr           (fraddr),
+      .fwaddr           (fwaddr),
+      .fwdata           (fwdata),
+      .match            (match),
+      .matchval         (matchval),
+      .matchen          (matchen),
+      .matchdata        (matchdata),
+      .sdi              (sdi),
+      .sclk             (sclk),
+      .scs              (scs),
+      .sdo              (sdo),
+      .rxer             (rxer),
+      .rxdv             (rxdv),
+      .col              (col),
+      .crs              (crs),
+      .rxd              (rxd),
+      .txen             (txen),
+      .txer             (txer),
+      .txd              (txd),
+      .mdi              (mdi),
+      .mdo              (mdo),
+      .mden             (mden),
+      .mdc              (mdc)
+    );
 
   MAC2AXI
-  #(MAXIDATAWIDTH,
-    MAXIADDRESSWIDTH,
-    SAXIDATAWIDTH,
-    SAXIADDRESSWIDTH,
-    MAXIDATAWIDTH,
-    MAXIADDRESSWIDTH,
-    SAXIDATAWIDTH,
-    8)
-  U_MAC2AXI (
+    #(MAXIDATAWIDTH,
+      MAXIADDRESSWIDTH,
+      SAXIDATAWIDTH,
+      SAXIADDRESSWIDTH,
+      MAXIDATAWIDTH,
+      MAXIADDRESSWIDTH,
+      SAXIDATAWIDTH,
+      8)
+    U_MAC2AXI (
 
-  .mhclk             (mhclk      ),
-  .mhresetn          (mhresetn   ),
-  .shclk             (shclk      ),
-  .shresetn          (shresetn   ),
-  .mawid_o           (mawid_o    ),
-  .mawaddr_o         (mawaddr_o  ),
-  .mawlen_o          (mawlen_o   ),
-  .mawsize_o         (mawsize_o  ),
-  .mawburst_o        (mawburst_o ),
-  .mawlock_o         (mawlock_o  ),
-  .mawcache_o        (mawcache_o ),
-  .mawprot_o         (mawprot_o  ),
-  .mawvalid_o        (mawvalid_o ),
-  .mawready_i        (mawready_i ),
-  .mwid_o            (mwid_o     ),
-  .mwdata_o          (mwdata_o   ),
-  .mwstrb_o          (mwstrb_o   ),
-  .mwlast_o          (mwlast_o   ),
-  .mwvalid_o         (mwvalid_o  ),
-  .mwready_i         (mwready_i  ),
-  .mbid_i            (mbid_i     ),
-  .mbresp_i          (mbresp_i   ),
-  .mbvalid_i         (mbvalid_i  ),
-  .mbready_o         (mbready_o  ),
-  .marid_o           (marid_o    ),
-  .maraddr_o         (maraddr_o  ),
-  .marlen_o          (marlen_o   ),
-  .marsize_o         (marsize_o  ),
-  .marburst_o        (marburst_o ),
-  .marlock_o         (marlock_o  ),
-  .marcache_o        (marcache_o ),
-  .marprot_o         (marprot_o  ),
-  .marvalid_o        (marvalid_o ),
-  .marready_i        (marready_i ),
-  .mrid_i            (mrid_i     ),
-  .mrdata_i          (mrdata_i   ),
-  .mrresp_i          (mrresp_i   ),
-  .mrlast_i          (mrlast_i   ),
-  .mrvalid_i         (mrvalid_i  ),
-  .mrready_o         (mrready_o  ),
-  .sawid_i           (sawid_i    ),
-  .sawaddr_i         (sawaddr_i  ),
-  .sawlen_i          (sawlen_i   ),
-  .sawsize_i         (sawsize_i  ),
-  .sawburst_i        (sawburst_i ),
-  .sawlock_i         (sawlock_i  ),
-  .sawcache_i        (sawcache_i ),
-  .sawprot_i         (sawprot_i  ),
-  .sawvalid_i        (sawvalid_i ),
-  .sawready_o        (sawready_o ),   
-  .swid_i            (swid_i     ),
-  .swdata_i          (swdata_i   ),
-  .swstrb_i          (swstrb_i   ),
-  .swlast_i          (swlast_i   ),
-  .swvalid_i         (swvalid_i  ),
-  .swready_o         (swready_o  ),
-  .sbid_o            (sbid_o     ),
-  .sbresp_o          (sbresp_o   ),
-  .sbvalid_o         (sbvalid_o  ),
-  .sbready_i         (sbready_i  ),
-  .sarid_i           (sarid_i    ),
-  .saraddr_i         (saraddr_i  ),
-  .sarlen_i          (sarlen_i   ),
-  .sarsize_i         (sarsize_i  ),
-  .sarburst_i        (sarburst_i ),
-  .sarlock_i         (sarlock_i  ),
-  .sarcache_i        (sarcache_i ),
-  .sarprot_i         (sarprot_i  ),
-  .sarvalid_i        (sarvalid_i ),
-  .sarready_o        (sarready_o ),
-  .srid_o            (srid_o     ),
-  .srdata_o          (srdata_o   ),
-  .srresp_o          (srresp_o   ),
-  .srlast_o          (srlast_o   ),
-  .srvalid_o         (srvalid_o  ),
-  .srready_i         (srready_i  ),                 
-  .datareq           (datareq    ),
-  .datareqc          (datareqc   ),
-  .datarw            (datarw     ),
-  .dataeob           (dataeob    ),
-  .dataeobc          (dataeobc   ),
-  .dataaddr          (dataaddr   ),
-  .datao             (datao      ),
-  .dataack           (dataack    ),
-  .datai             (datai      ),
-  .rstcsr            (rstcsr     ),
-  .csrack            (csrack     ),
-  .csrdatao          (csrdatao   ),
-  .csrreq            (csrreq     ),
-  .csrrw             (csrrw      ),
-  .csrbe             (csrbe      ),
-  .csrdatai          (csrdatai   ),
-  .csraddr           (csraddr    )
-  );
+      .mhclk             (mhclk      ),
+      .mhresetn          (mhresetn   ),
+      .shclk             (shclk      ),
+      .shresetn          (shresetn   ),
+      .mawid_o           (mawid_o    ),
+      .mawaddr_o         (mawaddr_o  ),
+      .mawlen_o          (mawlen_o   ),
+      .mawsize_o         (mawsize_o  ),
+      .mawburst_o        (mawburst_o ),
+      .mawlock_o         (mawlock_o  ),
+      .mawcache_o        (mawcache_o ),
+      .mawprot_o         (mawprot_o  ),
+      .mawvalid_o        (mawvalid_o ),
+      .mawready_i        (mawready_i ),
+      .mwid_o            (mwid_o     ),
+      .mwdata_o          (mwdata_o   ),
+      .mwstrb_o          (mwstrb_o   ),
+      .mwlast_o          (mwlast_o   ),
+      .mwvalid_o         (mwvalid_o  ),
+      .mwready_i         (mwready_i  ),
+      .mbid_i            (mbid_i     ),
+      .mbresp_i          (mbresp_i   ),
+      .mbvalid_i         (mbvalid_i  ),
+      .mbready_o         (mbready_o  ),
+      .marid_o           (marid_o    ),
+      .maraddr_o         (maraddr_o  ),
+      .marlen_o          (marlen_o   ),
+      .marsize_o         (marsize_o  ),
+      .marburst_o        (marburst_o ),
+      .marlock_o         (marlock_o  ),
+      .marcache_o        (marcache_o ),
+      .marprot_o         (marprot_o  ),
+      .marvalid_o        (marvalid_o ),
+      .marready_i        (marready_i ),
+      .mrid_i            (mrid_i     ),
+      .mrdata_i          (mrdata_i   ),
+      .mrresp_i          (mrresp_i   ),
+      .mrlast_i          (mrlast_i   ),
+      .mrvalid_i         (mrvalid_i  ),
+      .mrready_o         (mrready_o  ),
+      .sawid_i           (sawid_i    ),
+      .sawaddr_i         (sawaddr_i  ),
+      .sawlen_i          (sawlen_i   ),
+      .sawsize_i         (sawsize_i  ),
+      .sawburst_i        (sawburst_i ),
+      .sawlock_i         (sawlock_i  ),
+      .sawcache_i        (sawcache_i ),
+      .sawprot_i         (sawprot_i  ),
+      .sawvalid_i        (sawvalid_i ),
+      .sawready_o        (sawready_o ),
+      .swid_i            (swid_i     ),
+      .swdata_i          (swdata_i   ),
+      .swstrb_i          (swstrb_i   ),
+      .swlast_i          (swlast_i   ),
+      .swvalid_i         (swvalid_i  ),
+      .swready_o         (swready_o  ),
+      .sbid_o            (sbid_o     ),
+      .sbresp_o          (sbresp_o   ),
+      .sbvalid_o         (sbvalid_o  ),
+      .sbready_i         (sbready_i  ),
+      .sarid_i           (sarid_i    ),
+      .saraddr_i         (saraddr_i  ),
+      .sarlen_i          (sarlen_i   ),
+      .sarsize_i         (sarsize_i  ),
+      .sarburst_i        (sarburst_i ),
+      .sarlock_i         (sarlock_i  ),
+      .sarcache_i        (sarcache_i ),
+      .sarprot_i         (sarprot_i  ),
+      .sarvalid_i        (sarvalid_i ),
+      .sarready_o        (sarready_o ),
+      .srid_o            (srid_o     ),
+      .srdata_o          (srdata_o   ),
+      .srresp_o          (srresp_o   ),
+      .srlast_o          (srlast_o   ),
+      .srvalid_o         (srvalid_o  ),
+      .srready_i         (srready_i  ),
+      .datareq           (datareq    ),
+      .datareqc          (datareqc   ),
+      .datarw            (datarw     ),
+      .dataeob           (dataeob    ),
+      .dataeobc          (dataeobc   ),
+      .dataaddr          (dataaddr   ),
+      .datao             (datao      ),
+      .dataack           (dataack    ),
+      .datai             (datai      ),
+      .rstcsr            (rstcsr     ),
+      .csrack            (csrack     ),
+      .csrdatao          (csrdatao   ),
+      .csrreq            (csrreq     ),
+      .csrrw             (csrrw      ),
+      .csrbe             (csrbe      ),
+      .csrdatai          (csrdatai   ),
+      .csraddr           (csraddr    )
+    );
 
-endmodule 
+endmodule

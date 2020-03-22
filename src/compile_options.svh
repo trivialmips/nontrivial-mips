@@ -1,18 +1,18 @@
 `ifndef COMPILE_OPTIONS_SVH
 `define COMPILE_OPTIONS_SVH
 
-/**
-    Options to control optional components to be compiled
-    These options are used to speed up compilation when debugging
-
-**/
+        /**
+            Options to control optional components to be compiled
+            These options are used to speed up compilation when debugging
+         
+        **/
 
 `define COMPILE_FULL_M
 
 `ifdef COMPILE_FULL_M
 	`define COMPILE_FULL 1
 `else
-	`define COMPILE_FULL 0
+`define COMPILE_FULL 0
 `endif
 
 `define CPU_MMU_ENABLED      `COMPILE_FULL

@@ -17,13 +17,13 @@
 
 module dcache #(
     parameter BUS_WIDTH = 4,
-    parameter DATA_WIDTH = 32, 
-    parameter LINE_WIDTH = 256, 
+    parameter DATA_WIDTH = 32,
+    parameter LINE_WIDTH = 256,
     parameter SET_ASSOC  = 4,
     parameter CACHE_SIZE = 16 * 1024 * 8,
     parameter WB_FIFO_DEPTH = 8,
     parameter TRANS_WIDTH = `DBUS_TRANS_WIDTH
-) (
+  ) (
     // external logics
     input  logic            clk,
     input  logic            rst,
@@ -52,440 +52,468 @@ module dcache #(
     input  axi_resp_t               axi_resp_uncached,
     input  logic [BUS_WIDTH - 1 :0] axi_resp_uncached_rid,
     input  logic [BUS_WIDTH - 1 :0] axi_resp_uncached_bid
-);
+  );
 
-localparam int LINE_NUM    = CACHE_SIZE / LINE_WIDTH;
-localparam int GROUP_NUM   = LINE_NUM / SET_ASSOC;
-localparam int DATA_PER_LINE = LINE_WIDTH / DATA_WIDTH;
+  localparam int LINE_NUM    = CACHE_SIZE / LINE_WIDTH;
+  localparam int GROUP_NUM   = LINE_NUM / SET_ASSOC;
+  localparam int DATA_PER_LINE = LINE_WIDTH / DATA_WIDTH;
 
-localparam int DATA_BYTE_OFFSET = $clog2(DATA_WIDTH / 8);
-localparam int LINE_BYTE_OFFSET = $clog2(LINE_WIDTH / 8);
-localparam int INDEX_WIDTH = $clog2(GROUP_NUM);
-localparam int TAG_WIDTH   = 32 - INDEX_WIDTH - LINE_BYTE_OFFSET;
+  localparam int DATA_BYTE_OFFSET = $clog2(DATA_WIDTH / 8);
+  localparam int LINE_BYTE_OFFSET = $clog2(LINE_WIDTH / 8);
+  localparam int INDEX_WIDTH = $clog2(GROUP_NUM);
+  localparam int TAG_WIDTH   = 32 - INDEX_WIDTH - LINE_BYTE_OFFSET;
 
-localparam int BURST_LIMIT = (LINE_WIDTH / 32) - 1;
+  localparam int BURST_LIMIT = (LINE_WIDTH / 32) - 1;
 
-typedef enum logic [3:0] {
-    IDLE,
-    REFILL,
-    WAIT_AXI_READY,
-    RECEIVING,
-    FINISH,
-    INVALIDATE,
-    INVALIDATE_WAIT,
-    RST,
+  typedef enum logic [3:0] {
+            IDLE,
+            REFILL,
+            WAIT_AXI_READY,
+            RECEIVING,
+            FINISH,
+            INVALIDATE,
+            INVALIDATE_WAIT,
+            RST,
 
-    UNCACHED_READ_WAIT_AXI,
-    UNCACHED_WRITE_WAIT_AXI,
-    UNCACHED_READ,
-    UNCACHED_WRITE,
-    UNCACHED_WAIT_BVALID
-} state_t;
+            UNCACHED_READ_WAIT_AXI,
+            UNCACHED_WRITE_WAIT_AXI,
+            UNCACHED_READ,
+            UNCACHED_WRITE,
+            UNCACHED_WAIT_BVALID
+          } state_t;
 
-typedef enum logic [2:0] {
-    WB_IDLE,
-    WB_WAIT_AWREADY,
-    WB_WRITE,
-    WB_WAIT_BVALID
-} wb_state_t ;
+  typedef enum logic [2:0] {
+            WB_IDLE,
+            WB_WAIT_AWREADY,
+            WB_WRITE,
+            WB_WAIT_BVALID
+          } wb_state_t ;
 
-typedef struct packed {
-    logic valid;
-    logic dirty;
-    logic [TAG_WIDTH-1:0] tag;
-} tag_t;
+  typedef struct packed {
+            logic valid;
+            logic dirty;
+            logic [TAG_WIDTH-1:0] tag;
+          } tag_t;
 
-typedef logic [DATA_PER_LINE-1:0][DATA_WIDTH-1:0] line_t;
-typedef logic [INDEX_WIDTH-1:0] index_t;
-typedef logic [LINE_BYTE_OFFSET-DATA_BYTE_OFFSET-1:0] offset_t;
-typedef logic [TAG_WIDTH+INDEX_WIDTH-1:0] fifo_tag_t;
-typedef logic [TRANS_WIDTH-1:0] trans_t;
+  typedef logic [DATA_PER_LINE-1:0][DATA_WIDTH-1:0] line_t;
+  typedef logic [INDEX_WIDTH-1:0] index_t;
+  typedef logic [LINE_BYTE_OFFSET-DATA_BYTE_OFFSET-1:0] offset_t;
+  typedef logic [TAG_WIDTH+INDEX_WIDTH-1:0] fifo_tag_t;
+  typedef logic [TRANS_WIDTH-1:0] trans_t;
 
-typedef logic [SET_ASSOC-1:0] we_t;
+  typedef logic [SET_ASSOC-1:0] we_t;
 
-function index_t get_index( input logic [31:0] addr );
+  function index_t get_index( input logic [31:0] addr );
     return addr[LINE_BYTE_OFFSET + INDEX_WIDTH - 1 : LINE_BYTE_OFFSET];
-endfunction
+  endfunction
 
-function logic [TAG_WIDTH-1:0] get_tag( input logic [31:0] addr );
+  function logic [TAG_WIDTH-1:0] get_tag( input logic [31:0] addr );
     return addr[31 : LINE_BYTE_OFFSET + INDEX_WIDTH];
-endfunction
+  endfunction
 
-function offset_t get_offset( input logic [31:0] addr );
+  function offset_t get_offset( input logic [31:0] addr );
     return addr[LINE_BYTE_OFFSET - 1 : DATA_BYTE_OFFSET];
-endfunction
+  endfunction
 
-function fifo_tag_t get_fifo_tag( input logic [31:0] addr );
+  function fifo_tag_t get_fifo_tag( input logic [31:0] addr );
     return addr[31 : LINE_BYTE_OFFSET];
-endfunction
+  endfunction
 
-function logic [31:0] mux_byteenable(
-    input logic [31:0] rdata,
-    input logic [31:0] wdata,
-    input logic [3:0] sel 
-);
-    return { 
+  function logic [31:0] mux_byteenable(
+      input logic [31:0] rdata,
+      input logic [31:0] wdata,
+      input logic [3:0] sel
+    );
+    return {
         sel[3] ? wdata[31:24] : rdata[31:24],
         sel[2] ? wdata[23:16] : rdata[23:16],
         sel[1] ? wdata[15:8] : rdata[15:8],
         sel[0] ? wdata[7:0] : rdata[7:0]
-    };
-endfunction
+      };
+  endfunction
 
-state_t state, state_d;
-wb_state_t wb_state, wb_state_d;
+  state_t state, state_d;
+  wb_state_t wb_state, wb_state_d;
 
-// RAM requests of tag
-// RF = refill, wm = write-merge
-index_t ram_addr, read_addr;
+  // RAM requests of tag
+  // RF = refill, wm = write-merge
+  index_t ram_addr, read_addr;
 
-tag_t [SET_ASSOC-1:0] tag_rdata;
-tag_t tag_wdata;
-we_t tag_we;
+  tag_t [SET_ASSOC-1:0] tag_rdata;
+  tag_t tag_wdata;
+  we_t tag_we;
 
-// RAM requests of line data
-line_t [SET_ASSOC-1:0] data_rdata;
-line_t data_wdata;
-we_t data_we;
+  // RAM requests of line data
+  line_t [SET_ASSOC-1:0] data_rdata;
+  line_t data_wdata;
+  we_t data_we;
 
-// Rand
-logic [LINE_BYTE_OFFSET-1:0] burst_cnt, burst_cnt_d;
+  // Rand
+  logic [LINE_BYTE_OFFSET-1:0] burst_cnt, burst_cnt_d;
 
-// FIFO
-fifo_tag_t fifo_wqtag, fifo_rtag, fifo_ptag;
-line_t fifo_wdata, fifo_rdata, fifo_qdata, fifo_pdata;
-logic [DATA_PER_LINE-1:0][DATA_WIDTH/8-1:0] fifo_wbe;
-logic fifo_found, fifo_full, fifo_empty, fifo_written;
-logic fifo_push, fifo_write, fifo_pop;
+  // FIFO
+  fifo_tag_t fifo_wqtag, fifo_rtag, fifo_ptag;
+  line_t fifo_wdata, fifo_rdata, fifo_qdata, fifo_pdata;
+  logic [DATA_PER_LINE-1:0][DATA_WIDTH/8-1:0] fifo_wbe;
+  logic fifo_found, fifo_full, fifo_empty, fifo_written;
+  logic fifo_push, fifo_write, fifo_pop;
 
-// Write back
-logic [31:0] wb_addr, wb_addr_d;
-line_t wb_line, wb_line_d;
-logic [BURST_LIMIT:0][31:0] wb_burst_lines;
-logic [LINE_BYTE_OFFSET-1:0] wb_burst_cnt, wb_burst_cnt_d;
+  // Write back
+  logic [31:0] wb_addr, wb_addr_d;
+  line_t wb_line, wb_line_d;
+  logic [BURST_LIMIT:0][31:0] wb_burst_lines;
+  logic [LINE_BYTE_OFFSET-1:0] wb_burst_cnt, wb_burst_cnt_d;
 
-// Rst
-index_t invalidate_cnt, invalidate_cnt_d;
+  // Rst
+  index_t invalidate_cnt, invalidate_cnt_d;
 
-// Invalidate
-logic [$clog2(SET_ASSOC)-1:0] assoc_cnt, assoc_cnt_d;
+  // Invalidate
+  logic [$clog2(SET_ASSOC)-1:0] assoc_cnt, assoc_cnt_d;
 
-/* Reg + Outputs */
-// Stage 1 output: tag_rdata, compute hit
-logic [SET_ASSOC-1:0] hit;
+  /* Reg + Outputs */
+  // Stage 1 output: tag_rdata, compute hit
+  logic [SET_ASSOC-1:0] hit;
 
-// Stage 2 reg + output
-logic s2_vacant;
+  // Stage 2 reg + output
+  logic s2_vacant;
 
-logic [31:0] pipe_2_addr, pipe_2_uncached_addr;
-logic [3:0] pipe_2_byteenable;
-logic [DATA_WIDTH-1:0] pipe_2_wdata;
-logic pipe_2_write, pipe_2_read, pipe_2_invalidate, pipe_2_uncached_read, pipe_2_uncached_write;
-logic pipe_2_fifo_found, pipe_2_fifo_written;
-line_t pipe_2_fifo_qdata;
-logic [SET_ASSOC-1:0] pipe_2_hit, patched_hit; // patched_hit: hit data to pass into stage 3
-logic found_in_ram;
-trans_t pipe_2_trans;
+  logic [31:0] pipe_2_addr, pipe_2_uncached_addr;
+  logic [3:0] pipe_2_byteenable;
+  logic [DATA_WIDTH-1:0] pipe_2_wdata;
+  logic pipe_2_write, pipe_2_read, pipe_2_invalidate, pipe_2_uncached_read, pipe_2_uncached_write;
+  logic pipe_2_fifo_found, pipe_2_fifo_written;
+  line_t pipe_2_fifo_qdata;
+  logic [SET_ASSOC-1:0] pipe_2_hit, patched_hit; // patched_hit: hit data to pass into stage 3
+  logic found_in_ram;
+  trans_t pipe_2_trans;
 
-line_t data_mux_line;
-line_t ram_mux_line;
-logic [DATA_WIDTH-1:0] rdata;
-logic request_refill;
-logic wb_current;
+  line_t data_mux_line;
+  line_t ram_mux_line;
+  logic [DATA_WIDTH-1:0] rdata;
+  logic request_refill;
+  logic wb_current;
 
-logic read_miss, write_miss;
-logic adjacent; // Same line with the previous request
-logic adjacent_exited; // Same line with the exited request
-logic invalidating; // Same index with the previous request, and the previous request is a invalidate request
+  logic read_miss, write_miss;
+  logic adjacent; // Same line with the previous request
+  logic adjacent_exited; // Same line with the exited request
+  logic invalidating; // Same index with the previous request, and the previous request is a invalidate request
 
-// Stage 3 reg
-logic s3_vacant;
+  // Stage 3 reg
+  logic s3_vacant;
 
-logic pipe_read;
-logic pipe_write;
-logic pipe_invalidate;
-logic pipe_uncached_read;
-logic pipe_uncached_write;
-logic pipe_request_refill;
-logic [SET_ASSOC-1:0] pipe_hit;
-logic [3:0] pipe_byteenable;
-logic [31:0] pipe_addr, pipe_uncached_addr;
-logic [DATA_WIDTH-1:0] pipe_wdata, pipe_rdata;
-line_t pipe_data_mux_line;
-trans_t pipe_trans;
+  logic pipe_read;
+  logic pipe_write;
+  logic pipe_invalidate;
+  logic pipe_uncached_read;
+  logic pipe_uncached_write;
+  logic pipe_request_refill;
+  logic [SET_ASSOC-1:0] pipe_hit;
+  logic [3:0] pipe_byteenable;
+  logic [31:0] pipe_addr, pipe_uncached_addr;
+  logic [DATA_WIDTH-1:0] pipe_wdata, pipe_rdata;
+  line_t pipe_data_mux_line;
+  trans_t pipe_trans;
 
-logic [BURST_LIMIT:0][31:0] line_recv;
-logic [$clog2(SET_ASSOC)-1:0] assoc_waddr, lru_waddr;
-logic [GROUP_NUM-1:0][$clog2(SET_ASSOC)-1:0] lru;
-tag_t [SET_ASSOC-1:0] delayed_tag_rdata_d, delayed_tag_rdata_q;
-line_t [SET_ASSOC-1:0] delayed_data_rdata;
-logic write_hit;
+  logic [BURST_LIMIT:0][31:0] line_recv;
+  logic [$clog2(SET_ASSOC)-1:0] assoc_waddr, lru_waddr;
+  logic [GROUP_NUM-1:0][$clog2(SET_ASSOC)-1:0] lru;
+  tag_t [SET_ASSOC-1:0] delayed_tag_rdata_d, delayed_tag_rdata_q;
+  line_t [SET_ASSOC-1:0] delayed_data_rdata;
+  logic write_hit;
 
-// Exited data
-logic exited_write, exited_invalidate;
-logic [31:0] exited_addr;
-logic [3:0] exited_byteenable;
-logic [DATA_WIDTH-1:0] exited_wdata;
-logic exited_vacant;
+  // Exited data
+  logic exited_write, exited_invalidate;
+  logic [31:0] exited_addr;
+  logic [3:0] exited_byteenable;
+  logic [DATA_WIDTH-1:0] exited_wdata;
+  logic exited_vacant;
 
-logic stall;
-assign stall = ~(state == FINISH || (state == IDLE && ~(pipe_invalidate || pipe_request_refill || pipe_uncached_read || pipe_uncached_write)));
-assign dbus.stall = stall;
-assign dbus_uncached.stall = stall;
-// assign dbus.stall = state_d != IDLE || state == RST;
+  logic stall;
+  assign stall = ~(state == FINISH || (state == IDLE && ~(pipe_invalidate || pipe_request_refill || pipe_uncached_read || pipe_uncached_write)));
+  assign dbus.stall = stall;
+  assign dbus_uncached.stall = stall;
+  // assign dbus.stall = state_d != IDLE || state == RST;
 
-assign dbus.trans_out = pipe_trans;
+  assign dbus.trans_out = pipe_trans;
 
-always_comb begin
-    dbus.rddata = pipe_rdata;
+  always_comb
+    begin
+      dbus.rddata = pipe_rdata;
 
-    if(pipe_request_refill) begin
-        dbus.rddata = line_recv[get_offset(pipe_addr)];
+      if(pipe_request_refill)
+        begin
+          dbus.rddata = line_recv[get_offset(pipe_addr)];
+        end
     end
-end
 
-assign dbus_uncached.rddata = line_recv[0];
+  assign dbus_uncached.rddata = line_recv[0];
 
-/* Read / Write: Sync part */
+  /* Read / Write: Sync part */
 
-// Stage 1
-//   - Tag query + Data query
-//   - FIFO query + write-merge
-//
-// Setup Tag RAM port B. We only use this port for tag query, not writing
-// Setup FIFO write channel
-//
-// If all queries results in missed in stage 1, the line is not present in
-// cache right now.
+  // Stage 1
+  //   - Tag query + Data query
+  //   - FIFO query + write-merge
+  //
+  // Setup Tag RAM port B. We only use this port for tag query, not writing
+  // Setup FIFO write channel
+  //
+  // If all queries results in missed in stage 1, the line is not present in
+  // cache right now.
 
-assign read_addr = get_index(dbus.address);
+  assign read_addr = get_index(dbus.address);
 
-assign fifo_wqtag = get_fifo_tag(dbus.address);
+  assign fifo_wqtag = get_fifo_tag(dbus.address);
 
-always_comb begin
-    fifo_wdata = '0;
-    fifo_wdata[get_offset(dbus.address)] = dbus.wrdata;
+  always_comb
+    begin
+      fifo_wdata = '0;
+      fifo_wdata[get_offset(dbus.address)] = dbus.wrdata;
 
-    fifo_wbe = '0;
-    fifo_wbe[get_offset(dbus.address)] = dbus.byteenable;
-end
+      fifo_wbe = '0;
+      fifo_wbe[get_offset(dbus.address)] = dbus.byteenable;
+    end
 
-assign fifo_write = ~dbus.stall && dbus.write; // Only handles cached writes
+  assign fifo_write = ~dbus.stall && dbus.write; // Only handles cached writes
 
-// Stage 2
-//   - Way select among RAM, FIFO and write-back line
-//
-// Setup Tag RAM port A / Data RAM. If the pipeline is stalled, we must be
-// refilling, so set the ram addr to stage 3 addr
+  // Stage 2
+  //   - Way select among RAM, FIFO and write-back line
+  //
+  // Setup Tag RAM port A / Data RAM. If the pipeline is stalled, we must be
+  // refilling, so set the ram addr to stage 3 addr
 
-// Calculate hit vector for stage 3 write-hits
-always_comb begin
-    patched_hit = pipe_2_hit;
-    if(invalidating)
+  // Calculate hit vector for stage 3 write-hits
+  always_comb
+    begin
+      patched_hit = pipe_2_hit;
+      if(invalidating)
         patched_hit = '0;
-    else if(adjacent && pipe_request_refill) // Must missed. TODO: assert
+      else if(adjacent && pipe_request_refill) // Must missed. TODO: assert
         patched_hit[assoc_waddr] = 1'b1;
-end
+    end
 
-// Tag/Data write request
-assign tag_wdata.valid = state != RST && state != INVALIDATE;
-assign tag_wdata.dirty = pipe_write; // If writing, this must be dirty
-assign tag_wdata.tag = get_tag(pipe_addr);
+  // Tag/Data write request
+  assign tag_wdata.valid = state != RST && state != INVALIDATE;
+  assign tag_wdata.dirty = pipe_write; // If writing, this must be dirty
+  assign tag_wdata.tag = get_tag(pipe_addr);
 
-always_comb begin
-    if(state == IDLE)
+  always_comb
+    begin
+      if(state == IDLE)
         data_wdata = pipe_data_mux_line;
-    else if(state == REFILL)
+      else if(state == REFILL)
         // If we are refilling in REFILL stage, the line must be being
         // written-back
         data_wdata = wb_line;
-    else
+      else
         data_wdata = line_recv;
 
-    // We also set line_recv to wb_line if the write occured on
-    // REFILL -> REFILL_FINISH, because the following adjacent write request
-    // may rely on the refilled data
+      // We also set line_recv to wb_line if the write occured on
+      // REFILL -> REFILL_FINISH, because the following adjacent write request
+      // may rely on the refilled data
 
-    // Only rewrite the last byte in RECEIVING state
-    // Because we may need data_wdata for stage 2 write hit
-    // We don't want to write invalid data after our receiving is finished
-    if(state == RECEIVING) begin
-        data_wdata[DATA_PER_LINE - 1][DATA_WIDTH - 1 -: 32] = axi_resp.rdata;
+      // Only rewrite the last byte in RECEIVING state
+      // Because we may need data_wdata for stage 2 write hit
+      // We don't want to write invalid data after our receiving is finished
+      if(state == RECEIVING)
+        begin
+          data_wdata[DATA_PER_LINE - 1][DATA_WIDTH - 1 -: 32] = axi_resp.rdata;
+        end
+
+      if(pipe_write)
+        begin
+          data_wdata[get_offset(pipe_addr)] = mux_byteenable(
+                      data_wdata[get_offset(pipe_addr)], pipe_wdata, pipe_byteenable);
+        end
     end
 
-    if(pipe_write) begin
-        data_wdata[get_offset(pipe_addr)] = mux_byteenable(
-            data_wdata[get_offset(pipe_addr)], pipe_wdata, pipe_byteenable);
+  for(genvar i = 0; i < SET_ASSOC; ++i)
+    begin
+      // Hit won't be affected by write-hits
+      // Only stalling can cause hit to change. If so, we have enough time to
+      // read the new tag out
+      assign hit[i] = tag_rdata[i].valid & (get_tag(dbus.address) == tag_rdata[i].tag);
     end
-end
 
-for(genvar i = 0; i < SET_ASSOC; ++i) begin
-    // Hit won't be affected by write-hits
-    // Only stalling can cause hit to change. If so, we have enough time to
-    // read the new tag out
-    assign hit[i] = tag_rdata[i].valid & (get_tag(dbus.address) == tag_rdata[i].tag);
-end
+  assign wb_current = wb_state != WB_IDLE && get_fifo_tag(wb_addr) == get_fifo_tag(pipe_2_addr); //get_offset(wb_addr) == get_offset(pipe_addr);
+  assign invalidating = (~s3_vacant) && pipe_invalidate && get_index(pipe_2_addr) == get_index(pipe_addr);
 
-assign wb_current = wb_state != WB_IDLE && get_fifo_tag(wb_addr) == get_fifo_tag(pipe_2_addr); //get_offset(wb_addr) == get_offset(pipe_addr);
-assign invalidating = (~s3_vacant) && pipe_invalidate && get_index(pipe_2_addr) == get_index(pipe_addr);
+  assign adjacent = (~s3_vacant) && get_fifo_tag(pipe_2_addr) == get_fifo_tag(pipe_addr) && ~invalidating;
+  assign adjacent_exited = (~exited_vacant) && get_fifo_tag(pipe_2_addr) == get_fifo_tag(exited_addr) && ~exited_invalidate;
 
-assign adjacent = (~s3_vacant) && get_fifo_tag(pipe_2_addr) == get_fifo_tag(pipe_addr) && ~invalidating;
-assign adjacent_exited = (~exited_vacant) && get_fifo_tag(pipe_2_addr) == get_fifo_tag(exited_addr) && ~exited_invalidate;
+  assign read_miss = (~(adjacent && pipe_request_refill)) && (~|pipe_2_hit) && (~pipe_2_fifo_found) && (~wb_current) && pipe_2_read;
+  assign write_miss = (~(adjacent && pipe_request_refill)) && (~|pipe_2_hit) && ~pipe_2_fifo_written && pipe_2_write;
 
-assign read_miss = (~(adjacent && pipe_request_refill)) && (~|pipe_2_hit) && (~pipe_2_fifo_found) && (~wb_current) && pipe_2_read;
-assign write_miss = (~(adjacent && pipe_request_refill)) && (~|pipe_2_hit) && ~pipe_2_fifo_written && pipe_2_write;
+  assign request_refill = read_miss || write_miss; // && ~(pipe_2_write && wb_current); TODO: why?
 
-assign request_refill = read_miss || write_miss; // && ~(pipe_2_write && wb_current); TODO: why?
-
-always_comb begin
-    ram_mux_line = '0;
-    for(int i = 0; i < SET_ASSOC; ++i)
+  always_comb
+    begin
+      ram_mux_line = '0;
+      for(int i = 0; i < SET_ASSOC; ++i)
         ram_mux_line |= {LINE_WIDTH{pipe_2_hit[i]}} & data_rdata[i];
-end
+    end
 
-always_comb begin
-    data_mux_line = '0;
-    found_in_ram = 1'b0;
-    if(adjacent && pipe_request_refill) begin
-        data_mux_line = data_wdata;
-        found_in_ram = 1'b1;
-    end else if(|pipe_2_hit) begin
-        data_mux_line = ram_mux_line;
+  always_comb
+    begin
+      data_mux_line = '0;
+      found_in_ram = 1'b0;
+      if(adjacent && pipe_request_refill)
+        begin
+          data_mux_line = data_wdata;
+          found_in_ram = 1'b1;
+        end
+      else if(|pipe_2_hit)
+        begin
+          data_mux_line = ram_mux_line;
 
-        if(adjacent_exited && exited_write)
+          if(adjacent_exited && exited_write)
             data_mux_line[get_offset(exited_addr)] = mux_byteenable(data_mux_line[get_offset(exited_addr)], exited_wdata, exited_byteenable);
 
-        if(adjacent && pipe_write)
+          if(adjacent && pipe_write)
             data_mux_line[get_offset(pipe_addr)] = mux_byteenable(data_mux_line[get_offset(pipe_addr)], pipe_wdata, pipe_byteenable);
 
-        found_in_ram = 1'b1;
-    end
+          found_in_ram = 1'b1;
+        end
 
-    rdata = data_mux_line[get_offset(pipe_2_addr)];
+      rdata = data_mux_line[get_offset(pipe_2_addr)];
 
-    if((~found_in_ram) && pipe_2_fifo_found)
+      if((~found_in_ram) && pipe_2_fifo_found)
         rdata = pipe_2_fifo_qdata[get_offset(pipe_2_addr)];
-    else if((~found_in_ram) && wb_current)
+      else if((~found_in_ram) && wb_current)
         rdata = wb_line[get_offset(pipe_2_addr)];
-end
-
-// Early data
-// assign dbus_uncached.early_valid = 1'b0;
-// assign dbus.early_valid = pipe_2_read && (|pipe_2_hit) && ~(adjacent_exited && exited_write) && ~(adjacent && pipe_write);
-// assign dbus.early_rddata = ram_mux_line[get_offset(pipe_2_addr)];
-
-// Stage 3
-//   - Refill
-//   - Tag/Data overwrite
-
-assign lru_waddr = lru[get_index(pipe_addr)];
-
-always_comb begin
-    assoc_waddr = pipe_2_hit[lru_waddr] ? ~lru_waddr : lru_waddr;
-
-    for(int i = 0; i < SET_ASSOC; ++i) begin
-        if((~(get_index(pipe_2_addr) == get_index(pipe_addr) && pipe_2_hit[i])) && ~delayed_tag_rdata_q[i].valid)
-            assoc_waddr = i;
     end
-end
 
-assign ram_addr = state == RST ? invalidate_cnt : get_index(pipe_addr);
-assign write_hit = pipe_write && (|pipe_hit);
+  // Early data
+  // assign dbus_uncached.early_valid = 1'b0;
+  // assign dbus.early_valid = pipe_2_read && (|pipe_2_hit) && ~(adjacent_exited && exited_write) && ~(adjacent && pipe_write);
+  // assign dbus.early_rddata = ram_mux_line[get_offset(pipe_2_addr)];
 
-always_comb begin
-    tag_we      = '0;
-    data_we     = '0;
-    
-    // FIFO push
-    fifo_push = state == REFILL && delayed_tag_rdata_q[assoc_waddr].valid && delayed_tag_rdata_q[assoc_waddr].dirty;
-    fifo_ptag = { delayed_tag_rdata_q[assoc_waddr].tag, get_index(pipe_addr) };
-    fifo_pdata = delayed_data_rdata[assoc_waddr];
+  // Stage 3
+  //   - Refill
+  //   - Tag/Data overwrite
 
-    burst_cnt_d = burst_cnt;
+  assign lru_waddr = lru[get_index(pipe_addr)];
 
-    invalidate_cnt_d = invalidate_cnt;
-    assoc_cnt_d = assoc_cnt;
+  always_comb
+    begin
+      assoc_waddr = pipe_2_hit[lru_waddr] ? ~lru_waddr : lru_waddr;
 
-    // AXI defaults
-    axi_req_arid = 1'b0;
+      for(int i = 0; i < SET_ASSOC; ++i)
+        begin
+          if((~(get_index(pipe_2_addr) == get_index(pipe_addr) && pipe_2_hit[i])) && ~delayed_tag_rdata_q[i].valid)
+            assoc_waddr = i;
+        end
+    end
 
-    axi_req.arvalid = 1'b0;
-    axi_req.rready = 1'b0;
+  assign ram_addr = state == RST ? invalidate_cnt : get_index(pipe_addr);
+  assign write_hit = pipe_write && (|pipe_hit);
 
-    axi_req.arlen   = BURST_LIMIT;
-    axi_req.arsize  = 3'b010; // 4 bytes
-    axi_req.arburst = 2'b01;  // INCR
-    axi_req.araddr = { pipe_addr[31 : LINE_BYTE_OFFSET], {LINE_BYTE_OFFSET{1'b0}} };
-    axi_req.arlock = '0;
-    axi_req.arprot = '0;
-    axi_req.arcache = '0;
+  always_comb
+    begin
+      tag_we      = '0;
+      data_we     = '0;
 
-    // Uncached AXI
-    axi_req_uncached = '0;
+      // FIFO push
+      fifo_push = state == REFILL && delayed_tag_rdata_q[assoc_waddr].valid && delayed_tag_rdata_q[assoc_waddr].dirty;
+      fifo_ptag = { delayed_tag_rdata_q[assoc_waddr].tag, get_index(pipe_addr) };
+      fifo_pdata = delayed_data_rdata[assoc_waddr];
 
-    axi_req_uncached_arid = '0;
-    axi_req_uncached_awid = '0;
-    axi_req_uncached_wid = '0;
+      burst_cnt_d = burst_cnt;
 
-    // INCR, but we are only doing one transfer in a burst
-    axi_req_uncached.arburst = 2'b01;
-    axi_req_uncached.awburst = 2'b01;
-    axi_req_uncached.arlen   = 3'b0000;
-    axi_req_uncached.awlen   = 3'b0000;
-    axi_req_uncached.arsize  = 2'b010; // 4 bytes
-    axi_req_uncached.awsize  = 2'b010;
-    axi_req_uncached.wstrb   = pipe_byteenable;
-    axi_req_uncached.araddr  = pipe_addr;
-    axi_req_uncached.awaddr  = pipe_addr;
-    axi_req_uncached.wdata   = pipe_wdata;
-    axi_req_uncached.bready = 1'b1;
+      invalidate_cnt_d = invalidate_cnt;
+      assoc_cnt_d = assoc_cnt;
 
-    case(state)
-        IDLE: begin
-            if(pipe_invalidate) begin
+      // AXI defaults
+      axi_req_arid = 1'b0;
+
+      axi_req.arvalid = 1'b0;
+      axi_req.rready = 1'b0;
+
+      axi_req.arlen   = BURST_LIMIT;
+      axi_req.arsize  = 3'b010; // 4 bytes
+      axi_req.arburst = 2'b01;  // INCR
+      axi_req.araddr = { pipe_addr[31 : LINE_BYTE_OFFSET], {LINE_BYTE_OFFSET{1'b0}} };
+      axi_req.arlock = '0;
+      axi_req.arprot = '0;
+      axi_req.arcache = '0;
+
+      // Uncached AXI
+      axi_req_uncached = '0;
+
+      axi_req_uncached_arid = '0;
+      axi_req_uncached_awid = '0;
+      axi_req_uncached_wid = '0;
+
+      // INCR, but we are only doing one transfer in a burst
+      axi_req_uncached.arburst = 2'b01;
+      axi_req_uncached.awburst = 2'b01;
+      axi_req_uncached.arlen   = 3'b0000;
+      axi_req_uncached.awlen   = 3'b0000;
+      axi_req_uncached.arsize  = 2'b010; // 4 bytes
+      axi_req_uncached.awsize  = 2'b010;
+      axi_req_uncached.wstrb   = pipe_byteenable;
+      axi_req_uncached.araddr  = pipe_addr;
+      axi_req_uncached.awaddr  = pipe_addr;
+      axi_req_uncached.wdata   = pipe_wdata;
+      axi_req_uncached.bready = 1'b1;
+
+      case(state)
+        IDLE:
+          begin
+            if(pipe_invalidate)
+              begin
                 assoc_cnt_d = '0;
-            end
+              end
 
-            if(write_hit) begin
+            if(write_hit)
+              begin
                 tag_we = pipe_hit;
                 data_we = pipe_hit;
-            end
+              end
 
             axi_req_uncached.arvalid = pipe_uncached_read;
             axi_req_uncached.awvalid = pipe_uncached_write;
-        end
-        WAIT_AXI_READY: begin
+          end
+        WAIT_AXI_READY:
+          begin
             burst_cnt_d     = '0;
             axi_req.arvalid = 1'b1;
-        end
-        REFILL: begin
-            if(~(fifo_full && fifo_push)) begin
+          end
+        REFILL:
+          begin
+            if(~(fifo_full && fifo_push))
+              begin
                 // See state transfer for detailed comments
-                if(wb_state != WB_IDLE && get_fifo_tag(wb_addr) == get_fifo_tag(pipe_addr)) begin
+                if(wb_state != WB_IDLE && get_fifo_tag(wb_addr) == get_fifo_tag(pipe_addr))
+                  begin
                     tag_we[assoc_waddr] = 1'b1;
                     data_we[assoc_waddr] = 1'b1;
-                end
-            end
-        end
+                  end
+              end
+          end
 
-        RECEIVING: begin
-            if(axi_resp.rvalid) begin
+        RECEIVING:
+          begin
+            if(axi_resp.rvalid)
+              begin
                 axi_req.rready = 1'b1;
                 burst_cnt_d    = burst_cnt + 1;
-            end
+              end
 
-            if(axi_resp.rvalid & axi_resp.rlast) begin
+            if(axi_resp.rvalid & axi_resp.rlast)
+              begin
                 tag_we[assoc_waddr]  = 1'b1;
                 data_we[assoc_waddr] = 1'b1;
-            end
-        end
+              end
+          end
 
-        RST: begin
+        RST:
+          begin
             tag_we = 4'b1111;
             invalidate_cnt_d = invalidate_cnt + 1;
-        end
+          end
 
-        INVALIDATE: begin
+        INVALIDATE:
+          begin
             fifo_push = delayed_tag_rdata_q[assoc_cnt].valid && delayed_tag_rdata_q[assoc_cnt].dirty;
             fifo_ptag = { delayed_tag_rdata_q[assoc_cnt].tag, get_index(pipe_addr) };
             fifo_pdata = delayed_data_rdata[assoc_cnt];
@@ -493,387 +521,448 @@ always_comb begin
             if(delayed_tag_rdata_q[assoc_cnt].valid
                 && { delayed_tag_rdata_q[assoc_cnt].tag, get_index(pipe_addr) }== get_fifo_tag(pipe_2_addr)
                 && pipe_2_write
-            ) begin
+              )
+              begin
                 // Stage 2 is writing this one
                 fifo_pdata[get_offset(pipe_2_addr)] = mux_byteenable(fifo_pdata[get_offset(pipe_2_addr)], pipe_2_wdata, pipe_2_byteenable);
                 fifo_push = 1'b1;
-            end
+              end
 
             // Only invalidate tag if the tag is going to be pushed into FIFO
-            if(~(fifo_push && fifo_full)) begin
+            if(~(fifo_push && fifo_full))
+              begin
                 tag_we[assoc_cnt] = 1'b1;
                 assoc_cnt_d = assoc_cnt + 1;
-            end
-        end
+              end
+          end
 
-        UNCACHED_READ_WAIT_AXI:  axi_req_uncached.arvalid = 1'b1;
-        UNCACHED_WRITE_WAIT_AXI: axi_req_uncached.awvalid = 1'b1;
-        UNCACHED_READ:  if(axi_resp_uncached.rvalid) axi_req_uncached.rready = 1'b1;
-        UNCACHED_WRITE: begin
+        UNCACHED_READ_WAIT_AXI:
+          axi_req_uncached.arvalid = 1'b1;
+        UNCACHED_WRITE_WAIT_AXI:
+          axi_req_uncached.awvalid = 1'b1;
+        UNCACHED_READ:
+          if(axi_resp_uncached.rvalid)
+            axi_req_uncached.rready = 1'b1;
+        UNCACHED_WRITE:
+          begin
             axi_req_uncached.wvalid = 1'b1;  // Write a single transfer
             axi_req_uncached.wlast = 1'b1;   // The burst length is 1
-        end
-    endcase
-end
-
-// update state
-always_comb begin
-    state_d = state;
-    unique case(state)
-        IDLE: begin
-            if(pipe_request_refill) state_d = REFILL;
-            if(pipe_invalidate) state_d = INVALIDATE;
-            if(pipe_uncached_read)  state_d = axi_resp_uncached.arready ? UNCACHED_READ  : UNCACHED_READ_WAIT_AXI;
-            if(pipe_uncached_write) state_d = axi_resp_uncached.awready ? UNCACHED_WRITE : UNCACHED_WRITE_WAIT_AXI;
-        end
-        REFILL: begin
-            if(~(fifo_full && fifo_push)) begin
-                // We are not targeting a dirty victim, or
-                // victim will be pushed into FIFO on the next clock tick
-                //
-                // Check for wb for matches
-                if(wb_state != WB_IDLE && get_fifo_tag(wb_addr) == get_fifo_tag(pipe_addr)) begin
-                    state_d = FINISH;
-                end else begin
-                    state_d = WAIT_AXI_READY;
-                end
-            end
-        end
-        FINISH:
-            state_d = IDLE;
-        WAIT_AXI_READY:
-            if(axi_resp.arready)
-                state_d = RECEIVING;
-        RECEIVING:
-            if(axi_resp.rvalid & axi_resp.rlast)
-                state_d = FINISH;
-        RST:
-            if(&invalidate_cnt)
-                state_d = FINISH;
-        INVALIDATE:
-            if(&assoc_cnt && ~(fifo_push && fifo_full))
-                state_d = INVALIDATE_WAIT;
-        INVALIDATE_WAIT:
-            if(wb_state == IDLE && fifo_empty)
-                state_d = FINISH;
-
-        UNCACHED_READ_WAIT_AXI:  if(axi_resp_uncached.arready) state_d = UNCACHED_READ;
-        UNCACHED_WRITE_WAIT_AXI: if(axi_resp_uncached.awready) state_d = UNCACHED_WRITE;
-        UNCACHED_READ:           if(axi_resp_uncached.rvalid)  state_d = FINISH;
-        UNCACHED_WRITE:          if(axi_resp_uncached.wready)  state_d = UNCACHED_WAIT_BVALID;
-        UNCACHED_WAIT_BVALID:    if(axi_resp_uncached.bvalid)  state_d = FINISH;
-    endcase
-end
-
-always_ff @(posedge clk) begin
-    if(rst) begin
-        line_recv <= '0;
-    end else if(state == REFILL
-        && wb_state != WB_IDLE
-        && get_fifo_tag(wb_addr) == get_fifo_tag(pipe_addr)
-    ) begin
-        // Refill from wb_line
-        line_recv <= wb_line;
-    end else if(state == RECEIVING && axi_resp.rvalid) begin
-        line_recv[burst_cnt] <= axi_resp.rdata;
-    end else if(state == UNCACHED_READ && axi_resp_uncached.rvalid) begin
-        line_recv[0] <= axi_resp_uncached.rdata;
+          end
+      endcase
     end
 
-    if(rst) begin
-        state     <= RST;
-        burst_cnt <= '0;
-        invalidate_cnt <= '0;
-        assoc_cnt <= '0;
-    end else begin
-        state     <= state_d;
-        burst_cnt <= burst_cnt_d;
-        invalidate_cnt <= invalidate_cnt_d;
-        assoc_cnt <= assoc_cnt_d;
-    end
-end
+  // update state
+  always_comb
+    begin
+      state_d = state;
+      unique case(state)
+               IDLE:
+                 begin
+                   if(pipe_request_refill)
+                     state_d = REFILL;
+                   if(pipe_invalidate)
+                     state_d = INVALIDATE;
+                   if(pipe_uncached_read)
+                     state_d = axi_resp_uncached.arready ? UNCACHED_READ  : UNCACHED_READ_WAIT_AXI;
+                   if(pipe_uncached_write)
+                     state_d = axi_resp_uncached.awready ? UNCACHED_WRITE : UNCACHED_WRITE_WAIT_AXI;
+                 end
+               REFILL:
+                 begin
+                   if(~(fifo_full && fifo_push))
+                     begin
+                       // We are not targeting a dirty victim, or
+                       // victim will be pushed into FIFO on the next clock tick
+                       //
+                       // Check for wb for matches
+                       if(wb_state != WB_IDLE && get_fifo_tag(wb_addr) == get_fifo_tag(pipe_addr))
+                         begin
+                           state_d = FINISH;
+                         end
+                       else
+                         begin
+                           state_d = WAIT_AXI_READY;
+                         end
+                     end
+                 end
+               FINISH:
+                 state_d = IDLE;
+               WAIT_AXI_READY:
+                 if(axi_resp.arready)
+                   state_d = RECEIVING;
+               RECEIVING:
+                 if(axi_resp.rvalid & axi_resp.rlast)
+                   state_d = FINISH;
+               RST:
+                 if(&invalidate_cnt)
+                   state_d = FINISH;
+               INVALIDATE:
+                 if(&assoc_cnt && ~(fifo_push && fifo_full))
+                   state_d = INVALIDATE_WAIT;
+               INVALIDATE_WAIT:
+                 if(wb_state == IDLE && fifo_empty)
+                   state_d = FINISH;
 
-// Stage 3 reg
+               UNCACHED_READ_WAIT_AXI:
+                 if(axi_resp_uncached.arready)
+                   state_d = UNCACHED_READ;
+               UNCACHED_WRITE_WAIT_AXI:
+                 if(axi_resp_uncached.awready)
+                   state_d = UNCACHED_WRITE;
+               UNCACHED_READ:
+                 if(axi_resp_uncached.rvalid)
+                   state_d = FINISH;
+               UNCACHED_WRITE:
+                 if(axi_resp_uncached.wready)
+                   state_d = UNCACHED_WAIT_BVALID;
+               UNCACHED_WAIT_BVALID:
+                 if(axi_resp_uncached.bvalid)
+                   state_d = FINISH;
+             endcase
+           end
 
-always_ff @(posedge clk) begin
-    if(rst) begin
-        s2_vacant <= 1'b1;
-        s3_vacant <= 1'b1;
-        exited_vacant <= 1'b1;
+         always_ff @(posedge clk)
+           begin
+             if(rst)
+               begin
+                 line_recv <= '0;
+               end
+             else if(state == REFILL
+                     && wb_state != WB_IDLE
+                     && get_fifo_tag(wb_addr) == get_fifo_tag(pipe_addr)
+                    )
+               begin
+                 // Refill from wb_line
+                 line_recv <= wb_line;
+               end
+             else if(state == RECEIVING && axi_resp.rvalid)
+               begin
+                 line_recv[burst_cnt] <= axi_resp.rdata;
+               end
+             else if(state == UNCACHED_READ && axi_resp_uncached.rvalid)
+               begin
+                 line_recv[0] <= axi_resp_uncached.rdata;
+               end
 
-        // Stage 1 -> 2
-        pipe_2_read <= 1'b0;
-        pipe_2_write <= 1'b0;
-        pipe_2_invalidate <= 1'b0;
-        pipe_2_uncached_read <= 1'b0;
-        pipe_2_uncached_write <= 1'b0;
-        pipe_2_byteenable <= '0;
-        pipe_2_addr <= '0;
-        pipe_2_wdata <= '0;
-        pipe_2_fifo_found <= 1'b0;
-        pipe_2_fifo_written <= 1'b0;
-        pipe_2_fifo_qdata <= '0;
-        pipe_2_hit <= '0;
-        pipe_2_trans <= '0;
+             if(rst)
+               begin
+                 state     <= RST;
+                 burst_cnt <= '0;
+                 invalidate_cnt <= '0;
+                 assoc_cnt <= '0;
+               end
+             else
+               begin
+                 state     <= state_d;
+                 burst_cnt <= burst_cnt_d;
+                 invalidate_cnt <= invalidate_cnt_d;
+                 assoc_cnt <= assoc_cnt_d;
+               end
+           end
 
-        // Stage 2 -> 3
-        pipe_read <= 1'b0;
-        pipe_write <= 1'b0;
-        pipe_invalidate <= 1'b0;
-        pipe_uncached_read <= 1'b0;
-        pipe_uncached_write <= 1'b0;
-        pipe_addr <= '0;
-        pipe_wdata <= '0;
-        pipe_byteenable <= '0;
-        pipe_request_refill <= 1'b0;
-        pipe_rdata <= '0;
-        pipe_data_mux_line <= '0;
-        pipe_hit <= '0;
-        pipe_trans <= '0;
+         // Stage 3 reg
 
-        // Stage 3 exits
-        exited_invalidate <= 1'b0;
-        exited_write <= 1'b0;
-        exited_byteenable <= '0;
-        exited_addr <= '0;
-        exited_wdata <= '0;
+         always_ff @(posedge clk)
+           begin
+             if(rst)
+               begin
+                 s2_vacant <= 1'b1;
+                 s3_vacant <= 1'b1;
+                 exited_vacant <= 1'b1;
 
-    end else if(~dbus.stall) begin
-        s2_vacant <= ~(dbus.read || dbus.write || dbus.invalidate);
-        s3_vacant <= s2_vacant;
-        exited_vacant <= s3_vacant;
+                 // Stage 1 -> 2
+                 pipe_2_read <= 1'b0;
+                 pipe_2_write <= 1'b0;
+                 pipe_2_invalidate <= 1'b0;
+                 pipe_2_uncached_read <= 1'b0;
+                 pipe_2_uncached_write <= 1'b0;
+                 pipe_2_byteenable <= '0;
+                 pipe_2_addr <= '0;
+                 pipe_2_wdata <= '0;
+                 pipe_2_fifo_found <= 1'b0;
+                 pipe_2_fifo_written <= 1'b0;
+                 pipe_2_fifo_qdata <= '0;
+                 pipe_2_hit <= '0;
+                 pipe_2_trans <= '0;
 
-        // Stage 1 -> 2
-        pipe_2_read <= dbus.read;
-        pipe_2_write <= dbus.write;
-        pipe_2_invalidate <= dbus.invalidate;
-        pipe_2_uncached_read <= dbus_uncached.read;
-        pipe_2_uncached_write <= dbus_uncached.write;
+                 // Stage 2 -> 3
+                 pipe_read <= 1'b0;
+                 pipe_write <= 1'b0;
+                 pipe_invalidate <= 1'b0;
+                 pipe_uncached_read <= 1'b0;
+                 pipe_uncached_write <= 1'b0;
+                 pipe_addr <= '0;
+                 pipe_wdata <= '0;
+                 pipe_byteenable <= '0;
+                 pipe_request_refill <= 1'b0;
+                 pipe_rdata <= '0;
+                 pipe_data_mux_line <= '0;
+                 pipe_hit <= '0;
+                 pipe_trans <= '0;
 
-        pipe_2_byteenable <= (dbus_uncached.read || dbus_uncached.write) ? dbus_uncached.byteenable : dbus.byteenable;
-        pipe_2_addr <= (dbus_uncached.read || dbus_uncached.write) ? dbus_uncached.address : dbus.address;
-        pipe_2_wdata <= (dbus_uncached.read || dbus_uncached.write) ? dbus_uncached.wrdata : dbus.wrdata;
-        pipe_2_fifo_found <= fifo_found;
-        pipe_2_fifo_written <= fifo_written;
-        pipe_2_fifo_qdata <= fifo_qdata;
-        pipe_2_hit <= hit;
-        pipe_2_trans <= dbus.trans_in;
+                 // Stage 3 exits
+                 exited_invalidate <= 1'b0;
+                 exited_write <= 1'b0;
+                 exited_byteenable <= '0;
+                 exited_addr <= '0;
+                 exited_wdata <= '0;
 
-        // Stage 2 -> 3
-        pipe_read <= pipe_2_read;
-        pipe_write <= pipe_2_write;
-        pipe_invalidate <= pipe_2_invalidate;
-        pipe_uncached_read <= pipe_2_uncached_read;
-        pipe_uncached_write <= pipe_2_uncached_write;
+               end
+             else if(~dbus.stall)
+               begin
+                 s2_vacant <= ~(dbus.read || dbus.write || dbus.invalidate);
+                 s3_vacant <= s2_vacant;
+                 exited_vacant <= s3_vacant;
 
-        pipe_addr <= pipe_2_addr;
-        pipe_wdata <= pipe_2_wdata;
-        pipe_byteenable <= pipe_2_byteenable;
-        pipe_request_refill <= request_refill;
-        pipe_rdata <= rdata;
-        pipe_data_mux_line <= data_mux_line;
-        pipe_hit <= patched_hit;
-        pipe_trans <= pipe_2_trans;
+                 // Stage 1 -> 2
+                 pipe_2_read <= dbus.read;
+                 pipe_2_write <= dbus.write;
+                 pipe_2_invalidate <= dbus.invalidate;
+                 pipe_2_uncached_read <= dbus_uncached.read;
+                 pipe_2_uncached_write <= dbus_uncached.write;
 
-        // Stage 3 exit
-        exited_invalidate <= pipe_invalidate;
-        exited_write <= pipe_write;
-        exited_byteenable <= pipe_byteenable;
-        exited_addr <= pipe_addr;
-        exited_wdata <= pipe_wdata;
+                 pipe_2_byteenable <= (dbus_uncached.read || dbus_uncached.write) ? dbus_uncached.byteenable : dbus.byteenable;
+                 pipe_2_addr <= (dbus_uncached.read || dbus_uncached.write) ? dbus_uncached.address : dbus.address;
+                 pipe_2_wdata <= (dbus_uncached.read || dbus_uncached.write) ? dbus_uncached.wrdata : dbus.wrdata;
+                 pipe_2_fifo_found <= fifo_found;
+                 pipe_2_fifo_written <= fifo_written;
+                 pipe_2_fifo_qdata <= fifo_qdata;
+                 pipe_2_hit <= hit;
+                 pipe_2_trans <= dbus.trans_in;
 
-        // Delayed tag_rdata
-        delayed_tag_rdata_q <= delayed_tag_rdata_d;
-    end
+                 // Stage 2 -> 3
+                 pipe_read <= pipe_2_read;
+                 pipe_write <= pipe_2_write;
+                 pipe_invalidate <= pipe_2_invalidate;
+                 pipe_uncached_read <= pipe_2_uncached_read;
+                 pipe_uncached_write <= pipe_2_uncached_write;
 
-    // Delayed tag_rdata
-    if(rst) begin
-        delayed_tag_rdata_q <= '0;
-    end else if(state == IDLE) begin
-        delayed_tag_rdata_q <= delayed_tag_rdata_d; // Only update when idle to stablize assoc_waddr
-    end
-end
+                 pipe_addr <= pipe_2_addr;
+                 pipe_wdata <= pipe_2_wdata;
+                 pipe_byteenable <= pipe_2_byteenable;
+                 pipe_request_refill <= request_refill;
+                 pipe_rdata <= rdata;
+                 pipe_data_mux_line <= data_mux_line;
+                 pipe_hit <= patched_hit;
+                 pipe_trans <= pipe_2_trans;
 
-// Write-back
-assign wb_burst_lines = wb_line;
+                 // Stage 3 exit
+                 exited_invalidate <= pipe_invalidate;
+                 exited_write <= pipe_write;
+                 exited_byteenable <= pipe_byteenable;
+                 exited_addr <= pipe_addr;
+                 exited_wdata <= pipe_wdata;
 
-always_comb begin
-    wb_state_d = wb_state;
-    wb_addr_d = wb_addr;
-    wb_line_d = wb_line;
-    wb_burst_cnt_d = wb_burst_cnt;
+                 // Delayed tag_rdata
+                 delayed_tag_rdata_q <= delayed_tag_rdata_d;
+               end
 
-    // AXI signals
-    axi_req.awvalid = 1'b0;
-    axi_req.wvalid = 1'b0;
-    axi_req.bready = 1'b1; // Ignores bresp
+             // Delayed tag_rdata
+             if(rst)
+               begin
+                 delayed_tag_rdata_q <= '0;
+               end
+             else if(state == IDLE)
+               begin
+                 delayed_tag_rdata_q <= delayed_tag_rdata_d; // Only update when idle to stablize assoc_waddr
+               end
+           end
 
-    axi_req_awid = '0;
-    axi_req_wid = '0;
+         // Write-back
+         assign wb_burst_lines = wb_line;
 
-    axi_req.awsize  = 2'b010;
-    axi_req.awlen = BURST_LIMIT;
-    axi_req.awburst = 2'b01;
-    axi_req.awaddr = wb_addr;
-    axi_req.awlock = '0;
-    axi_req.awprot = '0;
-    axi_req.awcache = '0;
+  always_comb
+    begin
+      wb_state_d = wb_state;
+      wb_addr_d = wb_addr;
+      wb_line_d = wb_line;
+      wb_burst_cnt_d = wb_burst_cnt;
 
-    axi_req.wdata = wb_burst_lines[wb_burst_cnt];
-    axi_req.wlast = wb_burst_cnt == BURST_LIMIT[LINE_BYTE_OFFSET-1:0];
-    axi_req.wstrb = 4'b1111;
+      // AXI signals
+      axi_req.awvalid = 1'b0;
+      axi_req.wvalid = 1'b0;
+      axi_req.bready = 1'b1; // Ignores bresp
 
-    fifo_pop = 1'b0;
+      axi_req_awid = '0;
+      axi_req_wid = '0;
 
-    case(wb_state)
-        WB_IDLE: begin
+      axi_req.awsize  = 2'b010;
+      axi_req.awlen = BURST_LIMIT;
+      axi_req.awburst = 2'b01;
+      axi_req.awaddr = wb_addr;
+      axi_req.awlock = '0;
+      axi_req.awprot = '0;
+      axi_req.awcache = '0;
+
+      axi_req.wdata = wb_burst_lines[wb_burst_cnt];
+      axi_req.wlast = wb_burst_cnt == BURST_LIMIT[LINE_BYTE_OFFSET-1:0];
+      axi_req.wstrb = 4'b1111;
+
+      fifo_pop = 1'b0;
+
+      case(wb_state)
+        WB_IDLE:
+          begin
             fifo_pop = 1'b1;
             wb_addr_d = { fifo_rtag, {LINE_BYTE_OFFSET{1'b0}} };
             wb_line_d = fifo_rdata;
 
-            if(~fifo_empty) begin
+            if(~fifo_empty)
+              begin
                 wb_state_d = WB_WAIT_AWREADY;
-            end
-        end
+              end
+          end
 
-        WB_WAIT_AWREADY: begin
+        WB_WAIT_AWREADY:
+          begin
             axi_req.awvalid = 1'b1;
 
             wb_burst_cnt_d = '0;
 
-            if(axi_resp.awready) begin
+            if(axi_resp.awready)
+              begin
                 wb_state_d = WB_WRITE;
-            end
-        end
+              end
+          end
 
-        WB_WRITE: begin
+        WB_WRITE:
+          begin
             axi_req.wvalid = 1'b1;
 
-            if(axi_resp.wready) begin
+            if(axi_resp.wready)
+              begin
                 wb_burst_cnt_d += 1;
-            end
+              end
 
-            if(axi_resp.wready && axi_req.wlast) begin
+            if(axi_resp.wready && axi_req.wlast)
+              begin
                 wb_state_d = WB_WAIT_BVALID;
-            end
-        end
+              end
+          end
 
-        WB_WAIT_BVALID: begin
+        WB_WAIT_BVALID:
+          begin
             if(axi_resp.bvalid)
-                wb_state_d = WB_IDLE;
-        end
-    endcase
-end
-
-always_ff @(posedge clk) begin
-    if(rst) begin
-        wb_line <= '0;
-        wb_addr <= '0;
-        wb_state <= WB_IDLE;
-        wb_burst_cnt <= '0;
-    end else begin
-        wb_line <= wb_line_d;
-        wb_addr <= wb_addr_d;
-        wb_state <= wb_state_d;
-        wb_burst_cnt <= wb_burst_cnt_d;
+              wb_state_d = WB_IDLE;
+          end
+      endcase
     end
-end
 
-// generate block RAMs
-for(genvar i = 0; i < SET_ASSOC; ++i) begin : gen_dcache_mem
-    // We need dual-port for simutanious R/W
-    dual_port_lutram #(
-        .SIZE  ( GROUP_NUM ),
-        .dtype ( tag_t     ),
-        .LATENCY_A ( 0 ),
-        .LATENCY_B ( 0 )
-    ) mem_tag (
-        .clk,
-        .rst,
+  always_ff @(posedge clk)
+    begin
+      if(rst)
+        begin
+          wb_line <= '0;
+          wb_addr <= '0;
+          wb_state <= WB_IDLE;
+          wb_burst_cnt <= '0;
+        end
+      else
+        begin
+          wb_line <= wb_line_d;
+          wb_addr <= wb_addr_d;
+          wb_state <= wb_state_d;
+          wb_burst_cnt <= wb_burst_cnt_d;
+        end
+    end
 
-        // Port A, handles tag write, controlled by stage 2 & 3
-        .ena   ( 1'b1      ),
-        .wea   ( tag_we[i] ),
-        .addra ( ram_addr  ),
-        .dina  ( tag_wdata ),
-        .douta ( delayed_tag_rdata_d[i] ),
+  // generate block RAMs
+  for(genvar i = 0; i < SET_ASSOC; ++i)
+    begin : gen_dcache_mem
+      // We need dual-port for simutanious R/W
+      dual_port_lutram #(
+                         .SIZE  ( GROUP_NUM ),
+                         .dtype ( tag_t     ),
+                         .LATENCY_A ( 0 ),
+                         .LATENCY_B ( 0 )
+                       ) mem_tag (
+                         .clk,
+                         .rst,
 
-        // Port B, handles tag read, controlled by stage 1
-        .enb   ( 1'b1         ),
-        .addrb ( read_addr    ),
-        .doutb ( tag_rdata[i] )
-    );
+                         // Port A, handles tag write, controlled by stage 2 & 3
+                         .ena   ( 1'b1      ),
+                         .wea   ( tag_we[i] ),
+                         .addra ( ram_addr  ),
+                         .dina  ( tag_wdata ),
+                         .douta ( delayed_tag_rdata_d[i] ),
 
-    dual_port_ram #(
-        .SIZE  ( GROUP_NUM ),
-        .dtype ( line_t    )
-    ) mem_data (
-        .clk,
-        .rst,
+                         // Port B, handles tag read, controlled by stage 1
+                         .enb   ( 1'b1         ),
+                         .addrb ( read_addr    ),
+                         .doutb ( tag_rdata[i] )
+                       );
 
-        // Port A, handles data write
-        .ena   ( 1'b1          ),
-        .wea   ( data_we[i]    ),
-        .addra ( ram_addr      ),
-        .dina  ( data_wdata    ),
-        .douta ( delayed_data_rdata[i] ),
+      dual_port_ram #(
+                      .SIZE  ( GROUP_NUM ),
+                      .dtype ( line_t    )
+                    ) mem_data (
+                      .clk,
+                      .rst,
 
-        // Port B, handles data
-        .enb   ( ~dbus.stall   ),
-        .web   ( 1'b0          ),
-        .addrb ( read_addr     ),
-        .dinb  ( '0            ),
-        .doutb ( data_rdata[i] )
-    );
-end
+                      // Port A, handles data write
+                      .ena   ( 1'b1          ),
+                      .wea   ( data_we[i]    ),
+                      .addra ( ram_addr      ),
+                      .dina  ( data_wdata    ),
+                      .douta ( delayed_data_rdata[i] ),
 
-// generate PLRU
-for(genvar i = 0; i < GROUP_NUM; ++i) begin: gen_plru
-    plru #(
-        .SET_ASSOC (SET_ASSOC)
-    ) plru_inst (
-        .clk,
-        .rst,
-        .access (pipe_hit),
-        .update ((~dbus.stall) && (~pipe_invalidate) && i[INDEX_WIDTH-1:0] == get_index(pipe_addr)),
+                      // Port B, handles data
+                      .enb   ( ~dbus.stall   ),
+                      .web   ( 1'b0          ),
+                      .addrb ( read_addr     ),
+                      .dinb  ( '0            ),
+                      .doutb ( data_rdata[i] )
+                    );
+    end
 
-        .lru    (lru[i])
-    );
-end
+  // generate PLRU
+  for(genvar i = 0; i < GROUP_NUM; ++i)
+    begin: gen_plru
+      plru #(
+             .SET_ASSOC (SET_ASSOC)
+           ) plru_inst (
+             .clk,
+             .rst,
+             .access (pipe_hit),
+             .update ((~dbus.stall) && (~pipe_invalidate) && i[INDEX_WIDTH-1:0] == get_index(pipe_addr)),
 
-dcache_fifo #(
-    .TAG_WIDTH (TAG_WIDTH + INDEX_WIDTH),
-    .DATA_WIDTH (LINE_WIDTH),
-    .DEPTH (WB_FIFO_DEPTH)
-) fifo_inst (
-    .clk,
-    .rst,
+             .lru    (lru[i])
+           );
+    end
 
-    .pline ({ fifo_ptag, fifo_pdata }),
-    .rline ({ fifo_rtag, fifo_rdata }),
+  dcache_fifo #(
+                .TAG_WIDTH (TAG_WIDTH + INDEX_WIDTH),
+                .DATA_WIDTH (LINE_WIDTH),
+                .DEPTH (WB_FIFO_DEPTH)
+              ) fifo_inst (
+                .clk,
+                .rst,
 
-    .full (fifo_full),
-    .empty (fifo_empty),
+                .pline ({ fifo_ptag, fifo_pdata }),
+                .rline ({ fifo_rtag, fifo_rdata }),
 
-    .query_tag (fifo_wqtag),
-    .query_found (fifo_found),
-    .query_wdata (fifo_wdata),
-    .query_rdata (fifo_qdata),
-    .query_wbe (fifo_wbe),
+                .full (fifo_full),
+                .empty (fifo_empty),
 
-    .pop (fifo_pop),
-    .push (fifo_push),
-    .write (fifo_write),
+                .query_tag (fifo_wqtag),
+                .query_found (fifo_found),
+                .query_wdata (fifo_wdata),
+                .query_rdata (fifo_qdata),
+                .query_wbe (fifo_wbe),
 
-    .written (fifo_written)
-);
+                .pop (fifo_pop),
+                .push (fifo_push),
+                .write (fifo_write),
 
-// debug info
-logic debug_uncache_access, debug_cache_miss;
-assign debug_uncache_access = (pipe_read | pipe_write) & (state == IDLE);
-assign debug_cache_miss = state == IDLE && (pipe_invalidate || pipe_request_refill);
+                .written (fifo_written)
+              );
 
-logic uncached_access;
-assign uncached_access = state == IDLE && (pipe_uncached_read || pipe_uncached_write);
+  // debug info
+  logic debug_uncache_access, debug_cache_miss;
+  assign debug_uncache_access = (pipe_read | pipe_write) & (state == IDLE);
+  assign debug_cache_miss = state == IDLE && (pipe_invalidate || pipe_request_refill);
+
+  logic uncached_access;
+  assign uncached_access = state == IDLE && (pipe_uncached_read || pipe_uncached_write);
 
 endmodule
