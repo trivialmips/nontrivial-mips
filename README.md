@@ -9,7 +9,7 @@ See `AUTHORS` for information about the authors of this project.
 ## Directory Structure
 
 * `loongson`: files from Loongson, some are adapted
-  * `cpu_gs232`: RTL code of GS232 CPU (__not committed for copyright reason__), packaged as Vivado IP
+  * `cpu_gs232`: RTL code of GS232 CPU (__not included for copyright reason__), packaged as Vivado IP
   * `soc_axi_func`: Vivado project, RTL code and testbench of functional test (using NonTrivialMIPS CPU)
   * `soc_axi_perf`: Vivado project, RTL code and testbench of performance test (using NonTrivialMIPS CPU)
   * `soc_run_os`: Vivado project and RTL code of a whole SoC (using GS232 CPU, upgraded to 2018.3)
@@ -22,6 +22,10 @@ See `AUTHORS` for information about the authors of this project.
 *Remark*: `out-of-order` branch contains a toy dual-issue out-of-order processor.
 
 ## Build Project
+
+### Update submodules
+
+We use git submodules to manage external code. Run `git submodule update --init` after cloning this project to ensure everything is up-to-date.
 
 ### Compiling options
 
@@ -53,3 +57,4 @@ All source code under `src/` is released under the MIT License with the followin
 
 Other directories might contain source code or materials that are proprietary or subject to open source licenses and kept in this repository as-is.
 Should you use these contents, you are aware that you will bear any corresponding legal responsibility or consequences.
+
